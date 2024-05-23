@@ -1,1 +1,3 @@
-# Biosphere3
+# 👾 Biosphere3
+
+A Mass Multi-Agent Online Game that combines elements of the Stanford town simulator with The sims. In thisgame, players can influence one of the citizens through conversation (bounded relationship), without directcontrol, and collaboratively govern an autonomous, self-sustaining small society with other citizens. Theproject will analyze how agents interact with humans and other agents to refine our agent algorithms. Thishelps us explore future models of harmonious and efficient coexistence between humans and Al.

@@ -1,0 +1,7 @@
+I suggest using these 2 collision plugins, since the asset is not designed to only have
+squared collisions and the only software that forces that is the Rpg Maker
+-
+https://quxios.github.io/plugins/QMovement
+https://quxios.github.io/plugins/QM+CollisionMap
+
+VIDEO TUTORIAL TO USE THEM: https://www.youtube.com/watch?v=-BN4Pyr5IBo

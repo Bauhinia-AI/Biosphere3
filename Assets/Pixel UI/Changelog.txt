@@ -1,0 +1,63 @@
+-- Changelog --
+Pixel UI V1.5 (Released 7/31/2019)
+- Added 188 pixel art button/key graphics
+- Added 4 round beveled graphics
+- Added 4 square beveled graphics
+- Adding new font retro gaming
+- Added animated bonus characters Slimus and Cubits
+- Slimus and Cubits are 14 additional graphics.
+
+Pixel UI V1.4 (Released 4/29/2019)
+- Added 86 Item Icons
+- Added 25 Pixel Card Sprites
+- Added 30 Pixel Particle Sprites
+- Added 4 Location Sprites
+- Added Scrollwork Dialogue Sprite
+- Added new classes: UICard, UIDeck, Card Profile
+- Separated Make a Game project from Demo (to be released separately later).
+
+Pixel UI V1.3 (Released: 2/27/2019)
+- Added 160 sprites for Visual Clock/Weather/Events
+- Added Game Clock & UI Clock Classes
+- Added Tooltips
+- Added Faders (Fade-In, Fade-Out, Fade-In/Out)
+- Added 8 new Icons
+- Added utility classes (Range, RangeInt)
+- Added several classes to add convenience functionality
+- Extended functionality of some existing controls
+- Completed full implementation of Primary & Sub text components
+- Completed base Make-a-Game GUI
+
+Pixel UI V1.21 (Released: 2/4/2019)
+- Rebuilt project to support Unity 2017.1.0f3 and higher
+- Added a prefab and menu entry for Pixel UI Canvas
+- Changed menu to instantiate prefabs as a child of the selected item
+- Newly created prefabs from the Pixel UI menu are automatically selected
+- Fixed incorrect configurations on a few prefabs
+- Changed text prefabs to utilize Internal and External materials
+- Changed text menu to reflect changes to text prefabs
+
+Pixel UI V1.2 (Released: 1/18/2019)
+- Added typewriter effect
+- Added dialogue and thought bubbles
+- Added tabbed, dialogue, and standard windows
+- Added health, magic, and energy bars
+- Added exp bar (with exp table)
+- Added 2 new icons
+- Added new font "Visitor"
+- Added 54 new graphics
+- Added 30 new prefabs
+
+Pixel UI V1.1 (Released: 12/8/2018)
+- Added 42 new pixel art icons exclusive to Pixel UI
+- Added 8 new UI alternatives for both Rounded and Square themes
+-- Internal-Invisible, Shadow Internal_Invisible, Internal-Highlight, Shadow Internal-Highlight
+- Added scrollviews to Pixel UI that were unintentionally left out
+- Added 3 new materials for text to give more control over text coloring
+-- Default (Pixel UI), Text (External), Text (Internal)
+- Changed the way the menu system works to make it easy to add new skinned UI themes
+- Fixed an issue where drop downs were not fully configured to use Pixel UI components
+- Fixed the slider handle in the rounded UI to better conform with the rounded UI theme
+- Changed Toggles to use the updated cross and checkmark icons
+- Changed the dropdown to use the updated arrow icon
+- Changed some minor settings on most control prefabs

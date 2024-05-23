@@ -1,0 +1,5235 @@
+fileFormatVersion: 2
+guid: 8eb6b30dfce27014ba157237ba97d661
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 62a9f0aa5b59740cfbadc7e5f9823bb0, type: 3}
+  textureImporterSettings:
+    alphaSource: 1
+    mipMapMode: 0
+    enableMipMap: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+    convertToNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+    swizzle: 50462976
+    isReadable: 0
+    streamingMipmaps: 0
+    streamingMipmapsPriority: 0
+    vTOnly: 0
+    ignoreMipmapLimit: 0
+    nPOTScale: 1
+    sRGBTexture: 1
+    spriteMode: 2
+    spriteExtrude: 1
+    spriteMeshType: 1
+    alignment: 0
+    spritePivot: {x: 0.5, y: 0.5}
+    spritePixelsToUnits: 100
+    spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+    spriteGenerateFallbackPhysicsShape: 0
+    generateCubemap: 6
+    cubemapConvolution: 0
+    seamlessCubemap: 0
+    alphaIsTransparency: 1
+    spriteTessellationDetail: -1
+    textureType: 8
+    textureShape: 1
+    singleChannelComponent: 0
+    flipbookRows: 0
+    flipbookColumns: 0
+    ignorePngGamma: 0
+    cookieMode: 0
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+    normalMap: 0
+    textureFormat: 0
+    maxTextureSize: 0
+    lightmap: 0
+    compressionQuality: 0
+    linearTexture: 0
+    grayScaleToAlpha: 0
+    rGBM: 0
+    cubemapConvolutionSteps: 0
+    cubemapConvolutionExponent: 0
+    maxTextureSizeSet: 0
+    compressionQualitySet: 0
+    textureFormatSet: 0
+    applyGammaDecoding: 0
+  previousAsepriteImporterSettings:
+    fileImportMode: 1
+    importHiddenLayers: 0
+    layerImportMode: 1
+    defaultPivotSpace: 0
+    defaultPivotAlignment: 7
+    customPivotPosition: {x: 0.5, y: 0.5}
+    mosaicPadding: 4
+    spritePadding: 0
+    generateModelPrefab: 1
+    generateAnimationClips: 1
+    addSortingGroup: 1
+    addShadowCasters: 0
+  asepriteImporterSettings:
+    fileImportMode: 1
+    importHiddenLayers: 0
+    layerImportMode: 1
+    defaultPivotSpace: 0
+    defaultPivotAlignment: 7
+    customPivotPosition: {x: 0.5, y: 0.5}
+    mosaicPadding: 4
+    spritePadding: 0
+    generateModelPrefab: 1
+    generateAnimationClips: 1
+    addSortingGroup: 1
+    addShadowCasters: 0
+  importFileNodeState: 1
+  platformSettingsDirtyTick: 0
+  textureAssetName: 
+  singleSpriteImportData:
+  - name: 
+    originalName: 
+    pivot: {x: 0, y: 0}
+    alignment: 0
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 0
+      y: 0
+      width: 0
+      height: 0
+    spriteID: 
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 0, y: 0}
+  animatedSpriteImportData:
+  - name: 000_MV_Hairstyles__Frame_0
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1656
+      width: 46
+      height: 109
+    spriteID: 909b04fb65133fc498188b35183a4ebb
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1656}
+  - name: 000_MV_Hairstyles__Frame_1
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1773
+      width: 46
+      height: 109
+    spriteID: b876731e4864abe48a44990cf13637d3
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1773}
+  - name: 000_MV_Hairstyles__Frame_2
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1890
+      width: 46
+      height: 109
+    spriteID: 20b9e336297027041aa194f012965179
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1890}
+  - name: 000_MV_Hairstyles__Frame_3
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 4
+      width: 46
+      height: 109
+    spriteID: 622f9adced8166242b86a9fa3c801dcc
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 4}
+  - name: 000_MV_Hairstyles__Frame_4
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 121
+      width: 46
+      height: 109
+    spriteID: 14b49ebb74bb29043b74891569d78dc8
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 121}
+  - name: 000_MV_Hairstyles__Frame_5
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 238
+      width: 46
+      height: 109
+    spriteID: 60138a4c4c6b3b546a2a4fd50ddd6a03
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 238}
+  - name: 000_MV_Hairstyles__Frame_6
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 355
+      width: 46
+      height: 109
+    spriteID: ed22909e2ab6c354fb832737a079ca76
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 355}
+  - name: 000_MV_Hairstyles__Frame_7
+    originalName: 
+    pivot: {x: 0.5106383, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 355
+      width: 47
+      height: 110
+    spriteID: 64451e277a386144495086c698ca8058
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 355}
+  - name: 000_MV_Hairstyles__Frame_8
+    originalName: 
+    pivot: {x: 0.5106383, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 473
+      width: 47
+      height: 110
+    spriteID: 5bb77201a565dea4891bee9b38b229d6
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 473}
+  - name: 000_MV_Hairstyles__Frame_9
+    originalName: 
+    pivot: {x: 0.5106383, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 591
+      width: 47
+      height: 110
+    spriteID: cae8923e3b24aa647a4d098fe064c50f
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 591}
+  - name: 000_MV_Hairstyles__Frame_10
+    originalName: 
+    pivot: {x: 0.5106383, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 709
+      width: 47
+      height: 110
+    spriteID: 4836e052040653a4cbe71dd5df546dfc
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 709}
+  - name: 000_MV_Hairstyles__Frame_11
+    originalName: 
+    pivot: {x: 0.5106383, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 827
+      width: 47
+      height: 110
+    spriteID: 673ebef7535443046a4c638a14bbc2d6
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 827}
+  - name: 000_MV_Hairstyles__Frame_12
+    originalName: 
+    pivot: {x: 0.5106383, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 945
+      width: 47
+      height: 110
+    spriteID: 35761b5ee2d72304c8fa7cf9f1dac6c9
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 945}
+  - name: 000_MV_Hairstyles__Frame_13
+    originalName: 
+    pivot: {x: 0.5106383, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1063
+      width: 47
+      height: 110
+    spriteID: a256e59070e66214ba934576fc05cdbe
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1063}
+  - name: 000_MV_Hairstyles__Frame_14
+    originalName: 
+    pivot: {x: 0.5, y: -0.081081085}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1324
+      width: 48
+      height: 111
+    spriteID: 827d441194114a84fa178ee0e8c5bac5
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1324}
+  - name: 000_MV_Hairstyles__Frame_15
+    originalName: 
+    pivot: {x: 0.5, y: -0.081081085}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1443
+      width: 48
+      height: 111
+    spriteID: 70912d55606293a429e891e1fdbcc453
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1443}
+  - name: 000_MV_Hairstyles__Frame_16
+    originalName: 
+    pivot: {x: 0.5, y: -0.081081085}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1562
+      width: 48
+      height: 111
+    spriteID: 48d4a955ffeee3e4fae8cbd0c08b1ad5
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1562}
+  - name: 000_MV_Hairstyles__Frame_17
+    originalName: 
+    pivot: {x: 0.5, y: -0.081081085}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1681
+      width: 48
+      height: 111
+    spriteID: 6fcaf7cf882c0a449a6625e91cf047da
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1681}
+  - name: 000_MV_Hairstyles__Frame_18
+    originalName: 
+    pivot: {x: 0.5, y: -0.081081085}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1800
+      width: 48
+      height: 111
+    spriteID: 72e4690cd85cba34695b90c09a52a4b0
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1800}
+  - name: 000_MV_Hairstyles__Frame_19
+    originalName: 
+    pivot: {x: 0.5, y: -0.081081085}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1919
+      width: 48
+      height: 111
+    spriteID: 88eca639c6683534d842929605ba1ead
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1919}
+  - name: 000_MV_Hairstyles__Frame_20
+    originalName: 
+    pivot: {x: 0.5, y: -0.081081085}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 4
+      width: 48
+      height: 111
+    spriteID: ae7a950a11b695d41be0a5f24e2ab8b2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 4}
+  - name: 000_MV_Hairstyles__Frame_21
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 4
+      width: 48
+      height: 112
+    spriteID: 670a58dc9c811eb44aa3d39b61f34512
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 4}
+  - name: 000_MV_Hairstyles__Frame_22
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 124
+      width: 48
+      height: 112
+    spriteID: 836b921698eb1b6498ed84781c52e86b
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 124}
+  - name: 000_MV_Hairstyles__Frame_23
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 244
+      width: 48
+      height: 112
+    spriteID: 7e15ec48d1e1175409b2782e7c002751
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 244}
+  - name: 000_MV_Hairstyles__Frame_24
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 364
+      width: 48
+      height: 112
+    spriteID: 098b0bd475e70dd44bd479bcd1a5453d
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 364}
+  - name: 000_MV_Hairstyles__Frame_25
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 484
+      width: 48
+      height: 112
+    spriteID: 1f128175579357248a10d947d8771066
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 484}
+  - name: 000_MV_Hairstyles__Frame_26
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 604
+      width: 48
+      height: 112
+    spriteID: 2b29f777c78a1c542b5e2479eead888c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 604}
+  - name: 000_MV_Hairstyles__Frame_27
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 724
+      width: 48
+      height: 112
+    spriteID: 1876743e56cb6b9408fab0fcc0ed75ba
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 724}
+  - name: 000_MV_Hairstyles__Frame_28
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 956
+      width: 48
+      height: 110
+    spriteID: d0a117bd62d78b148bb3e6c7e85641cf
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 956}
+  - name: 000_MV_Hairstyles__Frame_29
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1074
+      width: 48
+      height: 110
+    spriteID: bdbfdb3f54d6cbe47ba831abaac9177e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1074}
+  - name: 000_MV_Hairstyles__Frame_30
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1192
+      width: 48
+      height: 110
+    spriteID: ae23cc24c49049e42a8d92cac3802ae2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1192}
+  - name: 000_MV_Hairstyles__Frame_31
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1310
+      width: 48
+      height: 110
+    spriteID: c0527c10615df98498469891cfc90647
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1310}
+  - name: 000_MV_Hairstyles__Frame_32
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1428
+      width: 48
+      height: 110
+    spriteID: 1e3af4e3a50b91b4abf3032b18306254
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1428}
+  - name: 000_MV_Hairstyles__Frame_33
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1546
+      width: 48
+      height: 110
+    spriteID: 456e80033596f8c48a05ac233e8ed112
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1546}
+  - name: 000_MV_Hairstyles__Frame_34
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1664
+      width: 48
+      height: 110
+    spriteID: a2c9e6760f77a4e43bf737c8bca8c357
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1664}
+  - name: 000_MV_Hairstyles__Frame_35
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 472
+      width: 46
+      height: 109
+    spriteID: 7b0c8e74d9dea564fb67aca5fa1c9f28
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 472}
+  - name: 000_MV_Hairstyles__Frame_36
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 589
+      width: 46
+      height: 109
+    spriteID: 07fe002bde6e3c947b1242db8b553d81
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 589}
+  - name: 000_MV_Hairstyles__Frame_37
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 706
+      width: 46
+      height: 109
+    spriteID: b2bfaa22776e79f48954ed29686c7ea4
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 706}
+  - name: 000_MV_Hairstyles__Frame_38
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 823
+      width: 46
+      height: 109
+    spriteID: 6885164806df6cc46bba858266118a19
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 823}
+  - name: 000_MV_Hairstyles__Frame_39
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 940
+      width: 46
+      height: 109
+    spriteID: 8c4b1f942a96c1649885b62d5b032322
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 940}
+  - name: 000_MV_Hairstyles__Frame_40
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1057
+      width: 46
+      height: 109
+    spriteID: 54fc0b026f9a7d44d882adf4ba04e340
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1057}
+  - name: 000_MV_Hairstyles__Frame_41
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1174
+      width: 46
+      height: 109
+    spriteID: 82e2c7b8ceb972c4e9563d775019892e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1174}
+  - name: 000_MV_Hairstyles__Frame_42
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1782
+      width: 48
+      height: 110
+    spriteID: 743aae3ecf6b1ce4da3432aba842b956
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1782}
+  - name: 000_MV_Hairstyles__Frame_43
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 1900
+      width: 48
+      height: 110
+    spriteID: ee14af2b2e548bc4bb9870632aaa326c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 1900}
+  - name: 000_MV_Hairstyles__Frame_44
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 4
+      width: 48
+      height: 110
+    spriteID: 845e011a6f497bc469bea0e78a6cbdf3
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 4}
+  - name: 000_MV_Hairstyles__Frame_45
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 122
+      width: 48
+      height: 110
+    spriteID: cf21aec374be5c7458ec38182e24746a
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 122}
+  - name: 000_MV_Hairstyles__Frame_46
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 240
+      width: 48
+      height: 110
+    spriteID: c2761f138b548114580b86ea149d44df
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 240}
+  - name: 000_MV_Hairstyles__Frame_47
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 358
+      width: 48
+      height: 110
+    spriteID: 3478f03be4d959a43ae3c44a3b25c3ce
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 358}
+  - name: 000_MV_Hairstyles__Frame_48
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 476
+      width: 48
+      height: 110
+    spriteID: 715f22d7834167a4da37d0c336f9064b
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 476}
+  - name: 000_MV_Hairstyles__Frame_49
+    originalName: 
+    pivot: {x: 0.5, y: -0.072072074}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 123
+      width: 48
+      height: 111
+    spriteID: 14409fca6cd52864b90b59f21ac614a5
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 123}
+  - name: 000_MV_Hairstyles__Frame_50
+    originalName: 
+    pivot: {x: 0.5, y: -0.072072074}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 242
+      width: 48
+      height: 111
+    spriteID: d107fbef37bbee242ba9384ef73c25f1
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 242}
+  - name: 000_MV_Hairstyles__Frame_51
+    originalName: 
+    pivot: {x: 0.5, y: -0.072072074}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 361
+      width: 48
+      height: 111
+    spriteID: 95b2bfdae13ee5d478ed3a264dcbe4e0
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 361}
+  - name: 000_MV_Hairstyles__Frame_52
+    originalName: 
+    pivot: {x: 0.5, y: -0.072072074}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 480
+      width: 48
+      height: 111
+    spriteID: 94b30ddc17e119048b21f49894abfeeb
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 480}
+  - name: 000_MV_Hairstyles__Frame_53
+    originalName: 
+    pivot: {x: 0.5, y: -0.072072074}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 599
+      width: 48
+      height: 111
+    spriteID: 712240b2c4062f34cbe3f479a56d2417
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 599}
+  - name: 000_MV_Hairstyles__Frame_54
+    originalName: 
+    pivot: {x: 0.5, y: -0.072072074}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 718
+      width: 48
+      height: 111
+    spriteID: 9aa7c30b6e37a56428bfcf0c202f8ef3
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 718}
+  - name: 000_MV_Hairstyles__Frame_55
+    originalName: 
+    pivot: {x: 0.5, y: -0.072072074}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 116
+      y: 837
+      width: 48
+      height: 111
+    spriteID: fb1584dc1eec1334ab3707c71f6dace2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 116, y: 837}
+  - name: 000_MV_Hairstyles__Frame_56
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 844
+      width: 48
+      height: 112
+    spriteID: c577f7e3ab1189848a34efe28b18d5f9
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 844}
+  - name: 000_MV_Hairstyles__Frame_57
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 964
+      width: 48
+      height: 112
+    spriteID: 2a8a83f9de79c344e8a00a0151f93fce
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 964}
+  - name: 000_MV_Hairstyles__Frame_58
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1084
+      width: 48
+      height: 112
+    spriteID: 13ad983f21373994c8d205a3cf185478
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1084}
+  - name: 000_MV_Hairstyles__Frame_59
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1204
+      width: 48
+      height: 112
+    spriteID: df7955638f4c2e74cb0a38fb3d3e521c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1204}
+  - name: 000_MV_Hairstyles__Frame_60
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1324
+      width: 48
+      height: 112
+    spriteID: 4b4a30cdffcd2744990acdddf9c158b4
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1324}
+  - name: 000_MV_Hairstyles__Frame_61
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1444
+      width: 48
+      height: 112
+    spriteID: bbab6db58867b8c43a80136b1d02ebdf
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1444}
+  - name: 000_MV_Hairstyles__Frame_62
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1564
+      width: 48
+      height: 112
+    spriteID: b5f99fec7c47fe5479430f858d62ed44
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1564}
+  - name: 000_MV_Hairstyles__Frame_63
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 594
+      width: 48
+      height: 110
+    spriteID: 6bc8e2feccb2561468969483dfc74abe
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 594}
+  - name: 000_MV_Hairstyles__Frame_64
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 712
+      width: 48
+      height: 110
+    spriteID: ef04d16e709a92d458d8d5353fcaec6e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 712}
+  - name: 000_MV_Hairstyles__Frame_65
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 830
+      width: 48
+      height: 110
+    spriteID: ff526abb26b944d4294f09bfba9cbd39
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 830}
+  - name: 000_MV_Hairstyles__Frame_66
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 948
+      width: 48
+      height: 110
+    spriteID: 4c99b431fef19e54993bde17b7ff201a
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 948}
+  - name: 000_MV_Hairstyles__Frame_67
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1066
+      width: 48
+      height: 110
+    spriteID: a048e602b81b5e64ba807db5637b8fd0
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1066}
+  - name: 000_MV_Hairstyles__Frame_68
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1184
+      width: 48
+      height: 110
+    spriteID: 6a529b61cf38db24c827d1799b541d40
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1184}
+  - name: 000_MV_Hairstyles__Frame_69
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1302
+      width: 48
+      height: 110
+    spriteID: e9c82be54be7fae44bb573aa1d27e320
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1302}
+  - name: 000_MV_Hairstyles__Frame_70
+    originalName: 
+    pivot: {x: 0.5, y: -0.08035715}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1684
+      width: 48
+      height: 112
+    spriteID: 9b280aa34e71835429ec4603784f4d4e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1684}
+  - name: 000_MV_Hairstyles__Frame_71
+    originalName: 
+    pivot: {x: 0.5, y: -0.08035715}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1804
+      width: 48
+      height: 112
+    spriteID: 14973e72b487e4047851192479992f85
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1804}
+  - name: 000_MV_Hairstyles__Frame_72
+    originalName: 
+    pivot: {x: 0.5, y: -0.08035715}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 1924
+      width: 48
+      height: 112
+    spriteID: df37cce4b5c58d645928d669b82aecb2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 1924}
+  - name: 000_MV_Hairstyles__Frame_73
+    originalName: 
+    pivot: {x: 0.5, y: -0.08035715}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 4
+      width: 48
+      height: 112
+    spriteID: e3613233edf9cc14fa4a3db0ae9f4ccc
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 4}
+  - name: 000_MV_Hairstyles__Frame_74
+    originalName: 
+    pivot: {x: 0.5, y: -0.08035715}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 124
+      width: 48
+      height: 112
+    spriteID: 126e3db53cfd2bd49a168908da1f9dcb
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 124}
+  - name: 000_MV_Hairstyles__Frame_75
+    originalName: 
+    pivot: {x: 0.5, y: -0.08035715}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 244
+      width: 48
+      height: 112
+    spriteID: b000c0b2dc88d8b40a57a67381a728e2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 244}
+  - name: 000_MV_Hairstyles__Frame_76
+    originalName: 
+    pivot: {x: 0.5, y: -0.08035715}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 364
+      width: 48
+      height: 112
+    spriteID: 625ca291c85d4d24fbe5f7a6278f2b0b
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 364}
+  - name: 000_MV_Hairstyles__Frame_77
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1291
+      width: 46
+      height: 109
+    spriteID: 89ebc8958c7d8764fb2202634e8e181e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1291}
+  - name: 000_MV_Hairstyles__Frame_78
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1408
+      width: 46
+      height: 109
+    spriteID: e68260364d9925d45a736caea5f4ab48
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1408}
+  - name: 000_MV_Hairstyles__Frame_79
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1525
+      width: 46
+      height: 109
+    spriteID: 98d915f36bb54aa47a86512384c52e03
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1525}
+  - name: 000_MV_Hairstyles__Frame_80
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1642
+      width: 46
+      height: 109
+    spriteID: 7a22b114a860f6b449ff5ae19664ae9f
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1642}
+  - name: 000_MV_Hairstyles__Frame_81
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1759
+      width: 46
+      height: 109
+    spriteID: 57f8d146328ff734d8ec1c0ec77c113b
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1759}
+  - name: 000_MV_Hairstyles__Frame_82
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 450
+      y: 1876
+      width: 46
+      height: 109
+    spriteID: c396a9f2e0f5a2b438bb289c3f892051
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 450, y: 1876}
+  - name: 000_MV_Hairstyles__Frame_83
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 4
+      width: 46
+      height: 109
+    spriteID: 1fb80e4f1b4a9f7429e896a8f0b46042
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 4}
+  - name: 000_MV_Hairstyles__Frame_84
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 121
+      width: 46
+      height: 109
+    spriteID: 2aa0b783ed35c6a44856551050a2aed4
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 121}
+  - name: 000_MV_Hairstyles__Frame_85
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 238
+      width: 46
+      height: 109
+    spriteID: 0c171522f2a032c4f8694df12b2ec221
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 238}
+  - name: 000_MV_Hairstyles__Frame_86
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 355
+      width: 46
+      height: 109
+    spriteID: f6f76114856d31d4d91beb2e848ea716
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 355}
+  - name: 000_MV_Hairstyles__Frame_87
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 472
+      width: 46
+      height: 109
+    spriteID: eab995d0819db5b42a332931eadd95b1
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 472}
+  - name: 000_MV_Hairstyles__Frame_88
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 589
+      width: 46
+      height: 109
+    spriteID: 481e6c8466f71d94698abb8f1ab8e546
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 589}
+  - name: 000_MV_Hairstyles__Frame_89
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 706
+      width: 46
+      height: 109
+    spriteID: 440d48b8c33d71048b80d4e220a2ea09
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 706}
+  - name: 000_MV_Hairstyles__Frame_90
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 823
+      width: 46
+      height: 109
+    spriteID: 35a66b26ade728843ab94f9205e5d205
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 823}
+  - name: 000_MV_Hairstyles__Frame_91
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 940
+      width: 46
+      height: 109
+    spriteID: b7f95526c93c6c24b8f5406f6c94fe33
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 940}
+  - name: 000_MV_Hairstyles__Frame_92
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1057
+      width: 46
+      height: 109
+    spriteID: 302436b88cfb43b4ca7a21a730d2367e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1057}
+  - name: 000_MV_Hairstyles__Frame_93
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1174
+      width: 46
+      height: 109
+    spriteID: 1bca567d613a4664fa2e1aff248e8e0c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1174}
+  - name: 000_MV_Hairstyles__Frame_94
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1291
+      width: 46
+      height: 109
+    spriteID: d5e859dd9c69c53419ee0c253d831410
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1291}
+  - name: 000_MV_Hairstyles__Frame_95
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1408
+      width: 46
+      height: 109
+    spriteID: 8ee9cec4187f33a40a158e6876f0ed1c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1408}
+  - name: 000_MV_Hairstyles__Frame_96
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1525
+      width: 46
+      height: 109
+    spriteID: a4a39e635e6ace844bfc84d502708b70
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1525}
+  - name: 000_MV_Hairstyles__Frame_97
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1642
+      width: 46
+      height: 109
+    spriteID: ae1a858fa64e069438f06eaba4ec240c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1642}
+  - name: 000_MV_Hairstyles__Frame_98
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 484
+      width: 48
+      height: 112
+    spriteID: b215eec63006dda40bc583884abb0556
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 484}
+  - name: 000_MV_Hairstyles__Frame_99
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 604
+      width: 48
+      height: 112
+    spriteID: ff10ef06ffe8ec644b1477b781f1039f
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 604}
+  - name: 000_MV_Hairstyles__Frame_100
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 724
+      width: 48
+      height: 112
+    spriteID: bc9de09b89858914ea3ee6d399c69113
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 724}
+  - name: 000_MV_Hairstyles__Frame_101
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 844
+      width: 48
+      height: 112
+    spriteID: 14b9409e08dd31e4394ac50eba4a8110
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 844}
+  - name: 000_MV_Hairstyles__Frame_102
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 964
+      width: 48
+      height: 112
+    spriteID: a972e20b9239a9146b37e45502e98d71
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 964}
+  - name: 000_MV_Hairstyles__Frame_103
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1084
+      width: 48
+      height: 112
+    spriteID: 9d8e0fd25d8c04641abb7ab1de3d3a79
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1084}
+  - name: 000_MV_Hairstyles__Frame_104
+    originalName: 
+    pivot: {x: 0.5, y: -0.053571433}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 60
+      y: 1204
+      width: 48
+      height: 112
+    spriteID: 831fcad629a20124c878cf8d649a26e8
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 60, y: 1204}
+  - name: 000_MV_Hairstyles__Frame_105
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1759
+      width: 46
+      height: 109
+    spriteID: 3aa2b3612397f8d4d9dd35e635ab38f5
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1759}
+  - name: 000_MV_Hairstyles__Frame_106
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 504
+      y: 1876
+      width: 46
+      height: 109
+    spriteID: 515d48c5b4e091f449a62191de5c82a6
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 504, y: 1876}
+  - name: 000_MV_Hairstyles__Frame_107
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 4
+      width: 46
+      height: 109
+    spriteID: 9e0955987bb8e9646bc335b4ac04c14b
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 4}
+  - name: 000_MV_Hairstyles__Frame_108
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 121
+      width: 46
+      height: 109
+    spriteID: 49e24922ff94f2845bd2890499019348
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 121}
+  - name: 000_MV_Hairstyles__Frame_109
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 238
+      width: 46
+      height: 109
+    spriteID: 8afa4a443a3859a4198694b64ddc3f87
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 238}
+  - name: 000_MV_Hairstyles__Frame_110
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 355
+      width: 46
+      height: 109
+    spriteID: dcc4e8f81923f654291ca8310ba595b0
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 355}
+  - name: 000_MV_Hairstyles__Frame_111
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 472
+      width: 46
+      height: 109
+    spriteID: c5463635263bbe44792f28b8d5e149f9
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 472}
+  - name: 000_MV_Hairstyles__Frame_112
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1420
+      width: 48
+      height: 110
+    spriteID: 94bfa9ba7b6a16e41893f8cb41046b7e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1420}
+  - name: 000_MV_Hairstyles__Frame_113
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1538
+      width: 48
+      height: 110
+    spriteID: 839a731dde6c17e4483ceaed67a10ace
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1538}
+  - name: 000_MV_Hairstyles__Frame_114
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1656
+      width: 48
+      height: 110
+    spriteID: f0ed750d27fc27140acf1bf9af7c1508
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1656}
+  - name: 000_MV_Hairstyles__Frame_115
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1774
+      width: 48
+      height: 110
+    spriteID: bb389c5ffbce65846abd3d748c39e872
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1774}
+  - name: 000_MV_Hairstyles__Frame_116
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 172
+      y: 1892
+      width: 48
+      height: 110
+    spriteID: fea35b253e0ec9f4bb22e4e9c4d765a2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 172, y: 1892}
+  - name: 000_MV_Hairstyles__Frame_117
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 4
+      width: 48
+      height: 110
+    spriteID: e298cbaa7830cf440b1829fdb19e8eec
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 4}
+  - name: 000_MV_Hairstyles__Frame_118
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 122
+      width: 48
+      height: 110
+    spriteID: 6888cc984a4cf0746ac6e9b0ebe57bb1
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 122}
+  - name: 000_MV_Hairstyles__Frame_119
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 4
+      width: 46
+      height: 110
+    spriteID: 29fa37e602c0f7c4591254f338ad54bb
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 4}
+  - name: 000_MV_Hairstyles__Frame_120
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 122
+      width: 46
+      height: 110
+    spriteID: 225b59d705af91d4fb1ce1c068c64707
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 122}
+  - name: 000_MV_Hairstyles__Frame_121
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 240
+      width: 46
+      height: 110
+    spriteID: 4ccfb168a2a7a3447aca03bf8fabbdc2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 240}
+  - name: 000_MV_Hairstyles__Frame_122
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 358
+      width: 46
+      height: 110
+    spriteID: 180d2c6f8c231d64cb485329844a17a7
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 358}
+  - name: 000_MV_Hairstyles__Frame_123
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 476
+      width: 46
+      height: 110
+    spriteID: 393d5d1da3316f44c94072b730b6de79
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 476}
+  - name: 000_MV_Hairstyles__Frame_124
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 594
+      width: 46
+      height: 110
+    spriteID: 09fb8ce2f4636674884ab8de9b1fa04b
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 594}
+  - name: 000_MV_Hairstyles__Frame_125
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 712
+      width: 46
+      height: 110
+    spriteID: 938c693f8e4d6bc4aaadd834b96f60d6
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 712}
+  - name: 000_MV_Hairstyles__Frame_126
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 712
+      width: 48
+      height: 109
+    spriteID: 8399240146f1a204490ca386736f14c1
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 712}
+  - name: 000_MV_Hairstyles__Frame_127
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 829
+      width: 48
+      height: 109
+    spriteID: 044d59e6af4a57f4087ba3e875373d5f
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 829}
+  - name: 000_MV_Hairstyles__Frame_128
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 946
+      width: 48
+      height: 109
+    spriteID: 0e4998842bd0a0441875a91473efff3c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 946}
+  - name: 000_MV_Hairstyles__Frame_129
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1063
+      width: 48
+      height: 109
+    spriteID: 0a2e6c5139fe43f46a022acf9fe7a178
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1063}
+  - name: 000_MV_Hairstyles__Frame_130
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1180
+      width: 48
+      height: 109
+    spriteID: d7e398fbe211f10488c50c07e0c32b1d
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1180}
+  - name: 000_MV_Hairstyles__Frame_131
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1297
+      width: 48
+      height: 109
+    spriteID: 94ecc2837ddd85743bcc509e15a62cfe
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1297}
+  - name: 000_MV_Hairstyles__Frame_132
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1414
+      width: 48
+      height: 109
+    spriteID: 98fa97b384bf041438a38dc567de6210
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1414}
+  - name: 000_MV_Hairstyles__Frame_133
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 589
+      width: 46
+      height: 109
+    spriteID: 348de561d6aec5347a12fe211098e85c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 589}
+  - name: 000_MV_Hairstyles__Frame_134
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 706
+      width: 46
+      height: 109
+    spriteID: ed8d4c59ea468c64fbefa3f51a0d4e87
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 706}
+  - name: 000_MV_Hairstyles__Frame_135
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 823
+      width: 46
+      height: 109
+    spriteID: 5b9a4bf32d066a04a82bb0d5c8dda333
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 823}
+  - name: 000_MV_Hairstyles__Frame_136
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 940
+      width: 46
+      height: 109
+    spriteID: 6fe2795f9cf5c214b894fceb0f5ae6ad
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 940}
+  - name: 000_MV_Hairstyles__Frame_137
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 1057
+      width: 46
+      height: 109
+    spriteID: 170b5abd601fbed4e945e84a153b386f
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 1057}
+  - name: 000_MV_Hairstyles__Frame_138
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 1174
+      width: 46
+      height: 109
+    spriteID: 5bbe08aeeec8c7247a8676cce15050e2
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 1174}
+  - name: 000_MV_Hairstyles__Frame_139
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 558
+      y: 1291
+      width: 46
+      height: 109
+    spriteID: d0a4221a9ecdcc84294e9dee2082c5b4
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 558, y: 1291}
+  - name: 000_MV_Hairstyles__Frame_140
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 240
+      width: 48
+      height: 110
+    spriteID: 3e09957f04ed05e40b23f46a3ab9dc8c
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 240}
+  - name: 000_MV_Hairstyles__Frame_141
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 358
+      width: 48
+      height: 110
+    spriteID: 985200d8d0449ae479c0af99ba7fab66
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 358}
+  - name: 000_MV_Hairstyles__Frame_142
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 476
+      width: 48
+      height: 110
+    spriteID: 4b94e16c4cf437e4396cee752e0845bc
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 476}
+  - name: 000_MV_Hairstyles__Frame_143
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 594
+      width: 48
+      height: 110
+    spriteID: 4b4e66a3aeadb0343898ac6357b028db
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 594}
+  - name: 000_MV_Hairstyles__Frame_144
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 712
+      width: 48
+      height: 110
+    spriteID: f3ba3fb8b5a283340b14f23fb262b1aa
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 712}
+  - name: 000_MV_Hairstyles__Frame_145
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 830
+      width: 48
+      height: 110
+    spriteID: 72de5d85979a259499b1223fdca8d5fa
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 830}
+  - name: 000_MV_Hairstyles__Frame_146
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 948
+      width: 48
+      height: 110
+    spriteID: f9baef183b9f84942ae884b627a10a47
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 948}
+  - name: 000_MV_Hairstyles__Frame_147
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 830
+      width: 46
+      height: 110
+    spriteID: fae852494bd6d39468701e6381244293
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 830}
+  - name: 000_MV_Hairstyles__Frame_148
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 948
+      width: 46
+      height: 110
+    spriteID: fe1e530bf1726b747bd0e226cc98efba
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 948}
+  - name: 000_MV_Hairstyles__Frame_149
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1066
+      width: 46
+      height: 110
+    spriteID: 845fc627fd954d7429a9ddc248253669
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1066}
+  - name: 000_MV_Hairstyles__Frame_150
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1184
+      width: 46
+      height: 110
+    spriteID: 24e89cbaa1ec1e144b2c16a2ce47f113
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1184}
+  - name: 000_MV_Hairstyles__Frame_151
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1302
+      width: 46
+      height: 110
+    spriteID: aab57f2d8589eeb429f418d775736903
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1302}
+  - name: 000_MV_Hairstyles__Frame_152
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1420
+      width: 46
+      height: 110
+    spriteID: f32c5165186355242a173ef48a199327
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1420}
+  - name: 000_MV_Hairstyles__Frame_153
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 396
+      y: 1538
+      width: 46
+      height: 110
+    spriteID: e3e3784699166a84c837e1e26a307b6e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 396, y: 1538}
+  - name: 000_MV_Hairstyles__Frame_154
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1531
+      width: 48
+      height: 109
+    spriteID: 9e06c0d85401bb74ca7087e517072541
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1531}
+  - name: 000_MV_Hairstyles__Frame_155
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1648
+      width: 48
+      height: 109
+    spriteID: 1a55c88c39220264bb2d1b5001066cca
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1648}
+  - name: 000_MV_Hairstyles__Frame_156
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1765
+      width: 48
+      height: 109
+    spriteID: 0324d5eca83b62547936e9b2b4f91714
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1765}
+  - name: 000_MV_Hairstyles__Frame_157
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 1882
+      width: 48
+      height: 109
+    spriteID: 421e03f4a8b4f3048b1b25a4700951fc
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 1882}
+  - name: 000_MV_Hairstyles__Frame_158
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 4
+      width: 48
+      height: 109
+    spriteID: 75b5903ddbb30ff45afb36eb867562a5
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 4}
+  - name: 000_MV_Hairstyles__Frame_159
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 121
+      width: 48
+      height: 109
+    spriteID: f9c9eab1232173b4c92598c877c2b051
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 121}
+  - name: 000_MV_Hairstyles__Frame_160
+    originalName: 
+    pivot: {x: 0.5, y: -0.0825688}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 238
+      width: 48
+      height: 109
+    spriteID: a527168cb3fcd124b8ba088ba64ccae8
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 238}
+  - name: 000_MV_Hairstyles__Frame_161
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1066
+      width: 48
+      height: 110
+    spriteID: 8e0237da9161004439953b7a737ba1f4
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1066}
+  - name: 000_MV_Hairstyles__Frame_162
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1184
+      width: 48
+      height: 110
+    spriteID: 438604f3dd1602d4b91c6c985a6d7d69
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1184}
+  - name: 000_MV_Hairstyles__Frame_163
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1302
+      width: 48
+      height: 110
+    spriteID: f39891fd67015aa479e2d1a745a7da7d
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1302}
+  - name: 000_MV_Hairstyles__Frame_164
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1420
+      width: 48
+      height: 110
+    spriteID: 710bef074456ace4a877133ca8cd6fbd
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1420}
+  - name: 000_MV_Hairstyles__Frame_165
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1538
+      width: 48
+      height: 110
+    spriteID: edfc00f446a5e454e8f68eee05eca7dc
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1538}
+  - name: 000_MV_Hairstyles__Frame_166
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1656
+      width: 48
+      height: 110
+    spriteID: e698e7d87a6ef4845b3fc14dc56e5f81
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1656}
+  - name: 000_MV_Hairstyles__Frame_167
+    originalName: 
+    pivot: {x: 0.5, y: -0.08181818}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1774
+      width: 48
+      height: 110
+    spriteID: 6f1f4a134fdd609439abbad7de6fcda3
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1774}
+  - name: 000_MV_Hairstyles__Frame_168
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 228
+      y: 1892
+      width: 48
+      height: 110
+    spriteID: eded0e254d6ec7c4a9065c1525964fcd
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 228, y: 1892}
+  - name: 000_MV_Hairstyles__Frame_169
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 4
+      width: 48
+      height: 110
+    spriteID: 797b1b9777d8f5a48beb4d6d33c4e64e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 4}
+  - name: 000_MV_Hairstyles__Frame_170
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 122
+      width: 48
+      height: 110
+    spriteID: 2b700e064b7cc3045ae337c58233382b
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 122}
+  - name: 000_MV_Hairstyles__Frame_171
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 240
+      width: 48
+      height: 110
+    spriteID: f2bbc60cd118da24c8a48e421273da85
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 240}
+  - name: 000_MV_Hairstyles__Frame_172
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 358
+      width: 48
+      height: 110
+    spriteID: 9743eee0b1968f2448d114c02769b638
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 358}
+  - name: 000_MV_Hairstyles__Frame_173
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 476
+      width: 48
+      height: 110
+    spriteID: 7b81f6a2d52a69d4497072789ecb4f8f
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 476}
+  - name: 000_MV_Hairstyles__Frame_174
+    originalName: 
+    pivot: {x: 0.5, y: -0.07272727}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 284
+      y: 594
+      width: 48
+      height: 110
+    spriteID: 0cb28aacb4bd12249be1a59406e85dca
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 284, y: 594}
+  - name: 000_MV_Hairstyles__Frame_175
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.071428575}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1181
+      width: 46
+      height: 112
+    spriteID: 8b5cffb62dadc2640a0f5520f30db49e
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1181}
+  - name: 000_MV_Hairstyles__Frame_176
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.071428575}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1301
+      width: 46
+      height: 112
+    spriteID: 0e6f9f9f608ce1c4594c4ca4505f910a
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1301}
+  - name: 000_MV_Hairstyles__Frame_177
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.071428575}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1421
+      width: 46
+      height: 112
+    spriteID: 2a8f08884a2c9a64d94f9fda944d7f8a
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1421}
+  - name: 000_MV_Hairstyles__Frame_178
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.071428575}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1541
+      width: 46
+      height: 112
+    spriteID: 0010716618a76e9418a241aae98e2fcb
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1541}
+  - name: 000_MV_Hairstyles__Frame_179
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.071428575}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1661
+      width: 46
+      height: 112
+    spriteID: 224d923a7902e324e85cd3168227ae45
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1661}
+  - name: 000_MV_Hairstyles__Frame_180
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.071428575}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1781
+      width: 46
+      height: 112
+    spriteID: d31964b8b75f5174380d9f9e47b76863
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1781}
+  - name: 000_MV_Hairstyles__Frame_181
+    originalName: 
+    pivot: {x: 0.49999997, y: -0.071428575}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 340
+      y: 1901
+      width: 46
+      height: 112
+    spriteID: b390a3a242739a840b1f81350ef6974a
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 340, y: 1901}
+  spriteSheetImportData: []
+  asepriteLayers:
+  - layerIndex: 0
+    guid: -1880878608
+    name: 000_MV_Hairstyles_
+    layerFlags: 0
+    layerType: 0
+    blendMode: 0
+    cells:
+    - name: 000_MV_Hairstyles__Frame_0
+      frameIndex: 0
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 909b04fb65133fc498188b35183a4ebb
+    - name: 000_MV_Hairstyles__Frame_1
+      frameIndex: 1
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: b876731e4864abe48a44990cf13637d3
+    - name: 000_MV_Hairstyles__Frame_2
+      frameIndex: 2
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 20b9e336297027041aa194f012965179
+    - name: 000_MV_Hairstyles__Frame_3
+      frameIndex: 3
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 622f9adced8166242b86a9fa3c801dcc
+    - name: 000_MV_Hairstyles__Frame_4
+      frameIndex: 4
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 14b49ebb74bb29043b74891569d78dc8
+    - name: 000_MV_Hairstyles__Frame_5
+      frameIndex: 5
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 60138a4c4c6b3b546a2a4fd50ddd6a03
+    - name: 000_MV_Hairstyles__Frame_6
+      frameIndex: 6
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: ed22909e2ab6c354fb832737a079ca76
+    - name: 000_MV_Hairstyles__Frame_7
+      frameIndex: 7
+      cellRect:
+        x: 0
+        y: 9
+        width: 47
+        height: 110
+      spriteId: 64451e277a386144495086c698ca8058
+    - name: 000_MV_Hairstyles__Frame_8
+      frameIndex: 8
+      cellRect:
+        x: 0
+        y: 9
+        width: 47
+        height: 110
+      spriteId: 5bb77201a565dea4891bee9b38b229d6
+    - name: 000_MV_Hairstyles__Frame_9
+      frameIndex: 9
+      cellRect:
+        x: 0
+        y: 9
+        width: 47
+        height: 110
+      spriteId: cae8923e3b24aa647a4d098fe064c50f
+    - name: 000_MV_Hairstyles__Frame_10
+      frameIndex: 10
+      cellRect:
+        x: 0
+        y: 9
+        width: 47
+        height: 110
+      spriteId: 4836e052040653a4cbe71dd5df546dfc
+    - name: 000_MV_Hairstyles__Frame_11
+      frameIndex: 11
+      cellRect:
+        x: 0
+        y: 9
+        width: 47
+        height: 110
+      spriteId: 673ebef7535443046a4c638a14bbc2d6
+    - name: 000_MV_Hairstyles__Frame_12
+      frameIndex: 12
+      cellRect:
+        x: 0
+        y: 9
+        width: 47
+        height: 110
+      spriteId: 35761b5ee2d72304c8fa7cf9f1dac6c9
+    - name: 000_MV_Hairstyles__Frame_13
+      frameIndex: 13
+      cellRect:
+        x: 0
+        y: 9
+        width: 47
+        height: 110
+      spriteId: a256e59070e66214ba934576fc05cdbe
+    - name: 000_MV_Hairstyles__Frame_14
+      frameIndex: 14
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 111
+      spriteId: 827d441194114a84fa178ee0e8c5bac5
+    - name: 000_MV_Hairstyles__Frame_15
+      frameIndex: 15
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 111
+      spriteId: 70912d55606293a429e891e1fdbcc453
+    - name: 000_MV_Hairstyles__Frame_16
+      frameIndex: 16
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 111
+      spriteId: 48d4a955ffeee3e4fae8cbd0c08b1ad5
+    - name: 000_MV_Hairstyles__Frame_17
+      frameIndex: 17
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 111
+      spriteId: 6fcaf7cf882c0a449a6625e91cf047da
+    - name: 000_MV_Hairstyles__Frame_18
+      frameIndex: 18
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 111
+      spriteId: 72e4690cd85cba34695b90c09a52a4b0
+    - name: 000_MV_Hairstyles__Frame_19
+      frameIndex: 19
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 111
+      spriteId: 88eca639c6683534d842929605ba1ead
+    - name: 000_MV_Hairstyles__Frame_20
+      frameIndex: 20
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 111
+      spriteId: ae7a950a11b695d41be0a5f24e2ab8b2
+    - name: 000_MV_Hairstyles__Frame_21
+      frameIndex: 21
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 670a58dc9c811eb44aa3d39b61f34512
+    - name: 000_MV_Hairstyles__Frame_22
+      frameIndex: 22
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 836b921698eb1b6498ed84781c52e86b
+    - name: 000_MV_Hairstyles__Frame_23
+      frameIndex: 23
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 7e15ec48d1e1175409b2782e7c002751
+    - name: 000_MV_Hairstyles__Frame_24
+      frameIndex: 24
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 098b0bd475e70dd44bd479bcd1a5453d
+    - name: 000_MV_Hairstyles__Frame_25
+      frameIndex: 25
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 1f128175579357248a10d947d8771066
+    - name: 000_MV_Hairstyles__Frame_26
+      frameIndex: 26
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 2b29f777c78a1c542b5e2479eead888c
+    - name: 000_MV_Hairstyles__Frame_27
+      frameIndex: 27
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 1876743e56cb6b9408fab0fcc0ed75ba
+    - name: 000_MV_Hairstyles__Frame_28
+      frameIndex: 28
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: d0a117bd62d78b148bb3e6c7e85641cf
+    - name: 000_MV_Hairstyles__Frame_29
+      frameIndex: 29
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: bdbfdb3f54d6cbe47ba831abaac9177e
+    - name: 000_MV_Hairstyles__Frame_30
+      frameIndex: 30
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: ae23cc24c49049e42a8d92cac3802ae2
+    - name: 000_MV_Hairstyles__Frame_31
+      frameIndex: 31
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: c0527c10615df98498469891cfc90647
+    - name: 000_MV_Hairstyles__Frame_32
+      frameIndex: 32
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 1e3af4e3a50b91b4abf3032b18306254
+    - name: 000_MV_Hairstyles__Frame_33
+      frameIndex: 33
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 456e80033596f8c48a05ac233e8ed112
+    - name: 000_MV_Hairstyles__Frame_34
+      frameIndex: 34
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: a2c9e6760f77a4e43bf737c8bca8c357
+    - name: 000_MV_Hairstyles__Frame_35
+      frameIndex: 35
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 7b0c8e74d9dea564fb67aca5fa1c9f28
+    - name: 000_MV_Hairstyles__Frame_36
+      frameIndex: 36
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 07fe002bde6e3c947b1242db8b553d81
+    - name: 000_MV_Hairstyles__Frame_37
+      frameIndex: 37
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: b2bfaa22776e79f48954ed29686c7ea4
+    - name: 000_MV_Hairstyles__Frame_38
+      frameIndex: 38
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 6885164806df6cc46bba858266118a19
+    - name: 000_MV_Hairstyles__Frame_39
+      frameIndex: 39
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 8c4b1f942a96c1649885b62d5b032322
+    - name: 000_MV_Hairstyles__Frame_40
+      frameIndex: 40
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 54fc0b026f9a7d44d882adf4ba04e340
+    - name: 000_MV_Hairstyles__Frame_41
+      frameIndex: 41
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 82e2c7b8ceb972c4e9563d775019892e
+    - name: 000_MV_Hairstyles__Frame_42
+      frameIndex: 42
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 743aae3ecf6b1ce4da3432aba842b956
+    - name: 000_MV_Hairstyles__Frame_43
+      frameIndex: 43
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: ee14af2b2e548bc4bb9870632aaa326c
+    - name: 000_MV_Hairstyles__Frame_44
+      frameIndex: 44
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 845e011a6f497bc469bea0e78a6cbdf3
+    - name: 000_MV_Hairstyles__Frame_45
+      frameIndex: 45
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: cf21aec374be5c7458ec38182e24746a
+    - name: 000_MV_Hairstyles__Frame_46
+      frameIndex: 46
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: c2761f138b548114580b86ea149d44df
+    - name: 000_MV_Hairstyles__Frame_47
+      frameIndex: 47
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 3478f03be4d959a43ae3c44a3b25c3ce
+    - name: 000_MV_Hairstyles__Frame_48
+      frameIndex: 48
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 715f22d7834167a4da37d0c336f9064b
+    - name: 000_MV_Hairstyles__Frame_49
+      frameIndex: 49
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 111
+      spriteId: 14409fca6cd52864b90b59f21ac614a5
+    - name: 000_MV_Hairstyles__Frame_50
+      frameIndex: 50
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 111
+      spriteId: d107fbef37bbee242ba9384ef73c25f1
+    - name: 000_MV_Hairstyles__Frame_51
+      frameIndex: 51
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 111
+      spriteId: 95b2bfdae13ee5d478ed3a264dcbe4e0
+    - name: 000_MV_Hairstyles__Frame_52
+      frameIndex: 52
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 111
+      spriteId: 94b30ddc17e119048b21f49894abfeeb
+    - name: 000_MV_Hairstyles__Frame_53
+      frameIndex: 53
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 111
+      spriteId: 712240b2c4062f34cbe3f479a56d2417
+    - name: 000_MV_Hairstyles__Frame_54
+      frameIndex: 54
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 111
+      spriteId: 9aa7c30b6e37a56428bfcf0c202f8ef3
+    - name: 000_MV_Hairstyles__Frame_55
+      frameIndex: 55
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 111
+      spriteId: fb1584dc1eec1334ab3707c71f6dace2
+    - name: 000_MV_Hairstyles__Frame_56
+      frameIndex: 56
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: c577f7e3ab1189848a34efe28b18d5f9
+    - name: 000_MV_Hairstyles__Frame_57
+      frameIndex: 57
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 2a8a83f9de79c344e8a00a0151f93fce
+    - name: 000_MV_Hairstyles__Frame_58
+      frameIndex: 58
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 13ad983f21373994c8d205a3cf185478
+    - name: 000_MV_Hairstyles__Frame_59
+      frameIndex: 59
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: df7955638f4c2e74cb0a38fb3d3e521c
+    - name: 000_MV_Hairstyles__Frame_60
+      frameIndex: 60
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 4b4a30cdffcd2744990acdddf9c158b4
+    - name: 000_MV_Hairstyles__Frame_61
+      frameIndex: 61
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: bbab6db58867b8c43a80136b1d02ebdf
+    - name: 000_MV_Hairstyles__Frame_62
+      frameIndex: 62
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: b5f99fec7c47fe5479430f858d62ed44
+    - name: 000_MV_Hairstyles__Frame_63
+      frameIndex: 63
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 6bc8e2feccb2561468969483dfc74abe
+    - name: 000_MV_Hairstyles__Frame_64
+      frameIndex: 64
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: ef04d16e709a92d458d8d5353fcaec6e
+    - name: 000_MV_Hairstyles__Frame_65
+      frameIndex: 65
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: ff526abb26b944d4294f09bfba9cbd39
+    - name: 000_MV_Hairstyles__Frame_66
+      frameIndex: 66
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 4c99b431fef19e54993bde17b7ff201a
+    - name: 000_MV_Hairstyles__Frame_67
+      frameIndex: 67
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: a048e602b81b5e64ba807db5637b8fd0
+    - name: 000_MV_Hairstyles__Frame_68
+      frameIndex: 68
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 6a529b61cf38db24c827d1799b541d40
+    - name: 000_MV_Hairstyles__Frame_69
+      frameIndex: 69
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: e9c82be54be7fae44bb573aa1d27e320
+    - name: 000_MV_Hairstyles__Frame_70
+      frameIndex: 70
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 112
+      spriteId: 9b280aa34e71835429ec4603784f4d4e
+    - name: 000_MV_Hairstyles__Frame_71
+      frameIndex: 71
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 112
+      spriteId: 14973e72b487e4047851192479992f85
+    - name: 000_MV_Hairstyles__Frame_72
+      frameIndex: 72
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 112
+      spriteId: df37cce4b5c58d645928d669b82aecb2
+    - name: 000_MV_Hairstyles__Frame_73
+      frameIndex: 73
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 112
+      spriteId: e3613233edf9cc14fa4a3db0ae9f4ccc
+    - name: 000_MV_Hairstyles__Frame_74
+      frameIndex: 74
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 112
+      spriteId: 126e3db53cfd2bd49a168908da1f9dcb
+    - name: 000_MV_Hairstyles__Frame_75
+      frameIndex: 75
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 112
+      spriteId: b000c0b2dc88d8b40a57a67381a728e2
+    - name: 000_MV_Hairstyles__Frame_76
+      frameIndex: 76
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 112
+      spriteId: 625ca291c85d4d24fbe5f7a6278f2b0b
+    - name: 000_MV_Hairstyles__Frame_77
+      frameIndex: 77
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 89ebc8958c7d8764fb2202634e8e181e
+    - name: 000_MV_Hairstyles__Frame_78
+      frameIndex: 78
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: e68260364d9925d45a736caea5f4ab48
+    - name: 000_MV_Hairstyles__Frame_79
+      frameIndex: 79
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 98d915f36bb54aa47a86512384c52e03
+    - name: 000_MV_Hairstyles__Frame_80
+      frameIndex: 80
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 7a22b114a860f6b449ff5ae19664ae9f
+    - name: 000_MV_Hairstyles__Frame_81
+      frameIndex: 81
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 57f8d146328ff734d8ec1c0ec77c113b
+    - name: 000_MV_Hairstyles__Frame_82
+      frameIndex: 82
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: c396a9f2e0f5a2b438bb289c3f892051
+    - name: 000_MV_Hairstyles__Frame_83
+      frameIndex: 83
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 1fb80e4f1b4a9f7429e896a8f0b46042
+    - name: 000_MV_Hairstyles__Frame_84
+      frameIndex: 84
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 2aa0b783ed35c6a44856551050a2aed4
+    - name: 000_MV_Hairstyles__Frame_85
+      frameIndex: 85
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 0c171522f2a032c4f8694df12b2ec221
+    - name: 000_MV_Hairstyles__Frame_86
+      frameIndex: 86
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: f6f76114856d31d4d91beb2e848ea716
+    - name: 000_MV_Hairstyles__Frame_87
+      frameIndex: 87
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: eab995d0819db5b42a332931eadd95b1
+    - name: 000_MV_Hairstyles__Frame_88
+      frameIndex: 88
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 481e6c8466f71d94698abb8f1ab8e546
+    - name: 000_MV_Hairstyles__Frame_89
+      frameIndex: 89
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 440d48b8c33d71048b80d4e220a2ea09
+    - name: 000_MV_Hairstyles__Frame_90
+      frameIndex: 90
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 35a66b26ade728843ab94f9205e5d205
+    - name: 000_MV_Hairstyles__Frame_91
+      frameIndex: 91
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: b7f95526c93c6c24b8f5406f6c94fe33
+    - name: 000_MV_Hairstyles__Frame_92
+      frameIndex: 92
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 302436b88cfb43b4ca7a21a730d2367e
+    - name: 000_MV_Hairstyles__Frame_93
+      frameIndex: 93
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 1bca567d613a4664fa2e1aff248e8e0c
+    - name: 000_MV_Hairstyles__Frame_94
+      frameIndex: 94
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: d5e859dd9c69c53419ee0c253d831410
+    - name: 000_MV_Hairstyles__Frame_95
+      frameIndex: 95
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 8ee9cec4187f33a40a158e6876f0ed1c
+    - name: 000_MV_Hairstyles__Frame_96
+      frameIndex: 96
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: a4a39e635e6ace844bfc84d502708b70
+    - name: 000_MV_Hairstyles__Frame_97
+      frameIndex: 97
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: ae1a858fa64e069438f06eaba4ec240c
+    - name: 000_MV_Hairstyles__Frame_98
+      frameIndex: 98
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: b215eec63006dda40bc583884abb0556
+    - name: 000_MV_Hairstyles__Frame_99
+      frameIndex: 99
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: ff10ef06ffe8ec644b1477b781f1039f
+    - name: 000_MV_Hairstyles__Frame_100
+      frameIndex: 100
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: bc9de09b89858914ea3ee6d399c69113
+    - name: 000_MV_Hairstyles__Frame_101
+      frameIndex: 101
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 14b9409e08dd31e4394ac50eba4a8110
+    - name: 000_MV_Hairstyles__Frame_102
+      frameIndex: 102
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: a972e20b9239a9146b37e45502e98d71
+    - name: 000_MV_Hairstyles__Frame_103
+      frameIndex: 103
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 9d8e0fd25d8c04641abb7ab1de3d3a79
+    - name: 000_MV_Hairstyles__Frame_104
+      frameIndex: 104
+      cellRect:
+        x: 0
+        y: 6
+        width: 48
+        height: 112
+      spriteId: 831fcad629a20124c878cf8d649a26e8
+    - name: 000_MV_Hairstyles__Frame_105
+      frameIndex: 105
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 3aa2b3612397f8d4d9dd35e635ab38f5
+    - name: 000_MV_Hairstyles__Frame_106
+      frameIndex: 106
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 515d48c5b4e091f449a62191de5c82a6
+    - name: 000_MV_Hairstyles__Frame_107
+      frameIndex: 107
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 9e0955987bb8e9646bc335b4ac04c14b
+    - name: 000_MV_Hairstyles__Frame_108
+      frameIndex: 108
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 49e24922ff94f2845bd2890499019348
+    - name: 000_MV_Hairstyles__Frame_109
+      frameIndex: 109
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 8afa4a443a3859a4198694b64ddc3f87
+    - name: 000_MV_Hairstyles__Frame_110
+      frameIndex: 110
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: dcc4e8f81923f654291ca8310ba595b0
+    - name: 000_MV_Hairstyles__Frame_111
+      frameIndex: 111
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: c5463635263bbe44792f28b8d5e149f9
+    - name: 000_MV_Hairstyles__Frame_112
+      frameIndex: 112
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 94bfa9ba7b6a16e41893f8cb41046b7e
+    - name: 000_MV_Hairstyles__Frame_113
+      frameIndex: 113
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 839a731dde6c17e4483ceaed67a10ace
+    - name: 000_MV_Hairstyles__Frame_114
+      frameIndex: 114
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: f0ed750d27fc27140acf1bf9af7c1508
+    - name: 000_MV_Hairstyles__Frame_115
+      frameIndex: 115
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: bb389c5ffbce65846abd3d748c39e872
+    - name: 000_MV_Hairstyles__Frame_116
+      frameIndex: 116
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: fea35b253e0ec9f4bb22e4e9c4d765a2
+    - name: 000_MV_Hairstyles__Frame_117
+      frameIndex: 117
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: e298cbaa7830cf440b1829fdb19e8eec
+    - name: 000_MV_Hairstyles__Frame_118
+      frameIndex: 118
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 6888cc984a4cf0746ac6e9b0ebe57bb1
+    - name: 000_MV_Hairstyles__Frame_119
+      frameIndex: 119
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 29fa37e602c0f7c4591254f338ad54bb
+    - name: 000_MV_Hairstyles__Frame_120
+      frameIndex: 120
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 225b59d705af91d4fb1ce1c068c64707
+    - name: 000_MV_Hairstyles__Frame_121
+      frameIndex: 121
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 4ccfb168a2a7a3447aca03bf8fabbdc2
+    - name: 000_MV_Hairstyles__Frame_122
+      frameIndex: 122
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 180d2c6f8c231d64cb485329844a17a7
+    - name: 000_MV_Hairstyles__Frame_123
+      frameIndex: 123
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 393d5d1da3316f44c94072b730b6de79
+    - name: 000_MV_Hairstyles__Frame_124
+      frameIndex: 124
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 09fb8ce2f4636674884ab8de9b1fa04b
+    - name: 000_MV_Hairstyles__Frame_125
+      frameIndex: 125
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 938c693f8e4d6bc4aaadd834b96f60d6
+    - name: 000_MV_Hairstyles__Frame_126
+      frameIndex: 126
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 8399240146f1a204490ca386736f14c1
+    - name: 000_MV_Hairstyles__Frame_127
+      frameIndex: 127
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 044d59e6af4a57f4087ba3e875373d5f
+    - name: 000_MV_Hairstyles__Frame_128
+      frameIndex: 128
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 0e4998842bd0a0441875a91473efff3c
+    - name: 000_MV_Hairstyles__Frame_129
+      frameIndex: 129
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 0a2e6c5139fe43f46a022acf9fe7a178
+    - name: 000_MV_Hairstyles__Frame_130
+      frameIndex: 130
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: d7e398fbe211f10488c50c07e0c32b1d
+    - name: 000_MV_Hairstyles__Frame_131
+      frameIndex: 131
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 94ecc2837ddd85743bcc509e15a62cfe
+    - name: 000_MV_Hairstyles__Frame_132
+      frameIndex: 132
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 98fa97b384bf041438a38dc567de6210
+    - name: 000_MV_Hairstyles__Frame_133
+      frameIndex: 133
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 348de561d6aec5347a12fe211098e85c
+    - name: 000_MV_Hairstyles__Frame_134
+      frameIndex: 134
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: ed8d4c59ea468c64fbefa3f51a0d4e87
+    - name: 000_MV_Hairstyles__Frame_135
+      frameIndex: 135
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 5b9a4bf32d066a04a82bb0d5c8dda333
+    - name: 000_MV_Hairstyles__Frame_136
+      frameIndex: 136
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 6fe2795f9cf5c214b894fceb0f5ae6ad
+    - name: 000_MV_Hairstyles__Frame_137
+      frameIndex: 137
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 170b5abd601fbed4e945e84a153b386f
+    - name: 000_MV_Hairstyles__Frame_138
+      frameIndex: 138
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: 5bbe08aeeec8c7247a8676cce15050e2
+    - name: 000_MV_Hairstyles__Frame_139
+      frameIndex: 139
+      cellRect:
+        x: 1
+        y: 9
+        width: 46
+        height: 109
+      spriteId: d0a4221a9ecdcc84294e9dee2082c5b4
+    - name: 000_MV_Hairstyles__Frame_140
+      frameIndex: 140
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 3e09957f04ed05e40b23f46a3ab9dc8c
+    - name: 000_MV_Hairstyles__Frame_141
+      frameIndex: 141
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 985200d8d0449ae479c0af99ba7fab66
+    - name: 000_MV_Hairstyles__Frame_142
+      frameIndex: 142
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 4b94e16c4cf437e4396cee752e0845bc
+    - name: 000_MV_Hairstyles__Frame_143
+      frameIndex: 143
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 4b4e66a3aeadb0343898ac6357b028db
+    - name: 000_MV_Hairstyles__Frame_144
+      frameIndex: 144
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: f3ba3fb8b5a283340b14f23fb262b1aa
+    - name: 000_MV_Hairstyles__Frame_145
+      frameIndex: 145
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 72de5d85979a259499b1223fdca8d5fa
+    - name: 000_MV_Hairstyles__Frame_146
+      frameIndex: 146
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: f9baef183b9f84942ae884b627a10a47
+    - name: 000_MV_Hairstyles__Frame_147
+      frameIndex: 147
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: fae852494bd6d39468701e6381244293
+    - name: 000_MV_Hairstyles__Frame_148
+      frameIndex: 148
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: fe1e530bf1726b747bd0e226cc98efba
+    - name: 000_MV_Hairstyles__Frame_149
+      frameIndex: 149
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 845fc627fd954d7429a9ddc248253669
+    - name: 000_MV_Hairstyles__Frame_150
+      frameIndex: 150
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: 24e89cbaa1ec1e144b2c16a2ce47f113
+    - name: 000_MV_Hairstyles__Frame_151
+      frameIndex: 151
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: aab57f2d8589eeb429f418d775736903
+    - name: 000_MV_Hairstyles__Frame_152
+      frameIndex: 152
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: f32c5165186355242a173ef48a199327
+    - name: 000_MV_Hairstyles__Frame_153
+      frameIndex: 153
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 110
+      spriteId: e3e3784699166a84c837e1e26a307b6e
+    - name: 000_MV_Hairstyles__Frame_154
+      frameIndex: 154
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 9e06c0d85401bb74ca7087e517072541
+    - name: 000_MV_Hairstyles__Frame_155
+      frameIndex: 155
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 1a55c88c39220264bb2d1b5001066cca
+    - name: 000_MV_Hairstyles__Frame_156
+      frameIndex: 156
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 0324d5eca83b62547936e9b2b4f91714
+    - name: 000_MV_Hairstyles__Frame_157
+      frameIndex: 157
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 421e03f4a8b4f3048b1b25a4700951fc
+    - name: 000_MV_Hairstyles__Frame_158
+      frameIndex: 158
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: 75b5903ddbb30ff45afb36eb867562a5
+    - name: 000_MV_Hairstyles__Frame_159
+      frameIndex: 159
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: f9c9eab1232173b4c92598c877c2b051
+    - name: 000_MV_Hairstyles__Frame_160
+      frameIndex: 160
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 109
+      spriteId: a527168cb3fcd124b8ba088ba64ccae8
+    - name: 000_MV_Hairstyles__Frame_161
+      frameIndex: 161
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 8e0237da9161004439953b7a737ba1f4
+    - name: 000_MV_Hairstyles__Frame_162
+      frameIndex: 162
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 438604f3dd1602d4b91c6c985a6d7d69
+    - name: 000_MV_Hairstyles__Frame_163
+      frameIndex: 163
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: f39891fd67015aa479e2d1a745a7da7d
+    - name: 000_MV_Hairstyles__Frame_164
+      frameIndex: 164
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 710bef074456ace4a877133ca8cd6fbd
+    - name: 000_MV_Hairstyles__Frame_165
+      frameIndex: 165
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: edfc00f446a5e454e8f68eee05eca7dc
+    - name: 000_MV_Hairstyles__Frame_166
+      frameIndex: 166
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: e698e7d87a6ef4845b3fc14dc56e5f81
+    - name: 000_MV_Hairstyles__Frame_167
+      frameIndex: 167
+      cellRect:
+        x: 0
+        y: 9
+        width: 48
+        height: 110
+      spriteId: 6f1f4a134fdd609439abbad7de6fcda3
+    - name: 000_MV_Hairstyles__Frame_168
+      frameIndex: 168
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: eded0e254d6ec7c4a9065c1525964fcd
+    - name: 000_MV_Hairstyles__Frame_169
+      frameIndex: 169
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 797b1b9777d8f5a48beb4d6d33c4e64e
+    - name: 000_MV_Hairstyles__Frame_170
+      frameIndex: 170
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 2b700e064b7cc3045ae337c58233382b
+    - name: 000_MV_Hairstyles__Frame_171
+      frameIndex: 171
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: f2bbc60cd118da24c8a48e421273da85
+    - name: 000_MV_Hairstyles__Frame_172
+      frameIndex: 172
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 9743eee0b1968f2448d114c02769b638
+    - name: 000_MV_Hairstyles__Frame_173
+      frameIndex: 173
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 7b81f6a2d52a69d4497072789ecb4f8f
+    - name: 000_MV_Hairstyles__Frame_174
+      frameIndex: 174
+      cellRect:
+        x: 0
+        y: 8
+        width: 48
+        height: 110
+      spriteId: 0cb28aacb4bd12249be1a59406e85dca
+    - name: 000_MV_Hairstyles__Frame_175
+      frameIndex: 175
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 112
+      spriteId: 8b5cffb62dadc2640a0f5520f30db49e
+    - name: 000_MV_Hairstyles__Frame_176
+      frameIndex: 176
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 112
+      spriteId: 0e6f9f9f608ce1c4594c4ca4505f910a
+    - name: 000_MV_Hairstyles__Frame_177
+      frameIndex: 177
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 112
+      spriteId: 2a8f08884a2c9a64d94f9fda944d7f8a
+    - name: 000_MV_Hairstyles__Frame_178
+      frameIndex: 178
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 112
+      spriteId: 0010716618a76e9418a241aae98e2fcb
+    - name: 000_MV_Hairstyles__Frame_179
+      frameIndex: 179
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 112
+      spriteId: 224d923a7902e324e85cd3168227ae45
+    - name: 000_MV_Hairstyles__Frame_180
+      frameIndex: 180
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 112
+      spriteId: d31964b8b75f5174380d9f9e47b76863
+    - name: 000_MV_Hairstyles__Frame_181
+      frameIndex: 181
+      cellRect:
+        x: 1
+        y: 8
+        width: 46
+        height: 112
+      spriteId: b390a3a242739a840b1f81350ef6974a
+    linkedCells: []
+    parentIndex: -1
+  platformSettings: []
+  generatePhysicsShape: 0
+  secondarySpriteTextures: []
+  spritePackingTag: 
+  canvasSize: {x: 48, y: 128}

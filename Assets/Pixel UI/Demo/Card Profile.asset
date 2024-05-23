@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 938f015ca9485fd49b4e607c861e0074, type: 3}
+  m_Name: Card Profile
+  m_EditorClassIdentifier: 
+  CardPrefab: {fileID: 1230088822766806, guid: 2c09c3df55db4444e80797f88b20331a, type: 2}
+  CardBlankSprite: {fileID: 21300048, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  CardDeckSprite: {fileID: 21300042, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  CardBackSprite: {fileID: 21300040, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  CardFrontSprite: {fileID: 21300010, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  InventoryForegroundSprite: {fileID: 21300012, guid: 511b503541079b54f808b4e24201ff9a,
+    type: 3}
+  ShopForegroundSprite: {fileID: 21300016, guid: 511b503541079b54f808b4e24201ff9a,
+    type: 3}
+  TimeForegroundSprite: {fileID: 21300014, guid: 511b503541079b54f808b4e24201ff9a,
+    type: 3}
+  EnergyForegroundSprite: {fileID: 21300018, guid: 511b503541079b54f808b4e24201ff9a,
+    type: 3}
+  HeartForegroundSprites:
+  - {fileID: 21300020, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300022, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300024, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300026, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300028, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  StarForegroundSprites:
+  - {fileID: 21300030, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300032, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300034, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300036, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  - {fileID: 21300038, guid: 511b503541079b54f808b4e24201ff9a, type: 3}
+  Flip_Duration: 1
+  Fade_Duration: 1
+  Peek_Duration: 2
+  Move_Duration: 1

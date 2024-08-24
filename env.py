@@ -20,9 +20,7 @@ async def work_change(request: WorkChangeRequest):
     if request.jobid < 0:
         raise HTTPException(status_code=400, detail="Invalid job ID")
     #We need to add stochasticity in the json.
-    rand_num = random.random()
-    print(rand_num)
-    if rand_num > 0.5:
+    if random.random() > 0.5:
         return {"code": 200, "message": "Job change successful"}
     else:
         return {"code": 400, "message": "Job change failed"}

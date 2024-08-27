@@ -1,9 +1,11 @@
 import requests
 
-url = "http://localhost:8000/work-change"
-data = {"jobid": 5}
+file_list = ['/trade', "/character/data", "/character/status", "/character/bsinfo",'/character/inventory']
+base_url = "http://localhost:8000"
 
-response = requests.post(url, json=data)
+for file_name in file_list:
+    url = base_url + file_name
+    response = requests.get(url)
 
-print("Status Code:", response.status_code)
-print("Response Body:", response.json())
+    print("Status Code:", response.status_code)
+    print("Response Body:", response.json())

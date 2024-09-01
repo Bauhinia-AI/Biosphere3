@@ -150,3 +150,84 @@ game_subjects_data = [
         rewards={"mood": 4, "social": 3}
     )
 ]
+
+item_dict = {
+    "1": {
+        "item_id": "potion_001",
+        "name": "Strength Potion",
+        "description": "A potion that temporarily increases strength.",
+        "effects": [
+            {
+                "attribute": "strength",
+                "modifier": 10,
+                "duration": 600,
+                "type": "temporary",
+            },
+            {
+                "attribute": "health_regen",
+                "modifier": 5,
+                "duration": 300,
+                "type": "temporary",
+            },
+        ],
+        "side_effects": [
+            {
+                "attribute": "agility",
+                "modifier": -2,
+                "duration": 600,
+                "type": "temporary",
+            }
+        ],
+        "cooldown": 1200,
+    },
+    "2": {
+        "item_id": "potion_002",
+        "name": "Agility Elixir",
+        "description": "An elixir that temporarily boosts agility.",
+        "effects": [
+            {
+                "attribute": "agility",
+                "modifier": 15,
+                "duration": 600,
+                "type": "temporary",
+            },
+            {
+                "attribute": "dodge_chance",
+                "modifier": 10,
+                "duration": 300,
+                "type": "temporary",
+            },
+        ],
+        "side_effects": [
+            {
+                "attribute": "strength",
+                "modifier": -3,
+                "duration": 600,
+                "type": "temporary",
+            }
+        ],
+        "cooldown": 1500,
+    },
+    "3": {
+        "item_id": "potion_003",
+        "name": "Health Tonic",
+        "description": "A tonic that greatly restores health over time.",
+        "effects": [
+            {
+                "attribute": "health_regen",
+                "modifier": 20,
+                "duration": 300,
+                "type": "temporary",
+            }
+        ],
+        "side_effects": [
+            {
+                "attribute": "mana_regen",
+                "modifier": -5,
+                "duration": 300,
+                "type": "temporary",
+            }
+        ],
+        "cooldown": 900,
+    },
+}

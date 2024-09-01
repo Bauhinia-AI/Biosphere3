@@ -5,139 +5,17 @@ from flask import Flask, jsonify, request
 from flask.views import MethodView
 #For the sake of efficiency and simplicity we use fastapi :p.
 #FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.
-=======
 import uuid
 import math
-from model import WorkChangeRequest, TradeRequest, UseRequest, SleepRequest
-from fake_data import (
-    FreelanceJob,
-    PublicJob,
-    public_jobs_data,
-    freelance_jobs_data,
-    GameSubject,
-    game_subjects_data,
+from model import *
+from fake_data import *
 from loguru import logger
 from fastapi import FastAPI, HTTPException
-
-# For the sake of efficiency and simplicity we use fastapi :p.
-# FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.
 
 
 app = FastAPI()
 logger.level("INFO")
-# item and effect data
-item_dict = {
-    "1": {
-        "item_id": "potion_001",
-        "name": "Strength Potion",
-        "description": "A potion that temporarily increases strength.",
-        "effects": [
-            {
-                "attribute": "strength",
-                "modifier": 10,
-                "duration": 600,
-                "type": "temporary",
-            },
-            {
-                "attribute": "health_regen",
-                "modifier": 5,
-                "duration": 300,
-                "type": "temporary",
-            },
-        ],
-        "side_effects": [
-            {
-                "attribute": "agility",
-                "modifier": -2,
-                "duration": 600,
-                "type": "temporary",
-            }
-        ],
-        "cooldown": 1200,
-    },
-    "2": {
-        "item_id": "potion_002",
-        "name": "Agility Elixir",
-        "description": "An elixir that temporarily boosts agility.",
-        "effects": [
-            {
-                "attribute": "agility",
-                "modifier": 15,
-                "duration": 600,
-                "type": "temporary",
-            },
-            {
-                "attribute": "dodge_chance",
-                "modifier": 10,
-                "duration": 300,
-                "type": "temporary",
-            },
-        ],
-        "side_effects": [
-            {
-                "attribute": "strength",
-                "modifier": -3,
-                "duration": 600,
-                "type": "temporary",
-            }
-        ],
-        "cooldown": 1500,
-    },
-    "3": {
-        "item_id": "potion_003",
-        "name": "Health Tonic",
-        "description": "A tonic that greatly restores health over time.",
-        "effects": [
-            {
-                "attribute": "health_regen",
-                "modifier": 20,
-                "duration": 300,
-                "type": "temporary",
-            }
-        ],
-        "side_effects": [
-            {
-                "attribute": "mana_regen",
-                "modifier": -5,
-                "duration": 300,
-                "type": "temporary",
-            }
-        ],
-        "cooldown": 900,
-    },
-}
 
-
-
-#Pydantic is a data validation library in Python. It enforces type hints at runtime, and provides user-friendly errors when data is invalid.
-class MarketData(BaseModel):
-    merchantid: str
-    merchantprice: float
-    merchantamount: int
-    merchantcash: float
-    merchantk: float
-
-
-class CharacterStats(BaseModel):
-    health: float
-    energy: float
-    knowledge: float
-    fullness: float
-
-class CharacterStatus(BaseModel):
-    coordinate: str
-    subject: str
-
-class CharacterBasicInfo(BaseModel):
-    userid: int
-    jobid: int
-    cash: float
-    gender: str
-    username: str
-
-class MerchantItem(BaseModel):
-    merchantid: str
-    merchantnum: int
 
 
 # simulate data
@@ -167,21 +45,7 @@ inventory_items = [
 ]
 
 
-# container for return data
-class MarketResponse(BaseModel):
-    merchant: List[MarketData]
 
-class CharactersResponse(BaseModel):
-    characters: List[CharacterStats]
-
-class CharactersStatusResponse(BaseModel):
-    characters: List[CharacterStatus]
-
-class CharactersInfoResponse(BaseModel):
-    characters: List[CharacterBasicInfo]
-
-class InventoryResponse(BaseModel):
-    items: List[MerchantItem]
 
 
 
@@ -192,46 +56,8 @@ async def get_market_data(merchantid: Optional[str] = None):
         if not market_info:
             raise HTTPException(status_code=404, detail="Market data not found for given merchantid")
         return MarketResponse(merchant=[market_info])
-=======
-class ResumeSubmissionRequest(BaseModel):
-    jobid: int
-    cvurl: str
-class WorkChangeRequest(BaseModel):
-    jobid: str
-class VoteRequest(BaseModel):
-    userid: str
-
-class PublicJobRequest(BaseModel):
-    jobid: int
-    timelength: int
-
-class FreelanceJobRequest(BaseModel):
-    timelength: int
-    merchantid: Optional[int] = None
 
 
-class StudyRequest(BaseModel):
-    timelength: int
-
-
-class TalkRequest(BaseModel):
-    userid: str
-    talkcontent: str
-    talkid: Optional[str] = None
-
-
-class EndTalkRequest(BaseModel):
-    userid: str
-    talkid: str
-
-
-class GoToRequest(BaseModel):
-    to: str
-
-
-class DistanceRequest(BaseModel):
-    from_: Optional[str] = None
-    to: str
 
 
 # I will just add a simple endpoint to change the job of a character. -Rick

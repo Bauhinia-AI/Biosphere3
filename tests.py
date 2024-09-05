@@ -22,7 +22,7 @@ def run_tests():
         {"method": "post", "route": "study", "data": {"timelength": 3}},
         {"method": "post", "route": "talk", "data": {"userid": "user456", "talkcontent": "Hello!"}},
         {"method": "post", "route": "end-talk", "data": {"userid": "user456", "talkid": "1234abcd"}},
-        {"method": "post", "route": "go-to", "data": {"to": "100,200"}},
+        {"method": "post", "route": "go-to", "data": {"to": "Farm"}},
         {"method": "post", "route": "distance", "data": {"to": "3,4"}},
         {"method": "post", "route": "freelance-job", "data": {"timelength": 4}},
         {"method": "get", "route": "freelance-jobs", "data": None},

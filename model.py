@@ -153,3 +153,5 @@ class GoToRequest(BaseModel):
 class DistanceRequest(BaseModel):
     from_: Optional[str] = None
     to: str
+
+data = GoToRequest(**{"to":"home"})

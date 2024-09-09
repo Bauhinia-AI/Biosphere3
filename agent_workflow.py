@@ -16,7 +16,7 @@ os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "Bio3_agent"
 
 # 定义工具列表
-tool_list = [do_freelance_job, navigate_to, sleep]
+tool_list = [do_freelance_job, navigate_to, sleep, study, get_character_stats, get_inventory, do_public_job, talk, end_talk, see_doctor]
 
 # 创建LLM和代理
 llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o")
@@ -110,13 +110,13 @@ app = workflow.compile()
 async def main():
     config = {"recursion_limit": 10}
     test_cases = [
-        {"input": "go to the farm, do a freelance job for 2 hours, then go home and sleep for 8 hours"},
+        # {"input": "go to the farm, do a freelance job for 2 hours, then go home and sleep for 8 hours"},
         {"input": "study for 3 hours, then do a public job for 4 hours"},
-        {"input": "check character stats and inventory, then go to the hospital to see a doctor"},
-        {"input": "navigate to the park, start a conversation with user123 saying 'Hello!', then end the conversation"},
-        {"input": "do a freelance job for 4 hours, study for 2 hours, then sleep for 6 hours"},
-        {"input": "check character stats, do a public job for 3 hours, then study for 2 hours"},
-        {"input": "navigate to the gym, do a freelance job for 2 hours, then go home and sleep for 7 hours"},
+        # {"input": "check character stats and inventory, then go to the hospital to see a doctor"},
+        # {"input": "navigate to the park, start a conversation with user123 saying 'Hello!', then end the conversation"},
+        # {"input": "do a freelance job for 4 hours, study for 2 hours, then sleep for 6 hours"},
+        # {"input": "check character stats, do a public job for 3 hours, then study for 2 hours"},
+        # {"input": "navigate to the gym, do a freelance job for 2 hours, then go home and sleep for 7 hours"},
     ]
 
     for case in test_cases:

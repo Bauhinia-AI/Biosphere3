@@ -79,11 +79,17 @@ async def plan_step(state: PlanExecute):
 
 
 async def replan_step(state: PlanExecute):
-    output = await replanner.ainvoke(state)
-    if isinstance(output.action, Response):
-        return {"response": output.action.response}
-    else:
-        return {"plan": output.action.steps}
+    try:
+        output = await replanner.ainvoke(state)
+        if isinstance(output.action, Response):
+            return {"response": output.action.response}
+        elif isinstance(output.action, Plan):
+            return {"plan": output.action.steps}
+        else:
+            return {"response": "Unable to determine next action. Please provide more information."}
+    except Exception as e:
+        error_message = f"An error occurred while planning: {str(e)}"
+        return {"response": error_message}
 
 
 def should_end(state: PlanExecute) -> Literal["Executor", "__end__"]:

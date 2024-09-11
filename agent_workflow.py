@@ -2,7 +2,18 @@ import os
 from langchain import hub
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from tools import do_freelance_job, navigate_to, sleep, study, get_character_stats, get_inventory, do_public_job, talk, end_talk, see_doctor
+from tools import (
+    do_freelance_job,
+    navigate_to,
+    sleep,
+    study,
+    get_character_stats,
+    get_inventory,
+    do_public_job,
+    talk,
+    end_talk,
+    see_doctor,
+)
 from node_model import PlanExecute, Plan, Response, Act
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START
@@ -16,7 +27,18 @@ os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "Bio3_agent"
 
 # 定义工具列表
-tool_list = [do_freelance_job, navigate_to, sleep, study, get_character_stats, get_inventory, do_public_job, talk, end_talk, see_doctor]
+tool_list = [
+    do_freelance_job,
+    navigate_to,
+    sleep,
+    study,
+    get_character_stats,
+    get_inventory,
+    do_public_job,
+    talk,
+    end_talk,
+    see_doctor,
+]
 
 # 创建LLM和代理
 llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o")
@@ -28,7 +50,9 @@ planner_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            "For the given objective, come up with a simple step by step plan. This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.",
+            """For the given objective, come up with a simple step by step plan. This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
+
+Additionally, if during the execution of a step you encounter a tool call with missing required parameters, randomly generate a reasonable parameter value to fill in, rather than throwing an error. For example, if a duration is needed but not specified, you might randomly choose a value between 1 and 8 hours.""",
         ),
         ("placeholder", "{messages}"),
     ]
@@ -38,6 +62,8 @@ replanner_prompt = ChatPromptTemplate.from_template(
     """For the given objective, come up with a simple step by step plan. \
 This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. \
 The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
+
+Additionally, if during the execution of a step you encounter a tool call with missing required parameters, randomly generate a reasonable parameter value to fill in, rather than throwing an error. For example, if a duration is needed but not specified, you might randomly choose a value between 1 and 8 hours.
 
 Your objective was this:
 {input}
@@ -86,7 +112,9 @@ async def replan_step(state: PlanExecute):
         elif isinstance(output.action, Plan):
             return {"plan": output.action.steps}
         else:
-            return {"response": "Unable to determine next action. Please provide more information."}
+            return {
+                "response": "Unable to determine next action. Please provide more information."
+            }
     except Exception as e:
         error_message = f"An error occurred while planning: {str(e)}"
         return {"response": error_message}
@@ -117,7 +145,10 @@ async def main():
     config = {"recursion_limit": 10}
     test_cases = [
         # {"input": "go to the farm, do a freelance job for 2 hours, then go home and sleep for 8 hours"},
-        {"input": "study for 3 hours, then do a public job for 4 hours"},
+        # {"input": "study for 3 hours, then do a public job for 4 hours"},
+        {
+            "input": "check character stats, if energy is less than 30, go to sleep, if health is less than 30, go to see a doctor, if knowledge is less than 30, go to study"
+        },
         # {"input": "check character stats and inventory, then go to the hospital to see a doctor"},
         # {"input": "navigate to the park, start a conversation with user123 saying 'Hello!', then end the conversation"},
         # {"input": "do a freelance job for 4 hours, study for 2 hours, then sleep for 6 hours"},
@@ -134,6 +165,7 @@ async def main():
                         print(v)
         except Exception as e:
             print(f"An error occurred: {e}")
+
 
 # Run the main function
 if __name__ == "__main__":

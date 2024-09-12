@@ -12,6 +12,7 @@ def vector_search(
     model_name,
     base_url,
     api_key,
+    fields_to_return,  # List of fields to return
     num_candidates=100,
 ):
     # Generate embedding for the search query
@@ -22,6 +23,11 @@ def vector_search(
         db_name=db_name, collection_name=collection_name, mongo_uri=mongo_uri
     )
 
+    # Prepare projection based on the fields to return
+    projection = {field: 1 for field in fields_to_return}
+    projection["_id"] = 0  # Don't return the _id field
+    projection["score"] = {"$meta": "vectorSearchScore"}  # Include the similarity score
+
     # Sample vector search pipeline
     pipeline = [
         {
@@ -31,19 +37,10 @@ def vector_search(
                 "path": "text_embedding",
                 "numCandidates": num_candidates,
                 "limit": limit,
-                "exact": False,  # 默认值为 False。False - 运行ANN搜索，近似最邻近，适合查询大型数据集，需要有numCandidates。True - 运行ENN搜索，精确最邻近，查询少于10000个文档，而不必调整要考虑的最近邻的数量。
+                "exact": False,  # ANN search for larger datasets
             }
         },
-        {
-            "$project": {
-                "_id": 0,  # 不要在结果中包含 _id 字段
-                "API": 1,  # 包含 api 字段
-                "text": 1,  # 包含 text 字段
-                "score": {
-                    "$meta": "vectorSearchScore"
-                },  # 计算并返回每个结果文档与查询文本的相似度得分
-            }
-        },
+        {"$project": projection},  # Dynamically project the required fields
     ]
 
     # Execute the search
@@ -59,13 +56,11 @@ if __name__ == "__main__":
     index_name = "vector_index"
     api_key = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
     base_url = "https://api.aiproxy.io/v1"
-    # model_name = "nomic-ai/nomic-embed-text-v1"
-    model_name = "text-embedding-3-small"  # 调用OPEN AI的模型
+    model_name = "text-embedding-3-small"  # Using OpenAI model
     limit = 5
-    num_dimensions = 1536
-    similarity = "euclidean"
 
     query_text = "我要变更工作"
+    fields_to_return = ["API", "text"]  # Specify fields to return
 
     results = vector_search(
         db_name,
@@ -77,6 +72,7 @@ if __name__ == "__main__":
         model_name,
         base_url,
         api_key,
+        fields_to_return,
     )
     for result in results:
         print(result)

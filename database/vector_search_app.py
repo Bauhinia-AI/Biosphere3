@@ -3,13 +3,15 @@ import config
 
 
 class VectorSearchApp:
-    def perform_vector_search(self, query_text, fields_to_return):
-        print(f"Performing vector search for query: '{query_text}'")
+    def perform_vector_search(self, query_text, fields_to_return, collection_name):
+        print(
+            f"Performing vector search for query: '{query_text}' in collection: '{collection_name}'"
+        )
 
-        # Pass fields_to_return to vector_search
+        # Pass collection_name and fields_to_return to vector_search
         results = vector_search(
             config.db_name,
-            config.tool_collection_name,
+            collection_name,  # Dynamic collection name
             config.mongo_uri,
             query_text,
             config.index_name,
@@ -31,5 +33,8 @@ if __name__ == "__main__":
     # Specify the fields you want to return
     fields_to_return = ["API", "text"]
 
+    # Specify the collection name
+    collection_name = config.tool_collection_name  # or any other collection name
+
     # Perform the search
-    app.perform_vector_search("我要换工作", fields_to_return)
+    app.perform_vector_search("我要换工作", fields_to_return, collection_name)

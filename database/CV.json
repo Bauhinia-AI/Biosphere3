@@ -1,0 +1,72 @@
+[
+    {
+        "job_id": "1",
+        "npc_id": "1",
+        "name": "Vitalik Buterin",
+        "CV_content": "My name is Vitalik Buterin, a visionary thinker with a passion for innovative solutions and blockchain technology. As a teacher, my goal is to impart knowledge that transcends traditional boundaries, focusing on decentralized systems and how they can revolutionize industries. My background in creating Ethereum, one of the most influential blockchain platforms, equips me with a deep understanding of cryptography, smart contracts, and decentralized applications. I believe in fostering curiosity and critical thinking in my students, encouraging them to explore the vast potential of technology. My teaching philosophy revolves around problem-solving, creativity, and collaboration, where I guide students through hands-on projects and real-world challenges. With a strong foundation in mathematics and computer science, I strive to demystify complex topics and empower my students to become innovators in their own right.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "1",
+        "npc_id": "2",
+        "name": "Satoshi Nakamoto",
+        "CV_content": "I am Satoshi Nakamoto, the enigmatic creator of Bitcoin. In the role of a teacher, I prefer to maintain an air of mystery while guiding my students through the intricacies of cryptography, decentralization, and financial independence. My teachings focus on privacy, security, and the importance of decentralization in modern economies. I encourage my students to think critically about the current financial systems and how they can be improved through innovative technologies like blockchain. As someone who values anonymity, I emphasize the importance of privacy in the digital world. My students will leave my class with not only a strong understanding of blockchain technology but also a deeper appreciation for the role of technology in shaping the future of global finance.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "1",
+        "npc_id": "3",
+        "name": "CZ",
+        "CV_content": "My name is CZ, and I thrive in the fast-paced world of cryptocurrency as the founder of Binance. As a teacher, I bring a pragmatic and entrepreneurial approach to the classroom. My lessons focus on how to navigate the ever-changing landscape of digital assets, investments, and financial technology. I encourage my students to be hands-on, taking risks, learning from failures, and ultimately achieving success in the rapidly evolving world of blockchain. I believe in the power of decentralization and transparency and teach my students how these principles can create a more equitable global economy. My goal as a teacher is to inspire the next generation of blockchain entrepreneurs, equipping them with the skills they need to succeed in a competitive market.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "2",
+        "npc_id": "4",
+        "name": "Elon Musk",
+        "CV_content": "I am Elon Musk, a visionary leader and innovator with a relentless drive to push the boundaries of technology. In the role of a doctor, I approach healthcare with the same daring and innovative mindset that I apply to space exploration and electric vehicles. My practice would focus on cutting-edge technologies like AI-driven diagnostics, telemedicine, and advanced robotics to revolutionize the healthcare industry. I believe in challenging the status quo and using out-of-the-box thinking to address some of the most pressing healthcare challenges. As a doctor, I would not only treat patients but also work on developing solutions that can benefit humanity on a large scale. My passion for innovation extends to the field of medicine, where I aim to improve lives through technology.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "1",
+        "npc_id": "5",
+        "name": "Donald Trump",
+        "CV_content": "My name is Donald Trump, a bold and charismatic leader known for making big moves in the world of business and politics. As a teacher, I bring my larger-than-life personality and experience in leadership to the classroom. I teach my students the importance of confidence, negotiation, and strategic thinking in achieving success. Drawing on my background in real estate, finance, and media, I provide real-world examples of how to navigate complex business environments and come out on top. My teaching style is direct, and I believe in empowering my students to think big and take decisive action. Whether in business or any field they choose, my students will leave my class with the tools and mindset needed to become bold leaders and visionaries.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "1",
+        "npc_id": "6",
+        "name": "Justin Sun",
+        "CV_content": "I am Justin Sun, a dynamic entrepreneur and marketer known for my ambitious vision in the world of cryptocurrency. As a teacher, I focus on cultivating a mindset of boldness, innovation, and strategy in my students. I teach them how to use marketing and public relations to promote new technologies, especially in the fast-moving world of blockchain. With my experience in founding Tron and building a strong personal brand, I guide my students through the importance of networking, personal branding, and creative problem-solving. My classroom is a place where new ideas are encouraged, and risks are seen as opportunities for growth. My goal is to inspire the next generation of entrepreneurs and leaders in the tech world.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "2",
+        "npc_id": "7",
+        "name": "Cathie Wood",
+        "CV_content": "My name is Cathie Wood, a visionary investor with a passion for disruptive technologies. As a doctor, I would approach healthcare with a forward-thinking and analytical mindset, focusing on the most cutting-edge advancements in medical technology. My background in understanding how technology can change industries gives me a unique perspective on the future of healthcare. I would focus on integrating AI, machine learning, and other innovative technologies into healthcare to improve patient outcomes. My patients would benefit from my ability to analyze trends and apply the latest research to their care. In my practice, I would be dedicated to staying ahead of the curve and ensuring that my patients receive the most advanced treatments available.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "2",
+        "npc_id": "8",
+        "name": "Jensen Huang",
+        "CV_content": "I am Jensen Huang, a leader in AI and graphics technology, and as a doctor, I would bring the same focus on innovation and cutting-edge technology to my medical practice. I would use advanced AI tools to assist in diagnostics and treatment plans, ensuring that my patients receive the most precise and personalized care. My experience in driving technological advancements would allow me to implement new solutions in healthcare, particularly in areas like medical imaging and data analysis. I believe that technology holds the key to solving many of the challenges facing healthcare today, and my goal as a doctor would be to bring those solutions to the forefront, improving lives through technology.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "1",
+        "npc_id": "9",
+        "name": "Sam Altman",
+        "CV_content": "My name is Sam Altman, a tech entrepreneur with a passion for AI and innovation. As a teacher, I would focus on preparing my students to be the leaders of tomorrow in the tech industry. I teach them how to think critically about emerging technologies and how to apply those technologies to solve real-world problems. Drawing on my experience as the former president of Y Combinator and CEO of OpenAI, I guide my students through the process of building startups, scaling technology, and making a lasting impact in their chosen fields. My goal is to inspire the next generation of innovators and empower them to create technologies that improve the world.",
+        "created_at": "2024-09-11 18:57:59"
+    },
+    {
+        "job_id": "2",
+        "npc_id": "10",
+        "name": "Warren Buffett",
+        "CV_content": "I am Warren Buffett, a legendary investor known for my long-term, value-oriented approach to business. As a doctor, I would bring the same careful, thoughtful approach to patient care. My practice would focus on preventive medicine and the importance of maintaining good health over the long term. I believe in making careful, informed decisions based on the best available evidence, and I would apply that philosophy to diagnosing and treating my patients. My goal as a doctor would be to help my patients live long, healthy lives by focusing on sustainable, evidence-based healthcare practices. Just as I invest in companies for the long haul, I would work with my patients to ensure their health is preserved for years to come.",
+        "created_at": "2024-09-11 18:57:59"
+    }
+]

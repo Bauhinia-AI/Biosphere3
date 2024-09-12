@@ -338,6 +338,19 @@ def get_public_jobs(jobid: int = None, method: str = "get") -> dict:
 
 
 @tool
+def get_candidates(method: str = "get") -> dict:
+    """Get candidate information for the current week's voting.
+
+    Args:
+        method (str): HTTP method to use (get or post)
+
+    Returns:
+        dict: API response data
+    """
+    return _make_api_call("candidates", {}, method)
+
+
+@tool
 def get_activity_subjects(subjectid: int = None, method: str = "get") -> dict:
     """Get activity subjects.
 

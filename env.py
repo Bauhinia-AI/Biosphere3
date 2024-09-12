@@ -381,8 +381,6 @@ async def get_public_jobs(jobid: Optional[int] = None):
 @app.get("/candidates", response_model=List[CandidateInfo])
 async def get_candidates():
     candidates = get_candidates_from_mongo()
-    print("candidates:")
-    print(candidates)
     return candidates
 
 

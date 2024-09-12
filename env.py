@@ -3,8 +3,9 @@ from typing import Optional, List
 import random
 from flask import Flask, jsonify, request
 from flask.views import MethodView
-#For the sake of efficiency and simplicity we use fastapi :p.
-#FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.
+
+# For the sake of efficiency and simplicity we use fastapi :p.
+# FastAPI is a modern, fast (high-performance), web framework for building APIs with Python 3.6+ based on standard Python type hints.
 import uuid
 import math
 from model import *
@@ -12,41 +13,55 @@ from fake_data import *
 from loguru import logger
 from fastapi import FastAPI, HTTPException
 
+from database.mongo_utils import get_candidates_from_mongo
+from model import CandidateInfo
+
 
 app = FastAPI()
 logger.level("INFO")
 
 
-
 # simulate data
 market_database = {
-    "123": MarketData(merchantid="123", merchantprice=500.0, merchantamount=250, merchantcash=12500.0, merchantk=6250000.0),
-    "456": MarketData(merchantid="456", merchantprice=150.0, merchantamount=600, merchantcash=9000.0, merchantk=5400000.0),
+    "123": MarketData(
+        merchantid="123",
+        merchantprice=500.0,
+        merchantamount=250,
+        merchantcash=12500.0,
+        merchantk=6250000.0,
+    ),
+    "456": MarketData(
+        merchantid="456",
+        merchantprice=150.0,
+        merchantamount=600,
+        merchantcash=9000.0,
+        merchantk=5400000.0,
+    ),
 }
 
 characters_data = [
     CharacterStats(health=20.0, energy=80.0, knowledge=25.0, fullness=70.0),
-    CharacterStats(health=85.0, energy=10.0, knowledge=95.0, fullness=65.0)
+    CharacterStats(health=85.0, energy=10.0, knowledge=95.0, fullness=65.0),
 ]
 
 characters_status = [
     CharacterStatus(coordinate="35.6895° N, 139.6917° E", subject="Exploring Tokyo"),
-    CharacterStatus(coordinate="51.5074° N, 0.1278° W", subject="Visiting London")
+    CharacterStatus(coordinate="51.5074° N, 0.1278° W", subject="Visiting London"),
 ]
 
 characters_info = [
-    CharacterBasicInfo(userid=1, jobid=101, cash=1500.0, gender="male", username="JohnDoe"),
-    CharacterBasicInfo(userid=2, jobid=102, cash=1700.0, gender="female", username="JaneDoe")
+    CharacterBasicInfo(
+        userid=1, jobid=101, cash=1500.0, gender="male", username="JohnDoe"
+    ),
+    CharacterBasicInfo(
+        userid=2, jobid=102, cash=1700.0, gender="female", username="JaneDoe"
+    ),
 ]
 
 inventory_items = [
     MerchantItem(merchantid="M001", merchantnum=10),
-    MerchantItem(merchantid="M002", merchantnum=5)
+    MerchantItem(merchantid="M002", merchantnum=5),
 ]
-
-
-
-
 
 
 @app.get("/trade")
@@ -54,10 +69,10 @@ async def get_market_data(merchantid: Optional[str] = None):
     if merchantid:
         market_info = market_database.get(merchantid)
         if not market_info:
-            raise HTTPException(status_code=404, detail="Market data not found for given merchantid")
+            raise HTTPException(
+                status_code=404, detail="Market data not found for given merchantid"
+            )
         return MarketResponse(merchant=[market_info])
-
-
 
 
 # I will just add a simple endpoint to change the job of a character. -Rick
@@ -75,15 +90,17 @@ async def work_change(request: WorkChangeRequest):
         return {"code": 200, "message": "Job change successful"}
     else:
         return MarketResponse(merchant=list(market_database.values()))
-    
-    
+
+
 @app.get("/character/data")
 async def get_character_stats():
     return CharactersResponse(characters=characters_data)
 
+
 @app.get("/character/status")
 async def get_character_status():
     return CharactersStatusResponse(characters=characters_status)
+
 
 @app.get("/character/bsinfo")
 async def get_character_basic_info():
@@ -94,17 +111,19 @@ async def get_character_basic_info():
 async def get_inventory():
     return InventoryResponse(items=inventory_items)
 
+
 @app.post("/resume-submission")
 async def resume_submission(request: ResumeSubmissionRequest):
     if request.jobid < 0:
         raise HTTPException(status_code=400, detail="Invalid job ID")
     if not request.cvurl:
         raise HTTPException(status_code=400, detail="CV URL is required")
-    #We need to add stochasticity in the json.
+    # We need to add stochasticity in the json.
     if random.random() > 0.5:
         return {"code": 200, "message": "Resume submitted successfully"}
     else:
         return {"code": 400, "message": "Resume submission failed"}
+
 
 @app.post("/vote")
 async def vote(request: VoteRequest):
@@ -113,30 +132,28 @@ async def vote(request: VoteRequest):
     # It seems that we do not need to add stochasticity in the json.
     return {"code": 200, "message": "Vote submitted successfully"}
 
+
 @app.post("/public-job")
 async def public_job(request: PublicJobRequest):
     if request.jobid < 0:
         raise HTTPException(status_code=400, detail="Invalid job ID")
     if request.timelength <= 0:
         raise HTTPException(status_code=400, detail="Invalid time length")
-    
+
     # 根据时长计算基础奖励
     base_reward = request.timelength * 10  # 假设每小时10金币
-    
+
     # 随机波动 ±20%
     cashreward = base_reward * random.uniform(0.8, 1.2)
-    
+
     if random.random() > 0.3:  # 70% 成功率
         return {
             "code": 200,
             "cashreward": round(cashreward, 2),
-            "message": "Public job completed successfully"
+            "message": "Public job completed successfully",
         }
     else:
-        return {
-            "code": 400,
-            "message": "Public job failed"
-        }
+        return {"code": 400, "message": "Public job failed"}
 
 
 @app.post("/study")
@@ -225,51 +242,53 @@ async def calculate_distance(request: DistanceRequest):
     if not request.to:
         raise HTTPException(status_code=400, detail="Destination is required")
 
-
     # 模拟计算距离
     distance = round(random.uniform(0.1, 10.0), 1)
 
     return {"code": 200, "maplength": distance}
 
+
 @app.post("/freelance-job")
 async def freelance_job(request: FreelanceJobRequest):
     if request.timelength <= 0:
         raise HTTPException(status_code=400, detail="Invalid time length")
-    
+
     # 根据时长计算基础奖励
     base_reward = request.timelength * 15  # 假设每小时15金币
-    
+
     # 随机波动 ±20%
     cashreward = base_reward * random.uniform(0.8, 1.2)
-    
+
     response = {
         "code": 200,
         "cashreward": round(cashreward, 2),
-        "message": "Freelance job completed successfully"
+        "message": "Freelance job completed successfully",
     }
-    
+
     # 如果有商户ID，添加商品奖励和消耗
     if request.merchantid is not None:
-        response.update({
-            "merchantrewardid": random.randint(1, 10),
-            "merchantrewardnum": random.randint(1, 5),
-            "merchantspentid": random.randint(1, 10)
-        })
-    
+        response.update(
+            {
+                "merchantrewardid": random.randint(1, 10),
+                "merchantrewardnum": random.randint(1, 5),
+                "merchantspentid": random.randint(1, 10),
+            }
+        )
+
     if random.random() > 0.2:  # 80% 成功率
         return response
     else:
-        return {
-            "code": 400,
-            "message": "Freelance job failed"
-        }
+        return {"code": 400, "message": "Freelance job failed"}
 
 
 @app.get("/freelance-jobs")
 async def get_freelance_jobs(jobid: Optional[int] = None):
     if jobid is not None and jobid < 0:
         raise HTTPException(status_code=400, detail="Invalid job ID")
-    return {"jobs": [{"jobid": 1, "jobname": "Apple Picker", "workhours": "10:00-16:00"}]}
+    return {
+        "jobs": [{"jobid": 1, "jobname": "Apple Picker", "workhours": "10:00-16:00"}]
+    }
+
 
 # 6-9 zesen
 @app.post("/trade")
@@ -357,6 +376,14 @@ async def get_public_jobs(jobid: Optional[int] = None):
         raise HTTPException(status_code=404, detail="Job ID not found")
 
     return filtered_jobs
+
+
+@app.get("/candidates", response_model=List[CandidateInfo])
+async def get_candidates():
+    candidates = get_candidates_from_mongo()
+    print("candidates:")
+    print(candidates)
+    return candidates
 
 
 @app.get("/activity", response_model=List[GameSubject])
@@ -563,7 +590,6 @@ async def get_position(
 
     else:
         return positions
-
 
 
 if __name__ == "__main__":

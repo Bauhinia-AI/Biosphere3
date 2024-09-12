@@ -1,12 +1,19 @@
 import requests
 
 
-file_list = ['/trade', "/character/data", "/character/status", "/character/bsinfo",'/character/inventory']
+file_list = [
+    "/trade",
+    "/character/data",
+    "/character/status",
+    "/character/bsinfo",
+    "/character/inventory",
+]
 base_url = "http://localhost:8000"
 
 
 # Base URL
 base_url = "http://localhost:8000"
+
 
 # Test /work-change
 def test_work_change():
@@ -65,6 +72,7 @@ def test_resume_submission():
     print("Resume Submission - Status Code:", response.status_code)
     print("Resume Submission - Response Body:", response.json())
 
+
 # Test /vote
 def test_vote():
     url = f"{base_url}/vote"
@@ -72,6 +80,7 @@ def test_vote():
     response = requests.post(url, json=data)
     print("Vote - Status Code:", response.status_code)
     print("Vote - Response Body:", response.json())
+
 
 # Test /public-job
 def test_public_job():
@@ -81,6 +90,7 @@ def test_public_job():
     print("Public Job - Status Code:", response.status_code)
     print("Public Job - Response Body:", response.json())
 
+
 # Test /freelance-job
 def test_freelance_job():
     url = f"{base_url}/freelance-job"
@@ -89,6 +99,12 @@ def test_freelance_job():
     print("Freelance Job - Status Code:", response.status_code)
     print("Freelance Job - Response Body:", response.json())
 
+
+def test_get_candidates():
+    url = f"{base_url}/candidates"
+    response = requests.get(url)
+    print("Get Candidates - Status Code:", response.status_code)
+    print("Get Candidates - Response Body:", response.json())
 
 
 class Request:
@@ -103,41 +119,47 @@ class Request:
         response = requests.get(self.url + route, params=data)
         return response
 
+
 def run_tests():
     url = "http://localhost:8000/"
     req = Request(url)
 
-    test_cases = [
-        {"method": "post", "route": "work-change", "data": {"jobid": 5}},
-        {"method": "post", "route": "trade", "data": {"merchantid": 1, "merchantnum": 1, "transactiontype": 0}},
-        {"method": "post", "route": "use", "data": {"merchantid": 2, "merchantnum": 1}},
-        {"method": "post", "route": "see-doctor", "data": {}},
-        {"method": "post", "route": "sleep", "data": {"timelength": 10}},
-        {"method": "get", "route": "activity", "data": {"subjectid": 4}},
-        {"method": "get", "route": "position", "data": None},
-    ]
+    # test_cases = [
+    #     {"method": "post", "route": "work-change", "data": {"jobid": 5}},
+    #     {
+    #         "method": "post",
+    #         "route": "trade",
+    #         "data": {"merchantid": 1, "merchantnum": 1, "transactiontype": 0},
+    #     },
+    #     {"method": "post", "route": "use", "data": {"merchantid": 2, "merchantnum": 1}},
+    #     {"method": "post", "route": "see-doctor", "data": {}},
+    #     {"method": "post", "route": "sleep", "data": {"timelength": 10}},
+    #     {"method": "get", "route": "activity", "data": {"subjectid": 4}},
+    #     {"method": "get", "route": "position", "data": None},
+    # ]
 
-    for test in test_cases:
-        method = test["method"]
-        route = test["route"]
-        data = test["data"]
+    # for test in test_cases:
+    #     method = test["method"]
+    #     route = test["route"]
+    #     data = test["data"]
 
-        if method == "post":
-            response = req.post(route, data)
-        elif method == "get":
-            response = req.get(route, data)
+    #     if method == "post":
+    #         response = req.post(route, data)
+    #     elif method == "get":
+    #         response = req.get(route, data)
 
-        print(f"Testing {method.upper()} {route}")
-        print("Status Code:", response.status_code)
-        print("Response Body:", response.json())
-        print("-" * 40)
-        
-    test_work_change()
-    test_resume_submission()
-    test_vote()
-    test_public_job()
-    test_freelance_job()
+    #     print(f"Testing {method.upper()} {route}")
+    #     print("Status Code:", response.status_code)
+    #     print("Response Body:", response.json())
+    #     print("-" * 40)
+
+    # test_work_change()
+    # test_resume_submission()
+    # test_vote()
+    # test_public_job()
+    # test_freelance_job()
+    test_get_candidates()
+
 
 if __name__ == "__main__":
     run_tests()
-

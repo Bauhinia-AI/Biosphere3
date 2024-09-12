@@ -420,3 +420,4 @@ def get_position(
 # print(get_activity_subjects.invoke({}))
 # print(get_talk_data.invoke({"talkid": "1234abcd"}))
 # print(get_position.invoke({}))
+# print(get_candidates.invoke({}))

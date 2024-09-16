@@ -19,9 +19,8 @@ def vector_search(
     query_embedding = get_embedding(query_text, model_name, base_url, api_key)
 
     # Connect to MongoDB collection
-    collection = connect_to_mongo(
-        db_name=db_name, collection_name=collection_name, mongo_uri=mongo_uri
-    )
+    db = connect_to_mongo(db_name=db_name, mongo_uri=mongo_uri)
+    collection = db[collection_name]
 
     # Prepare projection based on the fields to return
     projection = {field: 1 for field in fields_to_return}

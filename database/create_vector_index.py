@@ -7,9 +7,8 @@ from mongo_utils import connect_to_mongo
 def create_vector_search_index(
     db_name, collection_name, mongo_uri, index_name, num_dimensions, similarity
 ):
-    collection = connect_to_mongo(
-        db_name=db_name, collection_name=collection_name, mongo_uri=mongo_uri
-    )
+    db = connect_to_mongo(db_name=db_name, mongo_uri=mongo_uri)
+    collection = db[collection_name]
     search_index_model = SearchIndexModel(
         definition={
             "fields": [

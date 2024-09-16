@@ -2,6 +2,10 @@
 db_name = "biosphere3_test"
 tool_collection_name = "api"
 cv_collection_name = "cv"
+npc_collection_name = "npc"
+action_collection_name = "action"
+impression_collection_name = "impression"
+descriptor_collection_name = "descriptor"
 mongo_uri = "mongodb+srv://bauhiniaai:nb666@biosphere3.e1px8.mongodb.net/"
 index_name = "vector_index"
 

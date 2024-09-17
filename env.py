@@ -25,8 +25,8 @@ market_database = {
 }
 
 characters_data = [
-    CharacterStats(health=100.0, energy=80.0, knowledge=90.0, fullness=70.0),
-    CharacterStats(health=85.0, energy=75.0, knowledge=95.0, fullness=65.0)
+    CharacterStats(health=20.0, energy=80.0, knowledge=25.0, fullness=70.0),
+    CharacterStats(health=85.0, energy=10.0, knowledge=95.0, fullness=65.0)
 ]
 
 characters_status = [

@@ -1,6 +1,9 @@
 import datetime
 from pymongo import MongoClient
-import config
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from database import config
 
 
 def connect_to_mongo(db_name, mongo_uri):

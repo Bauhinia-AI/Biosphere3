@@ -181,6 +181,7 @@ print("Response Body:", response.json())
 
 - `failed_action`: 执行失败的动作,必须为字符串且为必填项
 - `action_id`: 失败动作的ID,必须为字符串且为必填项
+- `npc_id`: NPC ID,必须为字符串且为必填项
 - `reflection`: 动作失败后的反思,必须为字符串且为必填项
 
 例子:
@@ -188,6 +189,7 @@ print("Response Body:", response.json())
 {
     "failed_action": "Making Bread",
     "action_id": "3",
+    "npc_id": "1",
     "reflection": "Short of Flour."
 }
 ```

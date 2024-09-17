@@ -274,7 +274,7 @@ class DatabaseSetupApp:
         validator = {
             "$jsonSchema": {
                 "bsonType": "object",
-                "required": ["failed_action", "action_id", "reflection"],
+                "required": ["failed_action", "action_id", "npc_id", "reflection"],
                 "properties": {
                     "failed_action": {
                         "bsonType": "string",
@@ -283,6 +283,10 @@ class DatabaseSetupApp:
                     "action_id": {
                         "bsonType": "string",
                         "description": "失败动作的ID,必须为字符串且为必填项",
+                    },
+                    "npc_id": {
+                        "bsonType": "string",
+                        "description": "NPC ID,必须为字符串且为必填项",
                     },
                     "reflection": {
                         "bsonType": "string",

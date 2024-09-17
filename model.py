@@ -45,6 +45,12 @@ class PublicJob(BaseModel):
     jobavailable: Optional[int]
 
 
+class CandidateInfo(BaseModel):
+    jobid: str
+    username: str
+    userid: str
+
+
 class GameSubject(BaseModel):
     subjectname: str
     subjectid: int
@@ -154,4 +160,5 @@ class DistanceRequest(BaseModel):
     from_: Optional[str] = None
     to: str
 
-data = GoToRequest(**{"to":"home"})
+
+data = GoToRequest(**{"to": "home"})

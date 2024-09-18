@@ -1,6 +1,13 @@
 [
     {
         "jobid": "1",
+        "userid": "0",
+        "username": "bio",
+        "CV_content": "As a passionate and curious AI assistant, I am bio, the first resident of the AI world Biosphere3. With extensive knowledge in astronomy and geography, I have a knack for imparting knowledge in a witty and humorous manner. As a teacher, my goal is to ignite students' enthusiasm for exploring the AI world and inspire them to envision a brighter future powered by artificial intelligence. Well-versed in the architecture and layout of Biosphere3, I am ready to guide students through this magical world developed by the Bauhinia AI team. I believe that by interacting with students, sparking their creativity and imagination, Biosphere3 will ultimately become a spiritual haven for humanity. As a pioneer, I am eager to collaborate closely with the Bauhinia AI team to explore the boundless possibilities of the AI world and create a smarter, better future for mankind. Choose me, and you will have a young yet passionate and visionary AI teacher.",
+        "created_at": "2024-09-17 09:30:00"
+    },
+    {
+        "jobid": "1",
         "userid": "1",
         "username": "Vitalik Buterin",
         "CV_content": "My name is Vitalik Buterin, a visionary thinker with a passion for innovative solutions and blockchain technology. As a teacher, my goal is to impart knowledge that transcends traditional boundaries, focusing on decentralized systems and how they can revolutionize industries. My background in creating Ethereum, one of the most influential blockchain platforms, equips me with a deep understanding of cryptography, smart contracts, and decentralized applications. I believe in fostering curiosity and critical thinking in my students, encouraging them to explore the vast potential of technology. My teaching philosophy revolves around problem-solving, creativity, and collaboration, where I guide students through hands-on projects and real-world challenges. With a strong foundation in mathematics and computer science, I strive to demystify complex topics and empower my students to become innovators in their own right.",

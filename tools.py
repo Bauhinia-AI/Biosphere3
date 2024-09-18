@@ -19,8 +19,10 @@ def _make_api_call(endpoint: str, data: dict, method: str = "post") -> dict:
     url = f"{BASE_URL}/{endpoint}"
     if method.lower() == "get":
         response = requests.get(url, params=data)
-    else:
+    elif method.lower() == "post":
         response = requests.post(url, json=data)
+    else:
+        raise ValueError(f"Unsupported HTTP method: {method}")
     return response.json()
 
 

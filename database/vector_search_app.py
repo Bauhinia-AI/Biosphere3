@@ -31,7 +31,8 @@ if __name__ == "__main__":
     app = VectorSearchApp()
 
     # Specify the fields you want to return
-    fields_to_return = ["API", "text"]
+    # fields_to_return = ["API", "text", "code"]
+    fields_to_return = ["code"]
 
     # Specify the collection name
     collection_name = config.tool_collection_name  # or any other collection name

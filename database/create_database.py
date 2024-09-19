@@ -29,12 +29,12 @@ class DatabaseSetupApp:
                 "required": ["jobid", "userid", "username", "CV_content", "created_at"],
                 "properties": {
                     "jobid": {
-                        "bsonType": "string",
-                        "description": "工作ID,必须为字符串且为必填项",
+                        "bsonType": "int",
+                        "description": "工作ID,必须为整数且为必填项",
                     },
                     "userid": {
-                        "bsonType": "string",
-                        "description": "用户ID,必须为字符串且为必填项",
+                        "bsonType": "int",
+                        "description": "用户ID,必须为整数且为必填项",
                     },
                     "username": {
                         "bsonType": "string",
@@ -81,21 +81,22 @@ class DatabaseSetupApp:
             "$jsonSchema": {
                 "bsonType": "object",
                 "required": [
-                    "npc_id",
-                    "name",
+                    "userid",
+                    "username",
                     "gender",
                     "slogan",
                     "description",
+                    "stats",
                     "role",
                     "task",
                     "created_at",
                 ],
                 "properties": {
-                    "npc_id": {
-                        "bsonType": "string",
-                        "description": "NPC ID,必须为字符串且为必填项",
+                    "userid": {
+                        "bsonType": "int",
+                        "description": "NPC ID,必须为整数且为必填项",
                     },
-                    "name": {
+                    "username": {
                         "bsonType": "string",
                         "description": "NPC 名字,必须为字符串且为必填项",
                     },
@@ -111,6 +112,23 @@ class DatabaseSetupApp:
                         "bsonType": "string",
                         "description": "NPC 描述,必须为字符串且为必填项",
                     },
+                    "stats": {
+                        "bsonType": "object",
+                        "required": [
+                            "health",
+                            "fullness",
+                            "energy",
+                            "knowledge",
+                            "cash",
+                        ],
+                        "properties": {
+                            "health": {"bsonType": "double"},
+                            "fullness": {"bsonType": "double"},
+                            "energy": {"bsonType": "double"},
+                            "knowledge": {"bsonType": "double"},
+                            "cash": {"bsonType": "double"},
+                        },
+                    },
                     "role": {
                         "bsonType": "string",
                         "description": "NPC 角色,必须为字符串且为必填项",
@@ -122,11 +140,6 @@ class DatabaseSetupApp:
                     "created_at": {
                         "bsonType": "string",
                         "description": "创建时间,必须为字符串且为必填项",
-                    },
-                    "past_events": {
-                        "bsonType": "array",
-                        "description": "NPC 过去经历的事件,必须为字符串数组且为可选项",
-                        "items": {"bsonType": "string"},
                     },
                 },
             }
@@ -162,7 +175,7 @@ class DatabaseSetupApp:
             "$jsonSchema": {
                 "bsonType": "object",
                 "required": [
-                    "npc_id",
+                    "userid",
                     "timestamp",
                     "meta_action",
                     "description",
@@ -170,9 +183,9 @@ class DatabaseSetupApp:
                     "action_id",
                 ],
                 "properties": {
-                    "npc_id": {
-                        "bsonType": "string",
-                        "description": "NPC ID,必须为字符串且为必填项",
+                    "userid": {
+                        "bsonType": "int",
+                        "description": "NPC ID,必须为整数且为必填项",
                     },
                     "timestamp": {
                         "bsonType": "string",
@@ -191,12 +204,12 @@ class DatabaseSetupApp:
                         "description": "执行是否成功,必须为布尔类型且为必填项",
                     },
                     "action_id": {
-                        "bsonType": "string",
-                        "description": "唯一的动作ID,必须为字符串且为必填项",
+                        "bsonType": "int",
+                        "description": "唯一的动作ID,必须为整数且为必填项",
                     },
                     "prev_action": {
-                        "bsonType": "string",
-                        "description": "前一个动作的action_id,必须为字符串且为可选项",
+                        "bsonType": "int",
+                        "description": "前一个动作的action_id,必须为整数且为可选项",
                     },
                 },
             }
@@ -222,15 +235,15 @@ class DatabaseSetupApp:
         validator = {
             "$jsonSchema": {
                 "bsonType": "object",
-                "required": ["npc_id", "to_id", "impression"],
+                "required": ["from_id", "to_id", "impression"],
                 "properties": {
-                    "npc_id": {
-                        "bsonType": "string",
-                        "description": "表示印象来源的 NPC 的 ID,必须为字符串且为必填项",
+                    "from_id": {
+                        "bsonType": "int",
+                        "description": "表示印象来源的 NPC 的 ID,必须为整数且为必填项",
                     },
                     "to_id": {
-                        "bsonType": "string",
-                        "description": "表示印象指向的 NPC 的 ID,必须为字符串且为必填项",
+                        "bsonType": "int",
+                        "description": "表示印象指向的 NPC 的 ID,必须为整数且为必填项",
                     },
                     "impression": {
                         "bsonType": "array",
@@ -274,19 +287,19 @@ class DatabaseSetupApp:
         validator = {
             "$jsonSchema": {
                 "bsonType": "object",
-                "required": ["failed_action", "action_id", "npc_id", "reflection"],
+                "required": ["failed_action", "action_id", "userid", "reflection"],
                 "properties": {
                     "failed_action": {
                         "bsonType": "string",
                         "description": "执行失败的动作,必须为字符串且为必填项",
                     },
                     "action_id": {
-                        "bsonType": "string",
-                        "description": "失败动作的ID,必须为字符串且为必填项",
+                        "bsonType": "int",
+                        "description": "失败动作的ID,必须为整数且为必填项",
                     },
-                    "npc_id": {
-                        "bsonType": "string",
-                        "description": "NPC ID,必须为字符串且为必填项",
+                    "userid": {
+                        "bsonType": "int",
+                        "description": "NPC ID,必须为整数且为必填项",
                     },
                     "reflection": {
                         "bsonType": "string",

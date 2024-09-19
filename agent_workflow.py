@@ -19,6 +19,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START
 import asyncio
 from typing import Literal
+import json
+from datetime import datetime
 
 # 设置环境变量
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
@@ -89,15 +91,19 @@ replanner = replanner_prompt | ChatOpenAI(
 # 定义执行步骤函数
 async def execute_step(state: PlanExecute):
     plan = state["plan"]
+    steps_executed = state.get("steps_executed", 0)
     plan_str = "\n".join(f"{i+1}. {step}" for i, step in enumerate(plan))
     task = plan[0]
     task_formatted = f"""For the following plan:
-{plan_str}\n\nYou are tasked with executing step {1}, {task}."""
+        {plan_str}\n\nYou are tasked with executing step {steps_executed + 1}, {task}."""
     agent_response = await agent_executor.ainvoke(
         {"messages": [("user", task_formatted)]}
     )
-    return {"past_steps": [(task, agent_response["messages"][-1].content)]}
-
+    return {
+        "past_steps": state.get("past_steps", []) + [(task, agent_response["messages"][-1].content)],
+        "plan": plan[1:],  # Remove the executed step from the plan
+        "steps_executed": steps_executed + 1
+    }
 
 async def plan_step(state: PlanExecute):
     plan = await planner.ainvoke({"messages": [("user", state["input"])]})
@@ -120,21 +126,56 @@ async def replan_step(state: PlanExecute):
         return {"response": error_message}
 
 
+def should_replan(state: PlanExecute) -> Literal["replan", "Executor", "__end__"]:
+    if not state["plan"]:
+        return "replan"
+    if state.get("steps_executed", 0) >= 3:  # Replan after every 3 steps
+        return "replan"
+    return "Executor"
+
 def should_end(state: PlanExecute) -> Literal["Executor", "__end__"]:
     if "response" in state and state["response"]:
         return "__end__"
     else:
         return "Executor"
 
+# 添加反思模块
+async def reflect(state: PlanExecute):
+    reflection = {
+        "timestamp": datetime.now().isoformat(),
+        "input": state["input"],
+        "steps_executed": state.get("steps_executed", 0),
+        "past_steps": state.get("past_steps", []),
+        "final_response": state.get("response", "No final response"),
+        "execution_result": state,
+    }
+    
+    # 分析可能的失败原因
+    if "error" in state:
+        reflection["error"] = state["error"]
+        reflection["possible_failure_reason"] = "An error occurred during execution"
+    elif not state.get("response"):
+        reflection["possible_failure_reason"] = "No response generated, possibly due to incomplete execution"
+    else:
+        reflection["possible_failure_reason"] = "None"
+
+    # 将反思结果写入日志文件
+    with open("agent_reflections.jsonl", "a") as f:
+        f.write(json.dumps(reflection) + "\n")
+
+    return state
 
 # 创建工作流
 workflow = StateGraph(PlanExecute)
+workflow.add_node("Reflect", reflect)
+
 workflow.add_node("Objectives_planner", plan_step)
 workflow.add_node("Executor", execute_step)
 workflow.add_node("replan", replan_step)
 workflow.add_edge(START, "Objectives_planner")
 workflow.add_edge("Objectives_planner", "Executor")
-workflow.add_edge("Executor", "replan")
+workflow.add_edge("Executor", "Reflect")
+workflow.add_conditional_edges("Reflect", should_replan)
 workflow.add_conditional_edges("replan", should_end)
 
 app = workflow.compile()

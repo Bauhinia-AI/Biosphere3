@@ -404,6 +404,18 @@ def get_position(
         params["positionid"] = positionid
     return _make_api_call("position", params, method)
 
+@tool
+def eat(timelength: int, method: str = "post") -> dict:
+    """Eat something.
+
+    Args:
+        method (str): HTTP method to use (get or post)
+
+    Returns:
+        dict: API response data
+    """
+    return _make_api_call("eat", {"timelength": timelength}, method)
+
 
 # print(do_freelance_job.invoke({"timelength": 2, "merchantid": 1}))
 # print(navigate_to.invoke({"to": "商店"}))

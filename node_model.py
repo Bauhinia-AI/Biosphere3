@@ -13,10 +13,32 @@ class PlanExecute(TypedDict):
     plan: List[str]
     past_steps: Annotated[List[Tuple], operator.add]
     response: str
+    daily_objective: List[str]
+    meta_seq: List[str]
+    tool_functions: str
+    locations: str
+
+class DailyObjective(BaseModel):
+    """Daily objective to follow in future"""
+
+    objectives: List[str] = Field(
+        description="daily objectives list"
+    )
+
+class DetailedPlan(BaseModel):
+    """Detailed plan to follow in future"""
+
+    detailed_plan: str = Field(
+        description="detailed plan"
+    )
 
 
+class MetaActionSequence(BaseModel):
+    """Meta action sequence to follow in future"""
 
-
+    meta_action_sequence: List[str] = Field(
+        description="meta action sequence"
+    )
 class Response(BaseModel):
     """Response to user."""
 

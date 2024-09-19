@@ -43,7 +43,7 @@ tool_list = [
 ]
 
 # 创建LLM和代理
-llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o")
+llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini")
 prompt = hub.pull("wfh/react-agent-executor")
 agent_executor = create_react_agent(llm, tool_list, messages_modifier=prompt)
 
@@ -81,10 +81,10 @@ Update your plan accordingly. If no more steps are needed and you can return to 
 
 # 创建规划器和重新规划器
 planner = planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o", temperature=0
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(Plan)
 replanner = replanner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o", temperature=0
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(Act)
 
 

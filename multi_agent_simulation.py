@@ -3,6 +3,48 @@ import random
 from datetime import datetime
 from agent_workflow import app
 from dataclasses import dataclass
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+import threading
+from concurrent.futures import ThreadPoolExecutor
+
+
+tool_functions = """
+1. do_freelance_job(): Perform freelance work
+2. navigate_to(location): Navigate to a specified location
+3. sleep(hours): Sleep for specified number of hours
+4. work_change(): Change job
+5. get_character_stats(): Get character statistics
+6. get_character_status(): Get character status
+7. get_character_basic_info(): Get character basic information
+8. get_inventory(): Get inventory information
+9. submit_resume(): Submit resume
+10. vote(): Cast a vote
+11. do_public_job(): Perform public work
+12. study(hours): Study for specified number of hours
+13. talk(person): Talk to a specified person
+14. end_talk(): End conversation
+15. calculate_distance(location1, location2): Calculate distance between two locations
+16. trade(item, price): Trade an item
+17. use_item(item): Use an item
+18. see_doctor(): Visit a doctor
+19. get_freelance_jobs(): Get list of available freelance jobs
+20. get_public_jobs(): Get list of available public jobs
+21. get_candidates(): Get list of candidates
+22. get_activity_subjects(): Get list of activity subjects
+23. get_talk_data(): Get conversation data
+24. get_position(): Get current position
+25. eat(): Eat food
+"""
+
+locations = """
+1. Home
+2. Park
+3. Restaurant
+4. Hospital
+5. School
+6. Farm
+"""
 
 
 @dataclass
@@ -47,47 +89,85 @@ class Agent:
 
     async def take_action(self, app, config):
         objective = self.generate_objective()
+        max_steps = 20  # 设置最大步骤数
+        step_count = 0
         async for event in app.astream({"input": objective}, config=config):
             for k, v in event.items():
                 if k != "__end__":
-                    print(f"{self.name}: {v}")
+                    print(f"{self.username}: {v}")
+            step_count += 1
+            if step_count >= max_steps:
+                print(f"{self.username}: 达到最大步骤数")
+                break
         self.update_stats()
 
     def generate_objective(self) -> str:
-        if self.stats["energy"] < 30:
-            return "go home and sleep for 8 hours"
-        elif self.stats["health"] < 30:
-            return "go to see a doctor"
-        elif self.stats["knowledge"] < 30:
-            return "study for 4 hours"
-        else:
-            actions = [
-                "do a freelance job",
-                "do a public job",
-                "study",
-                "talk to someone",
-            ]
-            return random.choice(actions)
+        llm = ChatOpenAI(
+            base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", timeout=30
+        )  # 30秒超时
+
+        plan_prompt = ChatPromptTemplate.from_template(
+            """Generate a plan based on the agent's personal information and tasks. The plan should detail the agent's actions for an entire day, specifying how many hours each task takes. Avoid using vague terms.
+
+Agent's personal information:
+Name: {username}
+Description: {description}
+Role: {role}
+Task: {task}
+Location: {location}
+Status: {stats}
+Inventory: {inventory}
+
+You can use the following tool functions in your plan. Do not use any functions that are not listed here:
+{tool_functions}
+
+Available locations:
+{locations}
+
+Output the plan in a single sentence without any unnecessary words.
+Here is the format example and your plan should NOT be longer than this example:
+Wake up at 7 AM, go to the park and chat with people for 1 hour, study at school for 6 hours, have lunch at the restaurant, study at the school for three hours, return home and sleep."""
+        )
+
+        formatted_prompt = plan_prompt.format(
+            username=self.username,
+            description=self.description,
+            role=self.role,
+            task=self.task,
+            location=self.location,
+            stats=self.stats,
+            inventory=self.inventory,
+            tool_functions=tool_functions,
+            locations=locations,
+        )
+
+        response = llm.invoke(formatted_prompt)
+        print(response.content)
+        return response.content
 
     def update_stats(self):
-        self.stats["energy"] -= random.randint(5, 15)
-        self.stats["health"] -= random.randint(1, 5)
-        self.stats["knowledge"] -= random.randint(1, 3)
-        self.stats["money"] -= random.randint(50, 100)
+        self.stats["energy"] = round(self.stats["energy"] - random.uniform(5, 15), 1)
+        self.stats["health"] = round(self.stats["health"] - random.uniform(1, 3), 1)
+        self.stats["fullness"] = round(self.stats["fullness"] - random.uniform(1, 5), 1)
+        self.stats["cash"] = round(self.stats["cash"] - random.uniform(50, 100), 1)
+
+        for key in ["energy", "health", "fullness"]:
+            self.stats[key] = max(0, self.stats[key])
+        self.stats["cash"] = max(0, self.stats[key])
 
     def __str__(self):
         inventory_str = ", ".join(self.inventory)
         stats_str = ", ".join(f"{k}: {v}" for k, v in self.stats.items())
         return f"""
-名字: {self.username}
-性别: {self.gender}
-口号: {self.slogan}
-描述: {self.description}
-角色: {self.role}
-任务: {self.task}
-位置: {self.location}
-状态: {stats_str}
-物品: {inventory_str}
+Name: {self.username}
+Gender: {self.gender}
+Slogan: {self.slogan}
+Description: {self.description}
+Role: {self.role}
+Task: {self.task}
+Location: {self.location}
+Status: {stats_str}
+Inventory: {inventory_str}
 """
 
 
@@ -97,134 +177,178 @@ agents = [
         AgentConfig(
             userid=1,
             username="Alice",
-            gender="女",
-            slogan="知识就是力量",
-            description="热爱学习的大学生，总是渴望获取新知识。",
-            role="学生",
-            task="每天坚持学习8小时，争取期末考试取得好成绩",
+            gender="Female",
+            slogan="Knowledge is power",
+            description="A university student who loves learning and always craves new knowledge.",
+            role="Student",
+            task="Study for 8 hours every day, aiming for excellent results in the final exams",
         )
     ),
     Agent(
         AgentConfig(
             userid=2,
             username="Bob",
-            gender="男",
-            slogan="以物易物，互利共赢",
-            description="精明的交易员，热衷于在市场上寻找最佳交易机会。",
-            role="交易员",
-            task="每天监控市场，寻找最佳交易机会，以赚更多钱为目标",
+            gender="Male",
+            slogan="Barter for mutual benefit",
+            description="A shrewd trader, passionate about finding the best trading opportunities in the market.",
+            role="Trader",
+            task="Monitor the market daily, seeking the best trading opportunities to maximize profits",
         )
     ),
     Agent(
         AgentConfig(
             userid=3,
             username="Charlie",
-            gender="男",
-            slogan="闲聊是人生的调味剂",
-            description="社交达人，喜欢与各行各业的人交流。",
-            role="社交家",
-            task="每天都主动与10个人交流，以此来娱乐自己，并提高知识水平",
+            gender="Male",
+            slogan="Casual chat is the spice of life",
+            description="A social butterfly who enjoys conversing with people from all walks of life",
+            role="Socialite",
+            task="Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge",
         )
     ),
     Agent(
         AgentConfig(
             userid=4,
             username="David",
-            gender="男",
-            slogan="劳动最光荣",
-            description="勤劳的工人，相信努力工作能带来美好生活。",
-            role="工人",
-            task="每天至少工作8小时，喜欢主动去找一些兼职工作，以赚更多钱为目标",
+            gender="Male",
+            slogan="Labor is glorious",
+            description="A hardworking laborer who believes that diligent work leads to a better life.",
+            role="Worker",
+            task="Work at least 8 hours a day, actively seeking part-time jobs to earn more money",
         )
     ),
     Agent(
         AgentConfig(
             userid=5,
             username="Eva",
-            gender="女",
-            slogan="健康是最大的财富",
-            description="退休老人，喜欢锻炼身体，保持健康",
-            role="退休老人",
-            task="早睡早起，保证睡眠充足，吃得好，保持健康",
+            gender="Female",
+            slogan="Health is the greatest wealth",
+            description="A retiree who enjoys exercising and maintaining good health",
+            role="Retiree",
+            task="Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",
         )
     ),
     Agent(
         AgentConfig(
             userid=6,
             username="Frank",
-            gender="男",
-            slogan="为人民服务",
-            description="热心街道工作，喜欢和人交流，喜欢到处逛",
-            role="普通居民",
-            task="帮助社区完成投票选举工作，并和社区居民交流，了解他们的需求和想法",
+            gender="Male",
+            slogan="Serve the people",
+            description="Enthusiastic about community work, enjoys communicating with people and exploring different places",
+            role="Ordinary Resident",
+            task="Help complete community voting and election work, communicate with residents to understand their needs and ideas",
         )
     ),
     Agent(
         AgentConfig(
             userid=7,
             username="Grace",
-            gender="女",
-            slogan="努力生活",
-            description="正在努力找工作，非常忙碌",
-            role="无业人员",
-            task="每天投递简历，面试，找工作",
+            gender="Female",
+            slogan="Strive for a better life",
+            description="Busy looking for a job, very occupied",
+            role="Job Seeker",
+            task="Submit resumes, attend interviews, and search for jobs every day",
         )
     ),
     Agent(
         AgentConfig(
             userid=8,
             username="Henry",
-            gender="男",
-            slogan="到处走走",
-            description="闲不住，喜欢到处旅行",
-            role="旅行家",
-            task="每天至少去三个地方，即使重复了也要去",
+            gender="Male",
+            slogan="Wander everywhere",
+            description="Restless, loves to travel around",
+            role="Traveler",
+            task="Visit at least three places every day, even if they are repeated",
         )
     ),
     Agent(
         AgentConfig(
             userid=9,
             username="Ivy",
-            gender="女",
-            slogan="购物使我快乐",
-            description="时尚博主，喜欢购买各种商品。",
-            role="购物达人",
-            task="每天买不一样的东西，获得各种物品",
+            gender="Female",
+            slogan="Shopping makes me happy",
+            description="A fashion blogger who enjoys purchasing various goods.",
+            role="Shopping Enthusiast",
+            task="Buy different things every day, acquire various items",
         )
     ),
     Agent(
         AgentConfig(
             userid=10,
             username="Jack",
-            gender="男",
-            slogan="分享是快乐的源泉",
-            description="网红主播，喜欢在网上分享生活。",
-            role="主播",
-            task="他的工作是每天和不同的人交流，把自家货卖给他们",
+            gender="Male",
+            slogan="Sharing is the source of happiness",
+            description="An internet celebrity who enjoys sharing life online.",
+            role="Streamer",
+            task="Communicate with different people every day and sell his own products to them",
         )
     ),
 ]
 
 
+def agent_task(agent):
+    objective = agent.generate_objective()
+    print(f"Agent {agent.userid}: {agent.username}")
+    print(f"Objective: {objective}")
+    print(agent)
+    print("\n" + "=" * 50 + "\n")  # 分隔线
+
+
+def whole_day_planning_main():
+    threads = []
+    for userid in range(1, 11):  # 1 to 10
+        agent = agents[userid - 1]  # 因为列表索引从0开始
+        thread = threading.Thread(target=agent_task, args=(agent,))
+        threads.append(thread)
+        thread.start()
+
+    # 等待所有线程完成
+    for thread in threads:
+        thread.join()
+
+
+async def agent_routine(agent, config, days):
+    for day in range(1, days + 1):
+        print(f"\n--- 第 {day} 天 {agent.username} ---")
+        print(f"\n{agent.username} 的行动:")
+        try:
+            await asyncio.wait_for(
+                agent.take_action(app, config), timeout=120
+            )  # 2分钟超时
+        except asyncio.TimeoutError:
+            print(f"{agent.username} 行动超时")
+    print(f"\n--- {days} 天后 {agent.username} 的状态 ---")
+    print(agent)
+
+
+async def run_agent(agent, config, days):
+    await agent_routine(agent, config, days)
+
+
 # 主函数
 async def main():
-    config = {"recursion_limit": 10}
+    config = {"recursion_limit": 3000}
     days = 10
 
-    for day in range(1, days + 1):
-        print(f"\n--- 第 {day} 天 ---")
-        for agent in agents:
-            print(f"\n{agent.name} 的行动:")
-            await agent.take_action(app, config)
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        tasks = [
+            asyncio.create_task(run_agent(agent, config, days)) for agent in agents
+        ]
 
-    print("\n--- 10天后的状态 ---")
-    for agent in agents:
-        print(f"{agent.name} ({agent.background}):")
-        print(f"  位置: {agent.location}")
-        print(f"  状态: {agent.stats}")
-        print(f"  物品: {agent.inventory}")
+        completed, pending = await asyncio.wait(
+            tasks, return_when=asyncio.ALL_COMPLETED
+        )
+
+        for task in completed:
+            try:
+                await task
+            except Exception as e:
+                print(f"代理执行出错: {e}")
+
+        for task in pending:
+            task.cancel()
 
 
-# 运行主函数
 if __name__ == "__main__":
     asyncio.run(main())
+    # whole_day_planning_main()

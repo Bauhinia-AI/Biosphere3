@@ -2,18 +2,7 @@ import os
 from langchain import hub
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from tools import (
-    do_freelance_job,
-    navigate_to,
-    sleep,
-    study,
-    get_character_stats,
-    get_inventory,
-    do_public_job,
-    talk,
-    end_talk,
-    see_doctor,
-)
+from tools import *
 from node_model import PlanExecute, Plan, Response, Act
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START
@@ -33,17 +22,32 @@ tool_list = [
     do_freelance_job,
     navigate_to,
     sleep,
-    study,
+    work_change,
     get_character_stats,
+    get_character_status,
+    get_character_basic_info,
     get_inventory,
+    submit_resume,
+    vote,
     do_public_job,
+    study,
     talk,
     end_talk,
+    eat,
+    calculate_distance,
+    trade,
+    use_item,
     see_doctor,
+    get_freelance_jobs,
+    get_public_jobs,
+    get_candidates,
+    get_activity_subjects,
+    get_talk_data,
+    get_position,
 ]
 
 # 创建LLM和代理
-llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o")
+llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini")
 prompt = hub.pull("wfh/react-agent-executor")
 agent_executor = create_react_agent(llm, tool_list, messages_modifier=prompt)
 
@@ -81,10 +85,10 @@ Update your plan accordingly. If no more steps are needed and you can return to 
 
 # 创建规划器和重新规划器
 planner = planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o", temperature=0
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(Plan)
 replanner = replanner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o", temperature=0
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(Act)
 
 
@@ -183,12 +187,12 @@ app = workflow.compile()
 
 # 主函数
 async def main():
-    config = {"recursion_limit": 10}
+    config = {"recursion_limit": 20}
     test_cases = [
         # {"input": "go to the farm, do a freelance job for 2 hours, then go home and sleep for 8 hours"},
         # {"input": "study for 3 hours, then do a public job for 4 hours"},
         {
-            "input": "check character stats, if energy is less than 30, go to sleep, if health is less than 30, go to see a doctor, if knowledge is less than 30, go to study"
+            "input": "Wake up at 7 AM, eat breakfast at home, go to school and engage in conversations with 5 different people for 2 hours, study for 3 hours, have lunch at the cafeteria, talk to 5 more people for 2 hours, then return home and sleep for 8 hours."
         },
         # {"input": "check character stats and inventory, then go to the hospital to see a doctor"},
         # {"input": "navigate to the park, start a conversation with user123 saying 'Hello!', then end the conversation"},

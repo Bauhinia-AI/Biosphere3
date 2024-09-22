@@ -1,4 +1,6 @@
 import os
+import sys
+import datetime
 from langchain import hub
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
@@ -14,11 +16,24 @@ from tools import (
     end_talk,
     see_doctor,
 )
-from node_model import PlanExecute, Plan, Response, Act,DailyObjective,DetailedPlan,MetaActionSequence
+from node_model import (
+    PlanExecute,
+    Plan,
+    Response,
+    Act,
+    DailyObjective,
+    DetailedPlan,
+    MetaActionSequence,
+)
 from langchain_core.prompts import ChatPromptTemplate
-from langgraph.graph import StateGraph, START,END
+from langgraph.graph import StateGraph, START, END
 import asyncio
 from typing import Literal
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from database.mongo_utils import insert_document
+from database import config
 
 # 设置环境变量
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
@@ -39,7 +54,7 @@ tool_list = [
     end_talk,
     see_doctor,
 ]
-#llm-readable
+# llm-readable
 tool_functions = """
 1. do_freelance_job(): Perform freelance work
 2. navigate_to(location): Navigate to a specified location
@@ -213,25 +228,63 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
 #     plan = await planner.ainvoke({"messages": [("user", state["input"])]})
 #     return {"plan": plan.steps}
 async def generate_daily_objective(state: PlanExecute):
-    daily_objective = await obj_planner.ainvoke({"messages": [("user", state["input"])], "tool_functions": state["tool_functions"], "locations": state["locations"]})
+    daily_objective = await obj_planner.ainvoke(
+        {
+            "messages": [("user", state["input"])],
+            "tool_functions": state["tool_functions"],
+            "locations": state["locations"],
+        }
+    )
+    # Prepare the document to insert
+    document = {
+        "userid": state["userid"],
+        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "objectives": daily_objective.objectives,
+    }
+    # Insert document using insert_document
+    inserted_id = insert_document(config.daily_objective_collection_name, document)
+    print(
+        f"Inserted daily objective with id {inserted_id} for userid {document['userid']}"
+    )
+
     return {"daily_objective": daily_objective.objectives}
+
 
 async def generate_detailed_plan(state: PlanExecute):
     detailed_plan = await detail_planner.ainvoke(state)
-    with open("detailed_plan.txt", "w", encoding="utf-8") as f:
-        f.write(detailed_plan.detailed_plan)
+    # Prepare the document to insert
+    document = {
+        "userid": state["userid"],
+        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "detailed_plan": detailed_plan.detailed_plan,
+    }
+    # Insert document using insert_document
+    inserted_id = insert_document(config.plan_collection_name, document)
+    print(
+        f"Inserted detailed plan with id {inserted_id} for userid {document['userid']}"
+    )
+
     return {"plan": detailed_plan.detailed_plan}
 
 
 async def generate_meta_action_sequence(state: PlanExecute):
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(state)
-
-    with open("meta_action_sequence.txt", "w", encoding="utf-8") as f:
-        f.write(str(meta_action_sequence.meta_action_sequence))
     meta_action_sequence = await meta_seq_adjuster.ainvoke(meta_action_sequence)
-    with open("meta_action_sequence.txt", "a", encoding="utf-8") as f:
-        f.write(str(meta_action_sequence.meta_action_sequence))
+    # Prepare the document to insert
+    document = {
+        "userid": state["userid"],
+        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "meta_sequence": meta_action_sequence.meta_action_sequence,
+    }
+    # Insert document using insert_document
+    inserted_id = insert_document(config.meta_seq_collection_name, document)
+    print(
+        f"Inserted meta action sequence with id {inserted_id} for userid {document['userid']}"
+    )
+
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
+
+
 # async def replan_step(state: PlanExecute):
 #     try:
 #         output = await replanner.ainvoke(state)
@@ -279,6 +332,7 @@ async def main():
         # {"input": "go to the farm, do a freelance job for 2 hours, then go home and sleep for 8 hours"},
         # {"input": "study for 3 hours, then do a public job for 4 hours"},
         {
+            "userid": 8,
             "input": """userid=8,
             username="Henry",
             gender="男",
@@ -286,7 +340,9 @@ async def main():
             description="闲不住，喜欢到处旅行",
             role="旅行家",
             task="每天至少去三个地方，即使重复了也要去",
-            """
+            """,
+            "tool_functions": tool_functions,
+            "locations": locations,
         },
         # {"input": "check character stats and inventory, then go to the hospital to see a doctor"},
         # {"input": "navigate to the park, start a conversation with user123 saying 'Hello!', then end the conversation"},

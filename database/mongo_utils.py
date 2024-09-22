@@ -66,6 +66,13 @@ def update_document(collection_name, query, update):
     return result.modified_count
 
 
+def insert_document(collection_name, document):
+    db = connect_to_mongo(db_name=config.db_name, mongo_uri=config.mongo_uri)
+    collection = db[collection_name]
+    result = collection.insert_one(document)
+    return result.inserted_id
+
+
 if __name__ == "__main__":
 
     # 获取候选人

@@ -2,13 +2,17 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from typing import Union, List, Annotated, Tuple, TypedDict
 import operator
 
+
 class Plan(BaseModel):
     """Plan to follow in future"""
 
     steps: List[str] = Field(
         description="different steps to follow, should be in sorted order"
     )
+
+
 class PlanExecute(TypedDict):
+    userid: int
     input: str
     plan: List[str]
     past_steps: Annotated[List[Tuple], operator.add]
@@ -18,27 +22,25 @@ class PlanExecute(TypedDict):
     tool_functions: str
     locations: str
 
+
 class DailyObjective(BaseModel):
     """Daily objective to follow in future"""
 
-    objectives: List[str] = Field(
-        description="daily objectives list"
-    )
+    objectives: List[str] = Field(description="daily objectives list")
+
 
 class DetailedPlan(BaseModel):
     """Detailed plan to follow in future"""
 
-    detailed_plan: str = Field(
-        description="detailed plan"
-    )
+    detailed_plan: str = Field(description="detailed plan")
 
 
 class MetaActionSequence(BaseModel):
     """Meta action sequence to follow in future"""
 
-    meta_action_sequence: List[str] = Field(
-        description="meta action sequence"
-    )
+    meta_action_sequence: List[str] = Field(description="meta action sequence")
+
+
 class Response(BaseModel):
     """Response to user."""
 

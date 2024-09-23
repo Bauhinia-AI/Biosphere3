@@ -9,7 +9,7 @@ descriptor_collection_name = "descriptor"
 daily_objective_collection_name = "daily_objective"
 plan_collection_name = "plan"
 meta_seq_collection_name = "meta_seq"
-mongo_uri = "mongodb+srv://bauhiniaai:nb666@biosphere3.e1px8.mongodb.net/"
+mongo_uri = "mongodb+srv://bauhiniaai:nb666@biosphere3.e1px8.mongodb.net/?connectTimeoutMS=30000"
 index_name = "vector_index"
 
 # Model and API Configuration

@@ -1,0 +1,35 @@
+
+--- Eva 的初始状态 ---
+
+Name: Eva
+Gender: Female
+Slogan: Health is the greatest wealth
+Description: A retiree who enjoys exercising and maintaining good health
+Role: Retiree
+Task: Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy
+Location: farm
+Status: health: 9.7, fullness: 9.4, energy: 3.4, knowledge: 5.3, cash: 8619
+Inventory: Agility Elixir
+
+
+==================================================
+
+--- 第 1 天 Eva ---
+
+Eva 的行动:
+Eva: {'daily_objective': ['Sleep: Aim for 8 hours of quality sleep', 'Eating: Prepare healthy meals throughout the day', 'Exercise: Engage in physical activities, like walking or yoga', 'Medical Check-up: Visit a doctor for a routine check-up', 'Socializing: Talk to friends or family to maintain connections', 'Relaxation: Dedicate time for relaxation and hobbies']}
+Eva: {'plan': '[Sleep: "I should sleep for 8 hours to ensure quality rest.",\nEating: "I should prepare healthy meals throughout the day, making sure to eat breakfast, lunch, and dinner.",\nExercise: "I should engage in physical activities like walking or yoga for at least 30 minutes.",\nMedical Check-up: "I should navigate to the doctor\'s office and see the doctor for a routine check-up.",\nSocializing: "I should talk to friends or family, perhaps by calling or visiting them to maintain connections.",\nRelaxation: "I should dedicate time for relaxation and hobbies, such as reading or watching a movie." ]'}
+Eva: {'meta_seq': ['navigate_to(restaurant)', 'eat()', 'navigate_to(park)', 'do_freelance_job()', 'navigate_to(hospital)', 'see_doctor()', 'navigate_to(home)', 'sleep(8)', 'talk(friends)', 'end_talk()', 'sleep(8)']}
+
+--- 1 天后 Eva 的状态 ---
+
+Name: Eva
+Gender: Female
+Slogan: Health is the greatest wealth
+Description: A retiree who enjoys exercising and maintaining good health
+Role: Retiree
+Task: Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy
+Location: farm
+Status: health: 9.7, fullness: 9.4, energy: 3.4, knowledge: 5.3, cash: 8619
+Inventory: Agility Elixir
+

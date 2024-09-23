@@ -1,0 +1,35 @@
+
+--- Alice 的初始状态 ---
+
+Name: Alice
+Gender: Female
+Slogan: Knowledge is power
+Description: A university student who loves learning and always craves new knowledge.
+Role: Student
+Task: Study for 8 hours every day, aiming for excellent results in the final exams
+Location: park
+Status: health: 8.0, fullness: 7.9, energy: 4.8, knowledge: 7.9, cash: 4468
+Inventory: 
+
+
+==================================================
+
+--- 第 1 天 Alice ---
+
+Alice 的行动:
+Alice: {'daily_objective': ['Studying: Study for 8 hours to prepare for final exams', 'Resting: Sleep for 7 hours to recharge', 'Eating: Have meals to maintain energy levels', 'Researching: Gather study materials related to current subjects', 'Networking: Talk to classmates about study groups', 'Exploring: Navigate to the library for a quiet study environment']}
+Alice: {'plan': '[Studying: "I should study for 8 hours to prepare for final exams, starting with 4 hours in the morning and 4 hours in the evening.", Resting: "I should sleep for 7 hours to recharge, ideally from 11 PM to 6 AM.", Eating: "I should eat breakfast, lunch, and dinner to maintain energy levels, ensuring I have healthy meals at each time.", Researching: "I should navigate to the library to gather study materials related to current subjects, spending a couple of hours there to find the necessary resources.", Networking: "I should talk to classmates about study groups, perhaps during lunch or after my study sessions to discuss our progress and share materials.", Exploring: "I should navigate to the library for a quiet study environment, making sure to plan my route beforehand to save time." ]'}
+Alice: {'meta_seq': ['navigate_to(School)', 'study(4)', 'navigate_to(Restaurant)', 'eat()', 'navigate_to(Home)', 'sleep(7)', 'navigate_to(Library)', 'Researching()', 'talk(classmates)', 'end_talk()']}
+
+--- 1 天后 Alice 的状态 ---
+
+Name: Alice
+Gender: Female
+Slogan: Knowledge is power
+Description: A university student who loves learning and always craves new knowledge.
+Role: Student
+Task: Study for 8 hours every day, aiming for excellent results in the final exams
+Location: park
+Status: health: 8.0, fullness: 7.9, energy: 4.8, knowledge: 7.9, cash: 4468
+Inventory: 
+

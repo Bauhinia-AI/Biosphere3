@@ -1,0 +1,35 @@
+
+--- Charlie 的初始状态 ---
+
+Name: Charlie
+Gender: Male
+Slogan: Casual chat is the spice of life
+Description: A social butterfly who enjoys conversing with people from all walks of life
+Role: Socialite
+Task: Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge
+Location: restaurant
+Status: health: 8.4, fullness: 3.5, energy: 5.9, knowledge: 9.9, cash: 9674
+Inventory: Health Tonic
+
+
+==================================================
+
+--- 第 1 天 Charlie ---
+
+Charlie 的行动:
+Charlie: {'daily_objective': ['Talking: Engage in conversations with 10 different people', 'Eating: Eat food to maintain energy', 'Navigating: Visit a new location to meet new people', 'Getting Stats: Check character statistics to see improvement in social skills', 'Studying: Dedicate time to studying how to improve conversational skills']}
+Charlie: {'plan': '[Talking: "I should navigate to a local café to meet new people and engage in conversations with at least 10 different individuals throughout the day.",\nEating: "I should eat breakfast, lunch, and dinner to maintain my energy levels. I can also grab snacks in between to keep my energy up.",\nNavigating: "I should visit a new park or community center where I can meet new people and engage in conversations.",\nGetting Stats: "I should take some time to get my character statistics to see how my social skills have improved after engaging with different people.",\nStudying: "I should dedicate at least 2 hours to studying how to improve my conversational skills, focusing on techniques and strategies that can help me in future interactions." ]'}
+Charlie: {'meta_seq': ['navigate_to(café)', 'talk(person)', 'talk(person)', 'talk(person)', 'talk(person)', 'talk(person)', 'talk(person)', 'talk(person)', 'talk(person)', 'talk(person)', 'talk(person)', 'eat()', 'navigate_to(park)', 'talk(person)', 'talk(person)', 'get_character_stats()', 'study(2)', 'sleep(8)']}
+
+--- 1 天后 Charlie 的状态 ---
+
+Name: Charlie
+Gender: Male
+Slogan: Casual chat is the spice of life
+Description: A social butterfly who enjoys conversing with people from all walks of life
+Role: Socialite
+Task: Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge
+Location: restaurant
+Status: health: 8.4, fullness: 3.5, energy: 5.9, knowledge: 9.9, cash: 9674
+Inventory: Health Tonic
+

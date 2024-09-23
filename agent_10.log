@@ -1,0 +1,35 @@
+
+--- Jack 的初始状态 ---
+
+Name: Jack
+Gender: Male
+Slogan: Sharing is the source of happiness
+Description: An internet celebrity who enjoys sharing life online.
+Role: Streamer
+Task: Communicate with different people every day and sell his own products to them
+Location: home
+Status: health: 0.6, fullness: 5.9, energy: 5.1, knowledge: 9.2, cash: 9379
+Inventory: Strength Potion, Agility Elixir
+
+
+==================================================
+
+--- 第 1 天 Jack ---
+
+Jack 的行动:
+Jack: {'daily_objective': ['Work: Perform freelance work to enhance skills', 'Navigation: Navigate to a popular local cafe to meet followers', 'Socializing: Talk to at least three fans or fellow streamers', 'Trade: Sell merchandise to followers', 'Rest: Sleep for 8 hours to maintain energy', 'Eat: Enjoy a healthy meal before streaming']}
+Jack: {'plan': '[Work: "I should perform freelance work to enhance my skills by doing a freelance job.",\nNavigation: "I should navigate to the popular local cafe to meet my followers.",\nSocializing: "I should talk to at least three fans or fellow streamers when I arrive at the cafe.",\nTrade: "I should sell merchandise to my followers while I\'m at the cafe.",\nRest: "I should sleep for 8 hours to maintain my energy for the day ahead.",\nEat: "I should enjoy a healthy meal before streaming, possibly at the cafe or preparing something nutritious at home." ]'}
+Jack: {'meta_seq': ['navigate_to(cafe)', 'do_freelance_job()', 'talk(fan1)', 'talk(fan2)', 'talk(fan3)', 'trade(merchandise, price)', 'eat()', 'sleep(8)']}
+
+--- 1 天后 Jack 的状态 ---
+
+Name: Jack
+Gender: Male
+Slogan: Sharing is the source of happiness
+Description: An internet celebrity who enjoys sharing life online.
+Role: Streamer
+Task: Communicate with different people every day and sell his own products to them
+Location: home
+Status: health: 0.6, fullness: 5.9, energy: 5.1, knowledge: 9.2, cash: 9379
+Inventory: Strength Potion, Agility Elixir
+

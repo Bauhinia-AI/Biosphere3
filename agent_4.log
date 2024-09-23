@@ -1,0 +1,35 @@
+
+--- David 的初始状态 ---
+
+Name: David
+Gender: Male
+Slogan: Labor is glorious
+Description: A hardworking laborer who believes that diligent work leads to a better life.
+Role: Worker
+Task: Work at least 8 hours a day, actively seeking part-time jobs to earn more money
+Location: restaurant
+Status: health: 8.4, fullness: 8.5, energy: 1.5, knowledge: 0.7, cash: 5324
+Inventory: Agility Elixir
+
+
+==================================================
+
+--- 第 1 天 David ---
+
+David 的行动:
+David: {'daily_objective': ['Work: Perform freelance jobs for at least 8 hours', 'Employment: Search for and apply to part-time jobs', 'Rest: Ensure to get enough sleep for recovery', 'Health: Eat nutritious food regularly to maintain energy', 'Networking: Talk to potential employers or fellow workers']}
+David: {'plan': '[Work: "I should navigate to my workspace, then do freelance jobs for at least 8 hours.",\nEmployment: "I should search for part-time jobs and submit my resume to at least 3 positions.",\nRest: "I should sleep for at least 7-8 hours to ensure proper recovery.",\nHealth: "I should eat nutritious meals for breakfast, lunch, and dinner to maintain my energy levels.",\nNetworking: "I should talk to at least 2 potential employers or fellow workers to expand my network.",\nDaily Actions: "I should take short breaks during my freelance work to stretch and refresh my mind."}'}
+David: {'meta_seq': ['navigate_to(workspace)', 'do_freelance_job(8)', 'navigate_to(home)', 'sleep(8)', 'navigate_to(restaurant)', 'eat()', 'navigate_to(home)', 'submit_resume()', 'navigate_to(park)', 'talk(employer)', 'end_talk()', 'talk(fellow_worker)', 'end_talk()']}
+
+--- 1 天后 David 的状态 ---
+
+Name: David
+Gender: Male
+Slogan: Labor is glorious
+Description: A hardworking laborer who believes that diligent work leads to a better life.
+Role: Worker
+Task: Work at least 8 hours a day, actively seeking part-time jobs to earn more money
+Location: restaurant
+Status: health: 8.4, fullness: 8.5, energy: 1.5, knowledge: 0.7, cash: 5324
+Inventory: Agility Elixir
+

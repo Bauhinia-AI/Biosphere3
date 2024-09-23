@@ -1,0 +1,65 @@
+
+--- Frank 的初始状态 ---
+
+Name: Frank
+Gender: Male
+Slogan: Serve the people
+Description: Enthusiastic about community work, enjoys communicating with people and exploring different places
+Role: Ordinary Resident
+Task: Help complete community voting and election work, communicate with residents to understand their needs and ideas
+Location: school
+Status: health: 5.2, fullness: 7.7, energy: 5.5, knowledge: 8.2, cash: 4199
+Inventory: Strength Potion, Health Tonic, Agility Elixir
+
+
+==================================================
+
+--- 第 1 天 Frank ---
+
+Frank 的行动:
+Frank: {'daily_objective': ['Navigating: Explore the community to meet residents', 'Voting: Participate in upcoming elections', 'Working: Assist with public work related to community service', 'Socializing: Engage in conversations with local residents', 'Studying: Learn about community needs and participation measures', 'Sleeping: Rest to recharge for the day', 'Eating: Maintain energy for daily activities']}
+Frank: {'plan': '[Navigating: "I should navigate to the community center to explore and meet residents.",\nVoting: "I need to check the list of candidates and then vote in the upcoming elections.",\nWorking: "I should look for available public jobs and assist with community service work.",\nSocializing: "I can engage in conversations with local residents at the park or community events.",\nStudying: "I should study for a couple of hours to learn about community needs and participation measures.",\nSleeping: "I need to sleep for at least 7 hours to recharge for the day.",\nEating: "I should eat breakfast, lunch, and dinner to maintain my energy for daily activities." ]'}
+Frank: {'meta_seq': ['navigate_to(community center)', 'socialize()', 'navigate_to(park)', 'talk(residents)', 'navigate_to(home)', 'sleep(7)', 'navigate_to(restaurant)', 'eat()', 'navigate_to(school)', 'study(2)', 'get_public_jobs()', 'do_public_job()', 'navigate_to(home)', 'get_candidates()', 'vote()']}
+
+--- 1 天后 Frank 的状态 ---
+
+Name: Frank
+Gender: Male
+Slogan: Serve the people
+Description: Enthusiastic about community work, enjoys communicating with people and exploring different places
+Role: Ordinary Resident
+Task: Help complete community voting and election work, communicate with residents to understand their needs and ideas
+Location: school
+Status: health: 3.1, fullness: 6.1, energy: 0, knowledge: 8.2, cash: 6.1
+Inventory: Strength Potion, Health Tonic, Agility Elixir
+
+Agent 6: Frank
+Objective: {'userid': 6, 'input': 'userid=6,\n            username="Frank",\n            gender="Male",\n            slogan="Serve the people",\n            description="Enthusiastic about community work, enjoys communicating with people and exploring different places",\n            role="Ordinary Resident",\n            task="Help complete community voting and election work, communicate with residents to understand their needs and ideas",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Frank
+Gender: Male
+Slogan: Serve the people
+Description: Enthusiastic about community work, enjoys communicating with people and exploring different places
+Role: Ordinary Resident
+Task: Help complete community voting and election work, communicate with residents to understand their needs and ideas
+Location: restaurant
+Status: health: 0.8, fullness: 6.4, energy: 3.4, knowledge: 4.9, cash: 5949
+Inventory: Agility Elixir, Health Tonic, Strength Potion
+
+
+==================================================
+Agent 6: Frank
+Objective: {'userid': 6, 'input': 'userid=6,\n            username="Frank",\n            gender="Male",\n            slogan="Serve the people",\n            description="Enthusiastic about community work, enjoys communicating with people and exploring different places",\n            role="Ordinary Resident",\n            task="Help complete community voting and election work, communicate with residents to understand their needs and ideas",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Frank
+Gender: Male
+Slogan: Serve the people
+Description: Enthusiastic about community work, enjoys communicating with people and exploring different places
+Role: Ordinary Resident
+Task: Help complete community voting and election work, communicate with residents to understand their needs and ideas
+Location: home
+Status: health: 3.5, fullness: 0.8, energy: 3.6, knowledge: 6.6, cash: 3166
+Inventory: Strength Potion
+
+
+==================================================

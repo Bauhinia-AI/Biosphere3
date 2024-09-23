@@ -1,0 +1,65 @@
+
+--- Eva 的初始状态 ---
+
+Name: Eva
+Gender: Female
+Slogan: Health is the greatest wealth
+Description: A retiree who enjoys exercising and maintaining good health
+Role: Retiree
+Task: Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy
+Location: park
+Status: health: 9.7, fullness: 2.8, energy: 5.7, knowledge: 4.2, cash: 5940
+Inventory: Agility Elixir, Health Tonic, Strength Potion
+
+
+==================================================
+
+--- 第 1 天 Eva ---
+
+Eva 的行动:
+Eva: {'daily_objective': ['Sleeping: Sleep for at least 8 hours to ensure sufficient rest', 'Eating: Prepare and eat nutritious meals for a healthier lifestyle', 'Exercising: Engage in daily exercises to maintain fitness', 'Studying: Learn about new health tips and exercises for better living', 'Socializing: Talk with friends or community members to maintain social connections']}
+Eva: {'plan': '[Sleeping: "I should sleep for at least 8 hours to ensure sufficient rest.",\nEating: "I should eat breakfast, lunch, and dinner, focusing on nutritious meals for a healthier lifestyle.",\nExercising: "I should engage in daily exercises, which may include a morning workout or a walk in the park.",\nStudying: "I should study for at least 1 hour to learn about new health tips and exercises for better living.",\nSocializing: "I should talk to friends or community members, perhaps by visiting a local café or community center to maintain social connections."]'}
+Eva: {'meta_seq': ['navigate_to(Park)', 'exercising()', 'navigate_to(Restaurant)', 'eat()', 'navigate_to(Home)', 'study(1)', 'sleep(8)']}
+
+--- 1 天后 Eva 的状态 ---
+
+Name: Eva
+Gender: Female
+Slogan: Health is the greatest wealth
+Description: A retiree who enjoys exercising and maintaining good health
+Role: Retiree
+Task: Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy
+Location: park
+Status: health: 8.6, fullness: 0, energy: 0, knowledge: 4.2, cash: 0
+Inventory: Agility Elixir, Health Tonic, Strength Potion
+
+Agent 5: Eva
+Objective: {'userid': 5, 'input': 'userid=5,\n            username="Eva",\n            gender="Female",\n            slogan="Health is the greatest wealth",\n            description="A retiree who enjoys exercising and maintaining good health",\n            role="Retiree",\n            task="Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Eva
+Gender: Female
+Slogan: Health is the greatest wealth
+Description: A retiree who enjoys exercising and maintaining good health
+Role: Retiree
+Task: Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy
+Location: home
+Status: health: 8.6, fullness: 9.8, energy: 8.1, knowledge: 6.0, cash: 6593
+Inventory: 
+
+
+==================================================
+Agent 5: Eva
+Objective: {'userid': 5, 'input': 'userid=5,\n            username="Eva",\n            gender="Female",\n            slogan="Health is the greatest wealth",\n            description="A retiree who enjoys exercising and maintaining good health",\n            role="Retiree",\n            task="Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Eva
+Gender: Female
+Slogan: Health is the greatest wealth
+Description: A retiree who enjoys exercising and maintaining good health
+Role: Retiree
+Task: Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy
+Location: school
+Status: health: 2.1, fullness: 5.8, energy: 4.6, knowledge: 8.7, cash: 1651
+Inventory: 
+
+
+==================================================

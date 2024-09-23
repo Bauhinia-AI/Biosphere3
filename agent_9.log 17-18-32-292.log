@@ -1,0 +1,65 @@
+
+--- Ivy 的初始状态 ---
+
+Name: Ivy
+Gender: Female
+Slogan: Shopping makes me happy
+Description: A fashion blogger who enjoys purchasing various goods.
+Role: Shopping Enthusiast
+Task: Buy different things every day, acquire various items
+Location: home
+Status: health: 6.6, fullness: 3.8, energy: 4.9, knowledge: 2.6, cash: 1628
+Inventory: Strength Potion
+
+
+==================================================
+
+--- 第 1 天 Ivy ---
+
+Ivy 的行动:
+Ivy: {'daily_objective': ['Navigating: Visit the shopping district', 'Shopping: Purchase new fashion items', 'Exploring: Discover new stores', 'Relaxing: Spend some time in a café after shopping', 'Studying: Learn about fashion trends', 'Socializing: Talk to other shopping enthusiasts']}
+Ivy: {'plan': '[Navigating: "I should navigate to the shopping district to start my day.", Shopping: "Once I arrive, I will purchase new fashion items from various stores.", Exploring: "After shopping, I will explore and discover new stores in the area.", Relaxing: "After a long day of shopping, I will spend some time in a café to relax and enjoy a drink.", Studying: "Later, I will study for a couple of hours to learn about the latest fashion trends.", Socializing: "Finally, I will talk to other shopping enthusiasts I meet during my day to share experiences and tips.", daily_action: "I should eat breakfast before heading out, and have lunch at the café after shopping."}'}
+Ivy: {'meta_seq': ['navigate_to(Shopping District)', 'eat()', 'Shopping()', 'Exploring()', 'navigate_to(Café)', 'Relaxing()', 'study(2)', 'Socializing()', 'navigate_to(Home)', 'sleep(8)']}
+
+--- 1 天后 Ivy 的状态 ---
+
+Name: Ivy
+Gender: Female
+Slogan: Shopping makes me happy
+Description: A fashion blogger who enjoys purchasing various goods.
+Role: Shopping Enthusiast
+Task: Buy different things every day, acquire various items
+Location: home
+Status: health: 3.7, fullness: 1.4, energy: 0, knowledge: 2.6, cash: 1.4
+Inventory: Strength Potion
+
+Agent 9: Ivy
+Objective: {'userid': 9, 'input': 'userid=9,\n            username="Ivy",\n            gender="Female",\n            slogan="Shopping makes me happy",\n            description="A fashion blogger who enjoys purchasing various goods.",\n            role="Shopping Enthusiast",\n            task="Buy different things every day, acquire various items",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Ivy
+Gender: Female
+Slogan: Shopping makes me happy
+Description: A fashion blogger who enjoys purchasing various goods.
+Role: Shopping Enthusiast
+Task: Buy different things every day, acquire various items
+Location: home
+Status: health: 9.8, fullness: 6.9, energy: 3.0, knowledge: 9.5, cash: 1409
+Inventory: Agility Elixir, Health Tonic
+
+
+==================================================
+Agent 9: Ivy
+Objective: {'userid': 9, 'input': 'userid=9,\n            username="Ivy",\n            gender="Female",\n            slogan="Shopping makes me happy",\n            description="A fashion blogger who enjoys purchasing various goods.",\n            role="Shopping Enthusiast",\n            task="Buy different things every day, acquire various items",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Ivy
+Gender: Female
+Slogan: Shopping makes me happy
+Description: A fashion blogger who enjoys purchasing various goods.
+Role: Shopping Enthusiast
+Task: Buy different things every day, acquire various items
+Location: hospital
+Status: health: 3.9, fullness: 2.6, energy: 9.0, knowledge: 9.4, cash: 6587
+Inventory: Health Tonic, Agility Elixir, Strength Potion
+
+
+==================================================

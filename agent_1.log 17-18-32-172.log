@@ -1,0 +1,65 @@
+
+--- Alice 的初始状态 ---
+
+Name: Alice
+Gender: Female
+Slogan: Knowledge is power
+Description: A university student who loves learning and always craves new knowledge.
+Role: Student
+Task: Study for 8 hours every day, aiming for excellent results in the final exams
+Location: park
+Status: health: 3.2, fullness: 0.9, energy: 0.3, knowledge: 2.4, cash: 2385
+Inventory: 
+
+
+==================================================
+
+--- 第 1 天 Alice ---
+
+Alice 的行动:
+Alice: {'daily_objective': ['Studying: Study for 8 hours to prepare for final exams', 'Sleep: Get at least 7 hours of sleep for better focus', 'Eating: Remember to eat healthy meals for energy and concentration', 'Getting Stats: Get character statistics to track academic progress', 'Talking: Discuss study topics with classmates', 'Navigating: Navigate to the library for quiet study space']}
+Alice: {'plan': '[Studying: "I should navigate to the library for quiet study space, then study for 8 hours to prepare for final exams.", Sleep: "I should sleep for at least 7 hours for better focus.", Eating: "I should eat healthy meals for energy and concentration, making sure to eat breakfast, lunch, and dinner.", Getting Stats: "I should get character statistics to track academic progress after studying.", Talking: "I should discuss study topics with classmates, perhaps by talking to a few of them during breaks.", Navigating: "I should navigate to the library before starting my study session." ]'}
+Alice: {'meta_seq': ['study(8)', 'sleep(7)', 'eat()', 'talk(classmate)', 'get_character_stats()']}
+
+--- 1 天后 Alice 的状态 ---
+
+Name: Alice
+Gender: Female
+Slogan: Knowledge is power
+Description: A university student who loves learning and always craves new knowledge.
+Role: Student
+Task: Study for 8 hours every day, aiming for excellent results in the final exams
+Location: park
+Status: health: 2.0, fullness: 0, energy: 0, knowledge: 2.4, cash: 0
+Inventory: 
+
+Agent 1: Alice
+Objective: {'userid': 1, 'input': 'userid=1,\n            username="Alice",\n            gender="Female",\n            slogan="Knowledge is power",\n            description="A university student who loves learning and always craves new knowledge.",\n            role="Student",\n            task="Study for 8 hours every day, aiming for excellent results in the final exams",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Alice
+Gender: Female
+Slogan: Knowledge is power
+Description: A university student who loves learning and always craves new knowledge.
+Role: Student
+Task: Study for 8 hours every day, aiming for excellent results in the final exams
+Location: restaurant
+Status: health: 9.9, fullness: 3.5, energy: 2.0, knowledge: 5.1, cash: 9753
+Inventory: Health Tonic
+
+
+==================================================
+Agent 1: Alice
+Objective: {'userid': 1, 'input': 'userid=1,\n            username="Alice",\n            gender="Female",\n            slogan="Knowledge is power",\n            description="A university student who loves learning and always craves new knowledge.",\n            role="Student",\n            task="Study for 8 hours every day, aiming for excellent results in the final exams",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Alice
+Gender: Female
+Slogan: Knowledge is power
+Description: A university student who loves learning and always craves new knowledge.
+Role: Student
+Task: Study for 8 hours every day, aiming for excellent results in the final exams
+Location: school
+Status: health: 6.8, fullness: 2.4, energy: 6.7, knowledge: 5.9, cash: 9651
+Inventory: Strength Potion, Health Tonic
+
+
+==================================================

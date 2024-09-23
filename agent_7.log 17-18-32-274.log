@@ -1,0 +1,65 @@
+
+--- Grace 的初始状态 ---
+
+Name: Grace
+Gender: Female
+Slogan: Strive for a better life
+Description: Busy looking for a job, very occupied
+Role: Job Seeker
+Task: Submit resumes, attend interviews, and search for jobs every day
+Location: school
+Status: health: 10.0, fullness: 1.3, energy: 6.7, knowledge: 2.3, cash: 6827
+Inventory: 
+
+
+==================================================
+
+--- 第 1 天 Grace ---
+
+Grace 的行动:
+Grace: {'daily_objective': ['Job Searching: Submit at least 3 resumes today', 'Job Searching: Attend an interview at the specified location', 'Job Searching: Get a list of available freelance jobs', 'Job Searching: Get a list of available public jobs']}
+Grace: {'plan': '[Job Searching: "I should submit at least 3 resumes today by using the submit_resume() action.",\nJob Searching: "I need to navigate to the specified location for the interview using navigate_to(location).",\nJob Searching: "I should get a list of available freelance jobs by using get_freelance_jobs().",\nJob Searching: "I should get a list of available public jobs by using get_public_jobs().",\nDaily Actions: "I should eat breakfast, lunch, and dinner to maintain my energy levels.",\nSocializing: "Perhaps I should take a break and talk to a friend to relax." ]'}
+Grace: {'meta_seq': ['navigate_to(Home)', 'submit_resume()', 'get_freelance_jobs()', 'get_public_jobs()', 'navigate_to(Interview_Location)', 'sleep(8)']}
+
+--- 1 天后 Grace 的状态 ---
+
+Name: Grace
+Gender: Female
+Slogan: Strive for a better life
+Description: Busy looking for a job, very occupied
+Role: Job Seeker
+Task: Submit resumes, attend interviews, and search for jobs every day
+Location: school
+Status: health: 8.9, fullness: 0.2, energy: 0, knowledge: 2.3, cash: 0.2
+Inventory: 
+
+Agent 7: Grace
+Objective: {'userid': 7, 'input': 'userid=7,\n            username="Grace",\n            gender="Female",\n            slogan="Strive for a better life",\n            description="Busy looking for a job, very occupied",\n            role="Job Seeker",\n            task="Submit resumes, attend interviews, and search for jobs every day",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Grace
+Gender: Female
+Slogan: Strive for a better life
+Description: Busy looking for a job, very occupied
+Role: Job Seeker
+Task: Submit resumes, attend interviews, and search for jobs every day
+Location: park
+Status: health: 3.3, fullness: 7.7, energy: 5.5, knowledge: 10.0, cash: 4764
+Inventory: Strength Potion
+
+
+==================================================
+Agent 7: Grace
+Objective: {'userid': 7, 'input': 'userid=7,\n            username="Grace",\n            gender="Female",\n            slogan="Strive for a better life",\n            description="Busy looking for a job, very occupied",\n            role="Job Seeker",\n            task="Submit resumes, attend interviews, and search for jobs every day",\n            ', 'tool_functions': '\n1. do_freelance_job(): Perform freelance work\n2. navigate_to(location): Navigate to a specified location\n3. sleep(hours): Sleep for specified number of hours\n4. work_change(): Change job\n5. get_character_stats(): Get character statistics\n6. get_character_status(): Get character status\n7. get_character_basic_info(): Get character basic information\n8. get_inventory(): Get inventory information\n9. submit_resume(): Submit resume\n10. vote(): Cast a vote\n11. do_public_job(): Perform public work\n12. study(hours): Study for specified number of hours\n13. talk(person): Talk to a specified person\n14. end_talk(): End conversation\n15. calculate_distance(location1, location2): Calculate distance between two locations\n16. trade(item, price): Trade an item\n17. use_item(item): Use an item\n18. see_doctor(): Visit a doctor\n19. get_freelance_jobs(): Get list of available freelance jobs\n20. get_public_jobs(): Get list of available public jobs\n21. get_candidates(): Get list of candidates\n22. get_activity_subjects(): Get list of activity subjects\n23. get_talk_data(): Get conversation data\n24. get_position(): Get current position\n25. eat(): Eat food\n', 'locations': '\n1. Home\n2. Park\n3. Restaurant\n4. Hospital\n5. School\n6. Farm\n'}
+
+Name: Grace
+Gender: Female
+Slogan: Strive for a better life
+Description: Busy looking for a job, very occupied
+Role: Job Seeker
+Task: Submit resumes, attend interviews, and search for jobs every day
+Location: park
+Status: health: 1.9, fullness: 4.0, energy: 8.3, knowledge: 5.7, cash: 5843
+Inventory: Strength Potion, Health Tonic
+
+
+==================================================

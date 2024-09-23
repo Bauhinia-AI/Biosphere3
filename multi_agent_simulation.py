@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 import threading
 from concurrent.futures import ThreadPoolExecutor
-
+import os
 
 tool_functions = """
 1. do_freelance_job(): Perform freelance work
@@ -88,18 +88,25 @@ class Agent:
         return random.sample(possible_items, num_items)
 
     async def take_action(self, app, config):
-        objective = self.generate_objective()
+        # objective = self.generate_objective()
+        objective = self.generate_profile()
         max_steps = 20  # 设置最大步骤数
         step_count = 0
-        async for event in app.astream({"input": objective}, config=config):
+        async for event in app.astream(objective, config=config):
             for k, v in event.items():
                 if k != "__end__":
                     print(f"{self.username}: {v}")
+                    # 记录信息到文件
+                    log_filename = f"agent_{self.userid}.log"
+                    with open(log_filename, "a") as log_file:
+                        log_file.write(f"{self.username}: {v}\n")
             step_count += 1
             if step_count >= max_steps:
                 print(f"{self.username}: 达到最大步骤数")
+                with open(log_filename, "a") as log_file:
+                    log_file.write(f"{self.username}: 达到最大步骤数\n")
                 break
-        self.update_stats()
+        # self.update_stats()
 
     def generate_objective(self) -> str:
         llm = ChatOpenAI(
@@ -144,6 +151,21 @@ Wake up at 7 AM, go to the park and chat with people for 1 hour, study at school
         response = llm.invoke(formatted_prompt)
         print(response.content)
         return response.content
+
+    def generate_profile(self):
+        return {
+            "userid": self.userid,
+            "input": f"""userid={self.userid},
+            username="{self.username}",
+            gender="{self.gender}",
+            slogan="{self.slogan}",
+            description="{self.description}",
+            role="{self.role}",
+            task="{self.task}",
+            """,
+            "tool_functions": tool_functions,
+            "locations": locations,
+        }
 
     def update_stats(self):
         self.stats["energy"] = round(self.stats["energy"] - random.uniform(5, 15), 1)
@@ -287,11 +309,14 @@ agents = [
 
 
 def agent_task(agent):
-    objective = agent.generate_objective()
-    print(f"Agent {agent.userid}: {agent.username}")
-    print(f"Objective: {objective}")
-    print(agent)
-    print("\n" + "=" * 50 + "\n")  # 分隔线
+    # objective = agent.generate_objective()
+    objective = agent.generate_profile()
+    log_filename = f"agent_{agent.userid}.log"
+    with open(log_filename, "a") as log_file:
+        log_file.write(f"Agent {agent.userid}: {agent.username}\n")
+        log_file.write(f"Objective: {objective}\n")
+        log_file.write(str(agent) + "\n")
+        log_file.write("\n" + "=" * 50 + "\n")  # 分隔线
 
 
 def whole_day_planning_main():
@@ -308,27 +333,36 @@ def whole_day_planning_main():
 
 
 async def agent_routine(agent, config, days):
+    log_filename = f"agent_{agent.userid}.log"
     for day in range(1, days + 1):
-        print(f"\n--- 第 {day} 天 {agent.username} ---")
-        print(f"\n{agent.username} 的行动:")
+        with open(log_filename, "a") as log_file:
+            log_file.write(f"\n--- 第 {day} 天 {agent.username} ---\n")
+            log_file.write(f"\n{agent.username} 的行动:\n")
         try:
             await asyncio.wait_for(
                 agent.take_action(app, config), timeout=120
             )  # 2分钟超时
         except asyncio.TimeoutError:
-            print(f"{agent.username} 行动超时")
-    print(f"\n--- {days} 天后 {agent.username} 的状态 ---")
-    print(agent)
+            with open(log_filename, "a") as log_file:
+                log_file.write(f"{agent.username} 行动超时\n")
+    with open(log_filename, "a") as log_file:
+        log_file.write(f"\n--- {days} 天后 {agent.username} 的状态 ---\n")
+        log_file.write(str(agent) + "\n")
 
 
 async def run_agent(agent, config, days):
+    log_filename = f"agent_{agent.userid}.log"
+    with open(log_filename, "a") as log_file:
+        log_file.write(f"\n--- {agent.username} 的初始状态 ---\n")
+        log_file.write(str(agent) + "\n")
+        log_file.write("\n" + "=" * 50 + "\n")  # 分隔线
     await agent_routine(agent, config, days)
 
 
 # 主函数
 async def main():
     config = {"recursion_limit": 3000}
-    days = 10
+    days = 1
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         tasks = [

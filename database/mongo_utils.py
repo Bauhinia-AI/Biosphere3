@@ -1,5 +1,5 @@
 import datetime
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 import sys
 import os
 from pprint import pprint
@@ -72,24 +72,31 @@ def insert_document(collection_name, document):
     result = collection.insert_one(document)
     return result.inserted_id
 
+def get_latest_k_documents(collection_name, k,user_id):
+    db = connect_to_mongo(db_name=config.db_name, mongo_uri=config.mongo_uri)
+    collection = db[collection_name]
+    documents = collection.find({"userid": user_id}).sort("created_at", DESCENDING).limit(k)
+    #return the json format
+    return [doc['objectives'] for doc in documents]
 
 if __name__ == "__main__":
 
     # 获取候选人
-    print(get_candidates_from_mongo())
+    # print(get_candidates_from_mongo())
 
-    # 更新 npc 集合中 userid 为 0 的文档的 stats.health 字段
-    modified_count = update_document(
-        config.npc_collection_name, {"userid": 0}, {"$set": {"stats.health": 8.5}}
-    )
-    print(f"Updated {modified_count} document(s)")
-    print_collection(config.npc_collection_name)
+    # # 更新 npc 集合中 userid 为 0 的文档的 stats.health 字段
+    # modified_count = update_document(
+    #     config.npc_collection_name, {"userid": 0}, {"$set": {"stats.health": 8.5}}
+    # )
+    # print(f"Updated {modified_count} document(s)")
+    # print_collection(config.npc_collection_name)
 
-    # 更新 cv 集合中 username 为 "Vitalik Buterin" 的文档的 CV_content 字段
-    modified_count = update_document(
-        config.cv_collection_name,
-        {"username": "Vitalik Buterin"},
-        {"$set": {"CV_content": "Updated CV content"}},
-    )
-    print(f"Updated {modified_count} document(s)")
-    print_collection(config.cv_collection_name)
+    # # 更新 cv 集合中 username 为 "Vitalik Buterin" 的文档的 CV_content 字段
+    # modified_count = update_document(
+    #     config.cv_collection_name,
+    #     {"username": "Vitalik Buterin"},
+    #     {"$set": {"CV_content": "Updated CV content"}},
+    # )
+    # print(f"Updated {modified_count} document(s)")
+    # print_collection(config.cv_collection_name)
+    print(get_latest_k_documents("daily_objective", 2, 1))

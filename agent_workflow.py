@@ -71,7 +71,7 @@ tool_functions = """
 13. talk(person): Talk to a specified person
 14. end_talk(): End conversation
 15. calculate_distance(location1, location2): Calculate distance between two locations
-16. trade(item, price): Trade an item
+16. trade(): Trade an item
 17. use_item(item): Use an item
 18. see_doctor(): Visit a doctor
 19. get_freelance_jobs(): Get list of available freelance jobs
@@ -111,7 +111,10 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             Status: 
             Inventory: 
             \n
-            , come up with a general daily objectives.
+            and the past daily objectives are:
+            {past_objectives}.
+            \n
+            Come up with a general daily objectives. Each daily objectives should be diverse and not repetitive. \n
             These objectives are daily objectives that ONLY related to the following tool functions.\n
             {tool_functions}\n
 
@@ -155,10 +158,10 @@ detail_planner_prompt = ChatPromptTemplate.from_template(
     The detailed plan may involve plans that are not in the daily objectives.(daily actions like eating meals, random actions like chatting with friends.)\n
     
     The final format should be a list of daily objectives. for example:\n
-    [Working: "I should navigate to the farm, then do a freelance job."\n,
+    Working: "I should navigate to the farm, then do a freelance job."\n,
     daily_action:"I should eat breakfast, lunch and dinner."\n,
     Study:"I should study"\n,
-    Socializing:"Perhaps I should go to the square and talk to someone."]\n
+    Socializing:"Perhaps I should go to the square and talk to someone."\n
     
     """
 )
@@ -233,6 +236,7 @@ async def generate_daily_objective(state: PlanExecute):
             "messages": [("user", state["input"])],
             "tool_functions": state["tool_functions"],
             "locations": state["locations"],
+            "past_objectives": state["past_objectives"],
         }
     )
     # Prepare the document to insert
@@ -322,9 +326,8 @@ workflow.add_edge("meta_action_sequence", END)
 # workflow.add_edge("Executor", "replan")
 # workflow.add_conditional_edges("replan", should_end)
 
-app = workflow.compile()
 
-
+import matplotlib.pyplot as plt
 # 主函数
 async def main():
     config = {"recursion_limit": 10}

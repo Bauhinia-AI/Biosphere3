@@ -8,7 +8,9 @@ from langchain_core.prompts import ChatPromptTemplate
 import threading
 from concurrent.futures import ThreadPoolExecutor
 import os
-
+from loguru import logger
+from trade import trade_item
+from database.mongo_utils import get_latest_k_documents
 tool_functions = """
 1. do_freelance_job(): Perform freelance work
 2. navigate_to(location): Navigate to a specified location
@@ -25,7 +27,7 @@ tool_functions = """
 13. talk(person): Talk to a specified person
 14. end_talk(): End conversation
 15. calculate_distance(location1, location2): Calculate distance between two locations
-16. trade(item, price): Trade an item
+16. trade(apple, price:float, quantity:int): Trade apple
 17. use_item(item): Use an item
 18. see_doctor(): Visit a doctor
 19. get_freelance_jobs(): Get list of available freelance jobs
@@ -90,6 +92,7 @@ class Agent:
     async def take_action(self, app, config):
         # objective = self.generate_objective()
         objective = self.generate_profile()
+        logger.info(objective)
         max_steps = 20  # 设置最大步骤数
         step_count = 0
         async for event in app.astream(objective, config=config):
@@ -100,6 +103,18 @@ class Agent:
                     log_filename = f"agent_{self.userid}.log"
                     with open(log_filename, "a") as log_file:
                         log_file.write(f"{self.username}: {v}\n")
+                    if k == "meta_action_sequence":
+                        """
+                        k:v
+                        meta_action_sequence: {'meta_seq': ['get_inventory()', 'talk(traders)', 'trade(item, price)', 'eat()', 'sleep(8)']}
+                        """
+                        for action in v["meta_seq"]:
+                            if action.find("trade") != -1:
+                                get_profit = trade_item(0, 2, "apple", 1, 1, 2)
+                                quantity = get_profit['data']['itemTradeQuantity']
+                                price = get_profit['data']['averagePrice']
+                                self.stats["cash"] += quantity * price
+
             step_count += 1
             if step_count >= max_steps:
                 print(f"{self.username}: 达到最大步骤数")
@@ -125,7 +140,7 @@ Location: {location}
 Status: {stats}
 Inventory: {inventory}
 
-You can use the following tool functions in your plan. Do not use any functions that are not listed here:
+You can use ONLY the following tool functions in your plan. Do not use any functions that are not listed here:
 {tool_functions}
 
 Available locations:
@@ -165,6 +180,7 @@ Wake up at 7 AM, go to the park and chat with people for 1 hour, study at school
             """,
             "tool_functions": tool_functions,
             "locations": locations,
+            "past_objectives": get_latest_k_documents("daily_objective", 2, self.userid),
         }
 
     def update_stats(self):
@@ -362,11 +378,11 @@ async def run_agent(agent, config, days):
 # 主函数
 async def main():
     config = {"recursion_limit": 3000}
-    days = 1
+    days = 10
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         tasks = [
-            asyncio.create_task(run_agent(agent, config, days)) for agent in agents
+            asyncio.create_task(run_agent(agent, config, days)) for agent in agents[:2]
         ]
 
         completed, pending = await asyncio.wait(

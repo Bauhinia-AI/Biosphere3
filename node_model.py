@@ -21,12 +21,14 @@ class PlanExecute(TypedDict):
     meta_seq: List[str]
     tool_functions: str
     locations: str
+    past_objectives: List[List[str]]
 
 
 class DailyObjective(BaseModel):
     """Daily objective to follow in future"""
 
     objectives: List[str] = Field(description="daily objectives list")
+    past_objectives: List[List[str]] = Field(description="past daily objectives list")
 
 
 class DetailedPlan(BaseModel):

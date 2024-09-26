@@ -9,7 +9,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import os
 from loguru import logger
-from trade import trade_item
+from tool_executor import trade_item
 from database.mongo_utils import get_latest_k_documents
 tool_functions = """
 1. do_freelance_job(): Perform freelance work

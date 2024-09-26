@@ -18,9 +18,6 @@ from tools import (
 )
 from node_model import (
     PlanExecute,
-    Plan,
-    Response,
-    Act,
     DailyObjective,
     DetailedPlan,
     MetaActionSequence,
@@ -28,7 +25,7 @@ from node_model import (
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 import asyncio
-from typing import Literal
+from tool_executor import execute_action_sequence
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -236,7 +233,7 @@ async def generate_daily_objective(state: PlanExecute):
             "messages": [("user", state["input"])],
             "tool_functions": state["tool_functions"],
             "locations": state["locations"],
-            "past_objectives": state["past_objectives"],
+            "past_objectives": state.get("past_objectives", []),
         }
     )
     # Prepare the document to insert
@@ -289,6 +286,16 @@ async def generate_meta_action_sequence(state: PlanExecute):
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
 
 
+async def invoke_tool_executor(state: PlanExecute):
+    meta_seq = state.get("meta_seq", [])
+    print("Executing the following actions:")
+    results = execute_action_sequence(meta_seq)
+    for action, result in zip(meta_seq, results):
+        print(f"Action: {action}")
+        print(f"Result: {result}")
+    return {"execution_results": results}
+
+
 # async def replan_step(state: PlanExecute):
 #     try:
 #         output = await replanner.ainvoke(state)
@@ -317,17 +324,19 @@ workflow = StateGraph(PlanExecute)
 workflow.add_node("Objectives_planner", generate_daily_objective)
 workflow.add_node("detailed_planner", generate_detailed_plan)
 workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
+workflow.add_node("tool_executor", invoke_tool_executor)
 # workflow.add_node("Executor", execute_step)
 # workflow.add_node("replan", replan_step)
 workflow.add_edge(START, "Objectives_planner")
 workflow.add_edge("Objectives_planner", "detailed_planner")
 workflow.add_edge("detailed_planner", "meta_action_sequence")
-workflow.add_edge("meta_action_sequence", END)
+workflow.add_edge("meta_action_sequence", "tool_executor")
+workflow.add_edge("tool_executor", END)
 # workflow.add_edge("Executor", "replan")
 # workflow.add_conditional_edges("replan", should_end)
+app = workflow.compile()
 
 
-import matplotlib.pyplot as plt
 # 主函数
 async def main():
     config = {"recursion_limit": 10}

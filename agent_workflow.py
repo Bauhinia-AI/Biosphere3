@@ -21,6 +21,7 @@ from node_model import (
     DailyObjective,
     DetailedPlan,
     MetaActionSequence,
+    Reflection,
 )
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
@@ -189,6 +190,23 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     \n
     """
 )
+
+reflection_prompt = ChatPromptTemplate.from_template(
+    """Based on the following meta action sequence and their execution results, 
+    provide a brief reflection on the success of the plan, any unexpected outcomes, 
+    and potential improvements for future planning:
+
+    Meta Action Sequence:
+    {meta_seq}
+
+    Execution Results:
+    {execution_results}
+
+    Reflection:
+    """
+)
+
+
 # 创建规划器和重新规划器
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1
@@ -210,6 +228,10 @@ meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
 meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
+
+reflector = reflection_prompt | ChatOpenAI(
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+).with_structured_output(Reflection)
 
 # # 定义执行步骤函数
 # async def execute_step(state: PlanExecute):
@@ -286,14 +308,42 @@ async def generate_meta_action_sequence(state: PlanExecute):
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
 
 
+async def generate_reflection(state: PlanExecute):
+    meta_seq = state.get("meta_seq", [])
+    execution_results = state.get("execution_results", [])
+    
+    reflection = await reflector.ainvoke({
+        "meta_seq": meta_seq,
+        "execution_results": execution_results
+    })
+    
+    # 准备要插入的文档
+    document = {
+        "userid": state["userid"],
+        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "meta_sequence": meta_seq,
+        "execution_results": execution_results,
+        "reflection": reflection.reflection
+    }
+
+    # 使用 insert_document 插入文档
+    inserted_id = insert_document(config.reflection_collection_name, document)
+    print(f"Inserted reflection with id {inserted_id} for userid {document['userid']}")
+
+    return {"reflection": reflection.reflection}
+
+
 async def invoke_tool_executor(state: PlanExecute):
     meta_seq = state.get("meta_seq", [])
     print("Executing the following actions:")
     results = execute_action_sequence(meta_seq)
+    execution_results = []
     for action, result in zip(meta_seq, results):
         print(f"Action: {action}")
         print(f"Result: {result}")
-    return {"execution_results": results}
+        execution_results.append({"action": action, "result": result})
+    return {"execution_results": execution_results}
+
 
 
 # async def replan_step(state: PlanExecute):
@@ -325,13 +375,16 @@ workflow.add_node("Objectives_planner", generate_daily_objective)
 workflow.add_node("detailed_planner", generate_detailed_plan)
 workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
 workflow.add_node("tool_executor", invoke_tool_executor)
+workflow.add_node("reflector", generate_reflection)
+
 # workflow.add_node("Executor", execute_step)
 # workflow.add_node("replan", replan_step)
 workflow.add_edge(START, "Objectives_planner")
 workflow.add_edge("Objectives_planner", "detailed_planner")
 workflow.add_edge("detailed_planner", "meta_action_sequence")
 workflow.add_edge("meta_action_sequence", "tool_executor")
-workflow.add_edge("tool_executor", END)
+workflow.add_edge("tool_executor", "reflector")
+workflow.add_edge("reflector", END)
 # workflow.add_edge("Executor", "replan")
 # workflow.add_conditional_edges("replan", should_end)
 app = workflow.compile()

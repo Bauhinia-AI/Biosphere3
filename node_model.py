@@ -42,6 +42,8 @@ class MetaActionSequence(BaseModel):
 
     meta_action_sequence: List[str] = Field(description="meta action sequence")
 
+class Reflection(BaseModel):
+    reflection: str
 
 class Response(BaseModel):
     """Response to user."""

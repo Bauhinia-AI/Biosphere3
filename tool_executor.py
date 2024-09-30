@@ -106,23 +106,28 @@ def execute_action_sequence(action_sequence: List[str]) -> List[Dict[str, Any]]:
     results = []
     for action in action_sequence:
         print(f"Executing action: {action}")
-        # 解析动作字符串，提取工具名称和参数
-        tool_name, args_str = action.split("(", 1)
-        args_str = args_str.rstrip(")")
-        args = [arg.strip() for arg in args_str.split(",") if arg.strip()]
+        try:
+            # 解析动作字符串，提取工具名称和参数
+            tool_name, args_str = action.split("(", 1)
+            args_str = args_str.rstrip(")")
+            args = [arg.strip() for arg in args_str.split(",") if arg.strip()]
 
-        # 将参数转换为字典
-        kwargs = {}
-        for arg in args:
-            if "=" in arg:
-                key, value = arg.split("=")
-                kwargs[key.strip()] = eval(value.strip())
-            else:
-                # 如果没有明确的键值对，假设是按顺序的参数
-                kwargs[f"arg{len(kwargs)}"] = eval(arg.strip())
+            # 将参数转换为字典
+            kwargs = {}
+            for arg in args:
+                if "=" in arg:
+                    key, value = arg.split("=")
+                    kwargs[key.strip()] = eval(value.strip())
+                else:
+                    # 如果没有明确的键值对,假设是按顺序的参数
+                    kwargs[f"arg{len(kwargs)}"] = eval(arg.strip())
 
-        # 执行工具函数
-        result = execute_tool(tool_name, **kwargs)
+            # 执行工具函数
+            result = execute_tool(tool_name, **kwargs)
+        except Exception as e:
+            # 捕获所有异常,并将错误信息作为结果
+            result = {"Error": f"Action execution failed: {str(e)}"}
+        
         results.append({action: result})
 
     return results

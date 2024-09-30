@@ -1,5 +1,5 @@
 from langchain_core.pydantic_v1 import BaseModel, Field
-from typing import Union, List, Annotated, Tuple, TypedDict
+from typing import Union, List, Annotated, Tuple, TypedDict, Dict, Any
 import operator
 
 
@@ -22,7 +22,8 @@ class PlanExecute(TypedDict):
     tool_functions: str
     locations: str
     past_objectives: List[List[str]]
-
+    execution_results: List[Dict[str, Any]]
+    reflection: str
 
 class DailyObjective(BaseModel):
     """Daily objective to follow in future"""

@@ -4,18 +4,7 @@ import datetime
 from langchain import hub
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
-from tools import (
-    do_freelance_job,
-    navigate_to,
-    sleep,
-    study,
-    get_character_stats,
-    get_inventory,
-    do_public_job,
-    talk,
-    end_talk,
-    see_doctor,
-)
+from tools import *
 from node_model import (
     PlanExecute,
     DailyObjective,
@@ -41,16 +30,31 @@ os.environ["LANGCHAIN_PROJECT"] = "Bio3_agent"
 
 # 定义工具列表
 tool_list = [
-    do_freelance_job,
     navigate_to,
+    do_freelance_job,
     sleep,
-    study,
+    work_change,
     get_character_stats,
+    get_character_status,
+    get_character_basic_info,
     get_inventory,
+    submit_resume,
+    vote,
     do_public_job,
+    study,
     talk,
     end_talk,
+    calculate_distance,
+    trade,
+    use_item,
     see_doctor,
+    get_freelance_jobs,
+    get_public_jobs,
+    get_candidates,
+    get_activity_subjects,
+    get_talk_data,
+    get_position,
+    eat,
 ]
 # llm-readable
 tool_functions = """
@@ -311,19 +315,18 @@ async def generate_meta_action_sequence(state: PlanExecute):
 async def generate_reflection(state: PlanExecute):
     meta_seq = state.get("meta_seq", [])
     execution_results = state.get("execution_results", [])
-    
-    reflection = await reflector.ainvoke({
-        "meta_seq": meta_seq,
-        "execution_results": execution_results
-    })
-    
+
+    reflection = await reflector.ainvoke(
+        {"meta_seq": meta_seq, "execution_results": execution_results}
+    )
+
     # 准备要插入的文档
     document = {
         "userid": state["userid"],
         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "meta_sequence": meta_seq,
         "execution_results": execution_results,
-        "reflection": reflection.reflection
+        "reflection": reflection.reflection,
     }
 
     # 使用 insert_document 插入文档
@@ -343,7 +346,6 @@ async def invoke_tool_executor(state: PlanExecute):
         print(f"Result: {result}")
         execution_results.append({"action": action, "result": result})
     return {"execution_results": execution_results}
-
 
 
 # async def replan_step(state: PlanExecute):

@@ -103,17 +103,17 @@ class Agent:
                     log_filename = f"agent_{self.userid}.log"
                     with open(log_filename, "a") as log_file:
                         log_file.write(f"{self.username}: {v}\n")
-                    if k == "meta_action_sequence":
-                        """
-                        k:v
-                        meta_action_sequence: {'meta_seq': ['get_inventory()', 'talk(traders)', 'trade(item, price)', 'eat()', 'sleep(8)']}
-                        """
-                        for action in v["meta_seq"]:
-                            if action.find("trade") != -1:
-                                get_profit = trade_item(0, 2, "apple", 1, 1, 2)
-                                quantity = get_profit['data']['itemTradeQuantity']
-                                price = get_profit['data']['averagePrice']
-                                self.stats["cash"] += quantity * price
+                    # if k == "meta_action_sequence":
+                    #     """
+                    #     k:v
+                    #     meta_action_sequence: {'meta_seq': ['get_inventory()', 'talk(traders)', 'trade(item, price)', 'eat()', 'sleep(8)']}
+                    #     """
+                    #     for action in v["meta_seq"]:
+                    #         if action.find("trade") != -1:
+                    #             get_profit = trade_item(0, 2, "apple", 1, 1, 2)
+                    #             quantity = get_profit['data']['itemTradeQuantity']
+                    #             price = get_profit['data']['averagePrice']
+                    #             self.stats["cash"] += quantity * price
 
             step_count += 1
             if step_count >= max_steps:

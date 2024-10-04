@@ -53,6 +53,7 @@ class DatabaseSetupApp:
         }
         # 创建带有验证器的集合
         db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
         CV_df = load_and_prepare_data("CV.json")
         print("CV Data loaded and prepared.")
         print(CV_df.head())
@@ -146,7 +147,7 @@ class DatabaseSetupApp:
         }
         # 创建带有验证器的集合
         db.create_collection(collection_name, validator=validator)
-
+        print(f"Collection '{collection_name}' created with validator.")
         NPC_df = load_and_prepare_data("NPC.json")
         print("NPC Data loaded and prepared.")
         print(NPC_df.head())
@@ -216,6 +217,7 @@ class DatabaseSetupApp:
         }
         # 创建带有验证器的集合
         db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
 
     def setup_impression_database(self):
         # Connect to MongoDB collection
@@ -268,6 +270,7 @@ class DatabaseSetupApp:
         }
         # 创建带有验证器的集合
         db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
 
     def setup_descriptor_database(self):
         # Connect to MongoDB collection
@@ -310,6 +313,172 @@ class DatabaseSetupApp:
         }
         # 创建带有验证器的集合
         db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
+
+    def setup_daily_objective_database(self):
+        # Connect to MongoDB collection
+        db = connect_to_mongo(
+            db_name=config.db_name,
+            mongo_uri=config.mongo_uri,
+        )
+
+        # Delete existing collection
+        collection = db[config.daily_objective_collection_name]
+        collection.drop()
+        print(f"Collection '{config.daily_objective_collection_name}' deleted.")
+
+        # Create new collection with validator
+        collection_name = config.daily_objective_collection_name
+        validator = {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": ["userid", "created_at", "objectives"],
+                "properties": {
+                    "userid": {
+                        "bsonType": "int",
+                        "description": "User ID, must be a string and is required",
+                    },
+                    "created_at": {
+                        "bsonType": "string",
+                        "description": "Creation date, must be a string and is required",
+                    },
+                    "objectives": {
+                        "bsonType": "array",
+                        "description": "Array of objectives, must be an array of strings and is required",
+                        "items": {
+                            "bsonType": "string",
+                        },
+                    },
+                },
+            }
+        }
+        db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
+
+    def setup_daily_objective_database(self):
+        # 连接到 MongoDB 集合
+        db = connect_to_mongo(
+            db_name=config.db_name,
+            mongo_uri=config.mongo_uri,
+        )
+
+        # 删除现有集合
+        collection = db[config.daily_objective_collection_name]
+        collection.drop()
+        print(f"Collection '{config.daily_objective_collection_name}' deleted.")
+
+        # 新建集合
+        collection_name = config.daily_objective_collection_name
+        # 创建验证器
+        validator = {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": ["userid", "created_at", "objectives"],
+                "properties": {
+                    "userid": {
+                        "bsonType": "int",
+                        "description": "用户ID，必须为整数且为必填项",
+                    },
+                    "created_at": {
+                        "bsonType": "string",
+                        "description": "创建日期，必须为字符串且为必填项，格式为 'YYYY-MM-DD HH:MM:SS'",
+                    },
+                    "objectives": {
+                        "bsonType": "array",
+                        "description": "每日目标列表，必须为字符串数组且为必填项",
+                        "items": {
+                            "bsonType": "string",
+                            "description": "目标内容，必须为字符串",
+                        },
+                    },
+                },
+            }
+        }
+        # 创建带有验证器的集合
+        db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
+
+    def setup_plan_database(self):
+        # 连接到 MongoDB 集合
+        db = connect_to_mongo(
+            db_name=config.db_name,
+            mongo_uri=config.mongo_uri,
+        )
+
+        # 删除现有集合
+        collection = db[config.plan_collection_name]
+        collection.drop()
+        print(f"Collection '{config.plan_collection_name}' deleted.")
+
+        # 新建集合
+        collection_name = config.plan_collection_name
+        # 创建验证器
+        validator = {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": ["userid", "created_at", "detailed_plan"],
+                "properties": {
+                    "userid": {
+                        "bsonType": "int",
+                        "description": "用户ID，必须为整数且为必填项",
+                    },
+                    "created_at": {
+                        "bsonType": "string",
+                        "description": "创建日期，必须为字符串且为必填项，格式为 'YYYY-MM-DD HH:MM:SS'",
+                    },
+                    "detailed_plan": {
+                        "bsonType": "string",
+                        "description": "详细计划，必须为字符串且为必填项",
+                    },
+                },
+            }
+        }
+        # 创建带有验证器的集合
+        db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
+
+    def setup_meta_seq_database(self):
+        # 连接到 MongoDB 集合
+        db = connect_to_mongo(
+            db_name=config.db_name,
+            mongo_uri=config.mongo_uri,
+        )
+
+        # 删除现有集合
+        collection = db[config.meta_seq_collection_name]
+        collection.drop()
+        print(f"Collection '{config.meta_seq_collection_name}' deleted.")
+
+        # 新建集合
+        collection_name = config.meta_seq_collection_name
+        # 创建验证器
+        validator = {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": ["userid", "created_at", "meta_sequence"],
+                "properties": {
+                    "userid": {
+                        "bsonType": "int",
+                        "description": "用户ID，必须为整数且为必填项",
+                    },
+                    "created_at": {
+                        "bsonType": "string",
+                        "description": "创建日期，必须为字符串且为必填项",
+                    },
+                    "meta_sequence": {
+                        "bsonType": "array",
+                        "description": "元动作序列，必须为字符串数组且为必填项",
+                        "items": {
+                            "bsonType": "string",
+                            "description": "元动作，必须为字符串",
+                        },
+                    },
+                },
+            }
+        }
+        # 创建带有验证器的集合
+        db.create_collection(collection_name, validator=validator)
+        print(f"Collection '{collection_name}' created with validator.")
 
     def setup_tool_database(self):
         # Connect to MongoDB collection
@@ -389,3 +558,6 @@ if __name__ == "__main__":
     app.setup_impression_database()
     app.setup_descriptor_database()
     app.setup_tool_database()
+    app.setup_daily_objective_database()
+    app.setup_plan_database()
+    app.setup_meta_seq_database()

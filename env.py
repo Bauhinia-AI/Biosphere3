@@ -590,6 +590,19 @@ async def get_position(
         return positions
 
 
+@app.post("/eat")
+async def eat(request: EatRequest):
+    if request.timelength < 0:
+        raise HTTPException(status_code=400, detail="Invalid time length")
+    if request.timelength > 5:
+        raise HTTPException(
+            status_code=400, detail="You cannot eat for more than 5 hours.")
+    if random.random() > 0.1:
+        return {"code": 200, "fullnessnew": 10 * request.timelength}
+    else:
+        return {"code": 400, "message": "You cannot eat."}
+
+
 if __name__ == "__main__":
     # uvicorn is a lightning-fast ASGI server implementation, using uvloop and httptools.
     import uvicorn

@@ -74,15 +74,16 @@ print("Response Body:", response.json())
 
 ## 1. cv
 
-用于存储NPC的简历信息,包含以下字段:
+用于存储NPC的简历信息，包含以下字段：
 
-- `jobid`: 工作ID,必须为整数且为必填项
-- `userid`: 用户ID,必须为整数且为必填项
-- `username`: 用户名,必须为字符串且为必填项
-- `CV_content`: 简历内容,必须为字符串且为必填项
-- `created_at`: 创建时间,必须为字符串且为必填项
+- `jobid`：工作ID，必须为整数且为必填项
+- `userid`：用户ID，必须为整数且为必填项
+- `username`：用户名，必须为字符串且为必填项
+- `CV_content`：简历内容，必须为字符串且为必填项
+- `created_at`：创建时间，必须为字符串且为必填项
 
-例子:
+例子：
+
 ```json
 {
     "jobid": 1,
@@ -93,27 +94,27 @@ print("Response Body:", response.json())
 }
 ```
 
-
 ## 2. npc
 
-用于存储 NPC 的基本信息,包含以下字段:
+用于存储NPC的基本信息，包含以下字段：
 
-- `userid`: NPC ID,必须为整数且为必填项
-- `username`: NPC 名字,必须为字符串且为必填项
-- `gender`: NPC 性别,必须为字符串且为必填项
-- `slogan`: NPC 标语,必须为字符串且为必填项
-- `description`: NPC 描述,必须为字符串且为必填项
-- `stats`: NPC 属性,必须为包含以下字段的对象且为必填项
-  - `health`: 健康值,必须为浮点数
-  - `fullness`: 饱腹度,必须为浮点数
-  - `energy`: 精力值,必须为浮点数
-  - `knowledge`: 知识值,必须为浮点数
-  - `cash`: 现金,必须为浮点数
-- `role`: NPC 角色,必须为字符串且为必填项
-- `task`: NPC 任务,必须为字符串且为必填项
-- `created_at`: 创建时间,必须为字符串且为必填项
+- `userid`：NPC ID，必须为整数且为必填项
+- `username`：NPC名字，必须为字符串且为必填项
+- `gender`：NPC性别，必须为字符串且为必填项
+- `slogan`：NPC标语，必须为字符串且为必填项
+- `description`：NPC描述，必须为字符串且为必填项
+- `stats`：NPC属性，必须为包含以下字段的对象且为必填项
+  - `health`：健康值，必须为浮点数
+  - `fullness`：饱腹度，必须为浮点数
+  - `energy`：精力值，必须为浮点数
+  - `knowledge`：知识值，必须为浮点数
+  - `cash`：现金，必须为浮点数
+- `role`：NPC角色，必须为字符串且为必填项
+- `task`：NPC任务，必须为字符串且为必填项
+- `created_at`：创建时间，必须为字符串且为必填项
 
-例子:
+例子：
+
 ```json
 {
     "userid": 0,
@@ -134,20 +135,20 @@ print("Response Body:", response.json())
 }
 ```
 
-
 ## 3. action
 
-用于存储NPC执行的动作信息,包含以下字段:
+用于存储NPC执行的动作信息，包含以下字段：
 
-- `userid`: NPC ID,必须为整数且为必填项
-- `timestamp`: 时间戳,必须为字符串且为必填项
-- `meta_action`: 当前做的动作,必须为字符串且为必填项
-- `description`: 大语言模型返回的结果,必须为字符串且为必填项
-- `response`: 执行是否成功,必须为布尔类型且为必填项
-- `action_id`: 唯一的动作ID,必须为整数且为必填项
-- `prev_action`: 前一个动作的action_id,必须为整数且为可选项
+- `userid`：NPC ID，必须为整数且为必填项
+- `timestamp`：时间戳，必须为字符串且为必填项
+- `meta_action`：当前执行的动作，必须为字符串且为必填项
+- `description`：大语言模型返回的结果，必须为字符串且为必填项
+- `response`：执行是否成功，必须为布尔类型且为必填项
+- `action_id`：唯一的动作ID，必须为整数且为必填项
+- `prev_action`：前一个动作的action_id，必须为整数且为可选项
 
-例子:
+例子：
+
 ```json
 {
     "userid": 1,
@@ -162,15 +163,16 @@ print("Response Body:", response.json())
 
 ## 4. impression
 
-用于存储NPC之间的印象信息,包含以下字段:
+用于存储NPC之间的印象信息，包含以下字段：
 
-- `from_id`: 表示印象来源的 NPC 的 ID,必须为整数且为必填项
-- `to_id`: 表示印象指向的 NPC 的 ID,必须为整数且为必填项
-- `impression`: 印象数组,必须为对象数组且为必填项
-  - `content`: 印象内容,必须为字符串且为必填项
-  - `timestamp`: 时间戳,必须为字符串且为必填项
+- `from_id`：印象来源的NPC的ID，必须为整数且为必填项
+- `to_id`：印象指向的NPC的ID，必须为整数且为必填项
+- `impression`：印象数组，必须为对象数组且为必填项
+  - `content`：印象内容，必须为字符串且为必填项
+  - `timestamp`：时间戳，必须为字符串且为必填项
 
-例子:
+例子：
+
 ```json
 {
     "from_id": 1,
@@ -190,19 +192,80 @@ print("Response Body:", response.json())
 
 ## 5. descriptor
 
-用于存储NPC执行失败的动作信息,包含以下字段:
+用于存储NPC执行失败的动作信息，包含以下字段：
 
-- `failed_action`: 执行失败的动作,必须为字符串且为必填项
-- `action_id`: 失败动作的ID,必须为整数且为必填项
-- `userid`: NPC ID,必须为整数且为必填项
-- `reflection`: 动作失败后的反思,必须为字符串且为必填项
+- `failed_action`：执行失败的动作，必须为字符串且为必填项
+- `action_id`：失败动作的ID，必须为整数且为必填项
+- `userid`：NPC ID，必须为整数且为必填项
+- `reflection`：动作失败后的反思，必须为字符串且为必填项
 
-例子:
+例子：
+
 ```json
 {
     "failed_action": "Making Bread",
     "action_id": 3,
     "userid": 1,
     "reflection": "Short of Flour."
+}
+```
+
+## 6. daily_objective
+
+用于存储NPC的每日目标信息，包含以下字段：
+
+- `userid`：用户ID，必须为整数且为必填项
+- `created_at`：创建日期，必须为字符串且为必填项，格式为'YYYY-MM-DD HH:MM:SS'
+- `objectives`：每日目标列表，必须为字符串数组且为必填项
+
+例子：
+
+```json
+{
+    "userid": 1,
+    "created_at": "2024-09-23 08:00:0",
+    "objectives": [
+        "旅行：今天导航到三个不同的地点",
+        "探索：了解所访问地点的历史",
+        "社交：与当地人交谈，收集关于该地区的故事",
+        "休息：至少睡7个小时，以便为冒险充电",
+        "饮食：在每个访问的地方尝试当地菜肴"
+    ]
+}
+```
+
+## 7. plan
+
+用于存储NPC的详细计划信息，包含以下字段：
+
+- `userid`：用户ID，必须为整数且为必填项
+- `created_at`：创建日期，必须为字符串且为必填项，格式为'YYYY-MM-DD HH:MM:SS'
+- `detailed_plan`：详细计划，必须为字符串且为必填项
+
+例子：
+
+```json
+{
+    "userid": 1,
+    "created_at": "2024-09-23 08:00:0",
+    "detailed_plan": "1. 旅行：我应该在早上导航到第一个地点，午餐后前往第二个地点，最后在下午晚些时候前往第三个地点。\n2. 探索：在每个地点，我将花时间了解该地方的历史，可能通过阅读牌匾或使用当地导游手册。\n3. 社交：我应该在每个地点与当地人交谈，收集关于该地区的故事和见解，确保在每个停留点都与至少一个人互动。\n4. 休息：今晚我将确保睡至少7个小时，为明天的冒险充电。\n5. 饮食：我应该在每个访问的地方尝试当地菜肴，确保在开始旅程前吃早餐，在第二个地点吃午餐，最后在最后一个地点吃晚餐。"
+}
+```
+
+## 8. meta_seq
+
+用于存储NPC的元动作序列，包含以下字段：
+
+- `userid`：用户ID，必须为整数且为必填项
+- `created_at`：创建日期，必须为字符串且为必填项，格式为'YYYY-MM-DD HH:MM:SS'
+- `meta_sequence`：元动作序列，必须为字符串且为必填项
+
+例子：
+
+```json
+{
+    "userid": 1,
+    "created_at": "2024-09-23 08:00:0",
+    "meta_sequence": "navigate_to(park)\nexplore(park)\ntalk(local)\neat(1)\nnavigate_to(restaurant)\nexplore(restaurant)\ntalk(local)\neat(2)\nnavigate_to(farm)\nexplore(farm)\ntalk(local)\neat(3)\nnavigate_to(home)\nsleep(7)"
 }
 ```

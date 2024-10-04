@@ -21,6 +21,9 @@ class UseRequest(BaseModel):
 class SleepRequest(BaseModel):
     timelength: int
 
+class EatRequest(BaseModel):
+    timelength: int
+
 
 class FreelanceJob(BaseModel):
     jobname: str

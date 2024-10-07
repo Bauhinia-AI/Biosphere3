@@ -1,6 +1,7 @@
 import asyncio
 import random
 from datetime import datetime
+
 from agent_workflow import app
 from dataclasses import dataclass
 from langchain_openai import ChatOpenAI
@@ -9,8 +10,11 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 import os
 from loguru import logger
-from tool_executor import trade_item
-from database.mongo_utils import get_latest_k_documents
+
+# from tool_executor import trade_item
+from database.mongo_utils import get_latest_k_documents, insert_document
+import uuid
+
 tool_functions = """
 1. do_freelance_job(): Perform freelance work
 2. navigate_to(location): Navigate to a specified location
@@ -48,6 +52,9 @@ locations = """
 6. Farm
 """
 
+# setup the log file
+logger.add("logs/agent/multi_agent_simulation.log")
+
 
 @dataclass
 class AgentConfig:
@@ -63,7 +70,7 @@ class AgentConfig:
 # 定义Agent类
 class Agent:
     def __init__(self, config: AgentConfig):
-        self.userid = config.userid
+        self.userid = str(uuid.uuid4())
         self.username = config.username
         self.gender = config.gender
         self.slogan = config.slogan
@@ -73,21 +80,39 @@ class Agent:
             "fullness": round(random.uniform(0, 10), 1),
             "energy": round(random.uniform(0, 10), 1),
             "knowledge": round(random.uniform(0, 10), 1),
-            "cash": random.randint(500, 10000),
+            "cash": round(random.uniform(0, 10), 1),
         }
         self.role = config.role
         self.task = config.task
         self.created_at = datetime.now()
 
-        self.location = random.choice(
-            ["home", "park", "restaurant", "hospital", "school", "farm"]
-        )
+        # self.location = random.choice(
+        #     ["home", "park", "restaurant", "hospital", "school", "farm"]
+        # )
         self.inventory = self.generate_initial_inventory()
+        # self.save_agent_to_mongo()
 
     def generate_initial_inventory(self):
         possible_items = ["Strength Potion", "Agility Elixir", "Health Tonic"]
         num_items = random.randint(0, 3)
         return random.sample(possible_items, num_items)
+
+    def save_agent_to_mongo(self):
+        doc = {
+            "userid": self.userid,
+            "username": self.username,
+            "gender": self.gender,
+            "slogan": self.slogan,
+            "description": self.description,
+            "role": self.role,
+            "task": self.task,
+            "created_at": self.created_at,
+            "stats": self.stats,
+        }
+        insert_document("agent_profile", doc)
+        logger.info(
+            f"Agent {self.userid} with name {self.username} saved to MongoDB Atlas."
+        )
 
     async def take_action(self, app, config):
         # objective = self.generate_objective()
@@ -123,49 +148,49 @@ class Agent:
                 break
         # self.update_stats()
 
-    def generate_objective(self) -> str:
-        llm = ChatOpenAI(
-            base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", timeout=30
-        )  # 30秒超时
+    #     def generate_objective(self) -> str:
+    #         llm = ChatOpenAI(
+    #             base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", timeout=30
+    #         )  # 30秒超时
 
-        plan_prompt = ChatPromptTemplate.from_template(
-            """Generate a plan based on the agent's personal information and tasks. The plan should detail the agent's actions for an entire day, specifying how many hours each task takes. Avoid using vague terms.
+    #         plan_prompt = ChatPromptTemplate.from_template(
+    #             """Generate a plan based on the agent's personal information and tasks. The plan should detail the agent's actions for an entire day, specifying how many hours each task takes. Avoid using vague terms.
 
-Agent's personal information:
-Name: {username}
-Description: {description}
-Role: {role}
-Task: {task}
-Location: {location}
-Status: {stats}
-Inventory: {inventory}
+    # Agent's personal information:
+    # Name: {username}
+    # Description: {description}
+    # Role: {role}
+    # Task: {task}
+    # Location: {location}
+    # Status: {stats}
+    # Inventory: {inventory}
 
-You can use ONLY the following tool functions in your plan. Do not use any functions that are not listed here:
-{tool_functions}
+    # You can use ONLY the following tool functions in your plan. Do not use any functions that are not listed here:
+    # {tool_functions}
 
-Available locations:
-{locations}
+    # Available locations:
+    # {locations}
 
-Output the plan in a single sentence without any unnecessary words.
-Here is the format example and your plan should NOT be longer than this example:
-Wake up at 7 AM, go to the park and chat with people for 1 hour, study at school for 6 hours, have lunch at the restaurant, study at the school for three hours, return home and sleep."""
-        )
+    # Output the plan in a single sentence without any unnecessary words.
+    # Here is the format example and your plan should NOT be longer than this example:
+    # Wake up at 7 AM, go to the park and chat with people for 1 hour, study at school for 6 hours, have lunch at the restaurant, study at the school for three hours, return home and sleep."""
+    #         )
 
-        formatted_prompt = plan_prompt.format(
-            username=self.username,
-            description=self.description,
-            role=self.role,
-            task=self.task,
-            location=self.location,
-            stats=self.stats,
-            inventory=self.inventory,
-            tool_functions=tool_functions,
-            locations=locations,
-        )
+    #         formatted_prompt = plan_prompt.format(
+    #             username=self.username,
+    #             description=self.description,
+    #             role=self.role,
+    #             task=self.task,
+    #             location=self.location,
+    #             stats=self.stats,
+    #             inventory=self.inventory,
+    #             tool_functions=tool_functions,
+    #             locations=locations,
+    #         )
 
-        response = llm.invoke(formatted_prompt)
-        print(response.content)
-        return response.content
+    #         response = llm.invoke(formatted_prompt)
+    #         print(response.content)
+    #         return response.content
 
     def generate_profile(self):
         return {
@@ -180,7 +205,9 @@ Wake up at 7 AM, go to the park and chat with people for 1 hour, study at school
             """,
             "tool_functions": tool_functions,
             "locations": locations,
-            "past_objectives": get_latest_k_documents("daily_objective", 2, self.userid),
+            "past_objectives": get_latest_k_documents(
+                "daily_objective", 2, self.userid
+            ),
         }
 
     def update_stats(self):
@@ -203,7 +230,6 @@ Slogan: {self.slogan}
 Description: {self.description}
 Role: {self.role}
 Task: {self.task}
-Location: {self.location}
 Status: {stats_str}
 Inventory: {inventory_str}
 """
@@ -219,108 +245,108 @@ agents = [
             slogan="Knowledge is power",
             description="A university student who loves learning and always craves new knowledge.",
             role="Student",
-            task="Study for 8 hours every day, aiming for excellent results in the final exams",
+            task="Live a successful life in the town.",
         )
     ),
-    Agent(
-        AgentConfig(
-            userid=2,
-            username="Bob",
-            gender="Male",
-            slogan="Barter for mutual benefit",
-            description="A shrewd trader, passionate about finding the best trading opportunities in the market.",
-            role="Trader",
-            task="Monitor the market daily, seeking the best trading opportunities to maximize profits",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=3,
-            username="Charlie",
-            gender="Male",
-            slogan="Casual chat is the spice of life",
-            description="A social butterfly who enjoys conversing with people from all walks of life",
-            role="Socialite",
-            task="Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=4,
-            username="David",
-            gender="Male",
-            slogan="Labor is glorious",
-            description="A hardworking laborer who believes that diligent work leads to a better life.",
-            role="Worker",
-            task="Work at least 8 hours a day, actively seeking part-time jobs to earn more money",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=5,
-            username="Eva",
-            gender="Female",
-            slogan="Health is the greatest wealth",
-            description="A retiree who enjoys exercising and maintaining good health",
-            role="Retiree",
-            task="Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=6,
-            username="Frank",
-            gender="Male",
-            slogan="Serve the people",
-            description="Enthusiastic about community work, enjoys communicating with people and exploring different places",
-            role="Ordinary Resident",
-            task="Help complete community voting and election work, communicate with residents to understand their needs and ideas",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=7,
-            username="Grace",
-            gender="Female",
-            slogan="Strive for a better life",
-            description="Busy looking for a job, very occupied",
-            role="Job Seeker",
-            task="Submit resumes, attend interviews, and search for jobs every day",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=8,
-            username="Henry",
-            gender="Male",
-            slogan="Wander everywhere",
-            description="Restless, loves to travel around",
-            role="Traveler",
-            task="Visit at least three places every day, even if they are repeated",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=9,
-            username="Ivy",
-            gender="Female",
-            slogan="Shopping makes me happy",
-            description="A fashion blogger who enjoys purchasing various goods.",
-            role="Shopping Enthusiast",
-            task="Buy different things every day, acquire various items",
-        )
-    ),
-    Agent(
-        AgentConfig(
-            userid=10,
-            username="Jack",
-            gender="Male",
-            slogan="Sharing is the source of happiness",
-            description="An internet celebrity who enjoys sharing life online.",
-            role="Streamer",
-            task="Communicate with different people every day and sell his own products to them",
-        )
-    ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=2,
+    #         username="Bob",
+    #         gender="Male",
+    #         slogan="Barter for mutual benefit",
+    #         description="A shrewd trader, passionate about finding the best trading opportunities in the market.",
+    #         role="Trader",
+    #         task="Monitor the market daily, seeking the best trading opportunities to maximize profits",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=3,
+    #         username="Charlie",
+    #         gender="Male",
+    #         slogan="Casual chat is the spice of life",
+    #         description="A social butterfly who enjoys conversing with people from all walks of life",
+    #         role="Socialite",
+    #         task="Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=4,
+    #         username="David",
+    #         gender="Male",
+    #         slogan="Labor is glorious",
+    #         description="A hardworking laborer who believes that diligent work leads to a better life.",
+    #         role="Worker",
+    #         task="Work at least 8 hours a day, actively seeking part-time jobs to earn more money",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=5,
+    #         username="Eva",
+    #         gender="Female",
+    #         slogan="Health is the greatest wealth",
+    #         description="A retiree who enjoys exercising and maintaining good health",
+    #         role="Retiree",
+    #         task="Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=6,
+    #         username="Frank",
+    #         gender="Male",
+    #         slogan="Serve the people",
+    #         description="Enthusiastic about community work, enjoys communicating with people and exploring different places",
+    #         role="Ordinary Resident",
+    #         task="Help complete community voting and election work, communicate with residents to understand their needs and ideas",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=7,
+    #         username="Grace",
+    #         gender="Female",
+    #         slogan="Strive for a better life",
+    #         description="Busy looking for a job, very occupied",
+    #         role="Job Seeker",
+    #         task="Submit resumes, attend interviews, and search for jobs every day",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=8,
+    #         username="Henry",
+    #         gender="Male",
+    #         slogan="Wander everywhere",
+    #         description="Restless, loves to travel around",
+    #         role="Traveler",
+    #         task="Visit at least three places every day, even if they are repeated",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=9,
+    #         username="Ivy",
+    #         gender="Female",
+    #         slogan="Shopping makes me happy",
+    #         description="A fashion blogger who enjoys purchasing various goods.",
+    #         role="Shopping Enthusiast",
+    #         task="Buy different things every day, acquire various items",
+    #     )
+    # ),
+    # Agent(
+    #     AgentConfig(
+    #         userid=10,
+    #         username="Jack",
+    #         gender="Male",
+    #         slogan="Sharing is the source of happiness",
+    #         description="An internet celebrity who enjoys sharing life online.",
+    #         role="Streamer",
+    #         task="Communicate with different people every day and sell his own products to them",
+    #     )
+    # ),
 ]
 
 
@@ -378,11 +404,11 @@ async def run_agent(agent, config, days):
 # 主函数
 async def main():
     config = {"recursion_limit": 3000}
-    days = 10
+    days = 2
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         tasks = [
-            asyncio.create_task(run_agent(agent, config, days)) for agent in agents[:2]
+            asyncio.create_task(run_agent(agent, config, days)) for agent in agents[:1]
         ]
 
         completed, pending = await asyncio.wait(
@@ -401,4 +427,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    pass
     # whole_day_planning_main()

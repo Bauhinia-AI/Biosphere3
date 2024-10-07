@@ -1,15 +1,15 @@
 # MongoDB Configuration
-db_name = "biosphere3_test"
+db_name = "bio3agent"
 tool_collection_name = "api"
 cv_collection_name = "cv"
-npc_collection_name = "npc"
+npc_collection_name = "agent_profile"
 action_collection_name = "action"
 impression_collection_name = "impression"
 descriptor_collection_name = "descriptor"
 daily_objective_collection_name = "daily_objective"
 plan_collection_name = "plan"
 meta_seq_collection_name = "meta_seq"
-mongo_uri = "mongodb+srv://bauhiniaai:nb666@biosphere3.e1px8.mongodb.net/?connectTimeoutMS=30000"
+mongo_uri = "mongodb+srv://bio3agent:J4yWQZsuKPZR2poD@bios3agentdb.8grzp2i.mongodb.net/?retryWrites=true&w=majority&appName=bios3AgentDB"
 index_name = "vector_index"
 
 # Model and API Configuration

@@ -3,7 +3,7 @@ import sys
 import datetime
 from langchain import hub
 from langchain_openai import ChatOpenAI
-from langgraph.prebuilt import create_react_agent
+from langgraph.prebuilt import ToolNode
 from tools import *
 from node_model import (
     PlanExecute,
@@ -16,7 +16,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 import asyncio
 from tool_executor import execute_action_sequence
-
+from loguru import logger
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database.mongo_utils import insert_document
@@ -34,9 +34,9 @@ tool_list = [
     do_freelance_job,
     sleep,
     work_change,
-    get_character_stats,
-    get_character_status,
-    get_character_basic_info,
+    # get_character_stats,
+    # get_character_status,
+    # get_character_basic_info,
     get_inventory,
     submit_resume,
     vote,
@@ -58,29 +58,26 @@ tool_list = [
 ]
 # llm-readable
 tool_functions = """
-1. do_freelance_job(): Perform freelance work
-2. navigate_to(location): Navigate to a specified location
-3. sleep(hours): Sleep for specified number of hours
-4. work_change(): Change job
-5. get_character_stats(): Get character statistics
-6. get_character_status(): Get character status
-7. get_character_basic_info(): Get character basic information
+1. do_freelance_job(timelength: int): Perform freelance work \n
+2. navigate_to(location: str): Navigate to a specified location
+3. sleep(hours: int): Sleep for specified number of hours
+4. work_change(jobid: int): Change job
 8. get_inventory(): Get inventory information
-9. submit_resume(): Submit resume
-10. vote(): Cast a vote
-11. do_public_job(): Perform public work
-12. study(hours): Study for specified number of hours
-13. talk(person): Talk to a specified person
-14. end_talk(): End conversation
-15. calculate_distance(location1, location2): Calculate distance between two locations
-16. trade(): Trade an item
-17. use_item(item): Use an item
+9. submit_resume(jobid: int, cvurl: str): Submit resume
+10. vote(userid: int): Cast a vote
+11. do_public_job(jobid: int, timelength: int): Perform public work
+12. study(hours: int): Study for specified number of hours
+13. talk(person: str, talkcontent: str): Talk to a specified person
+14. end_talk(userid: str, talkid: str): End conversation
+15. calculate_distance(location1: str, location2: str): Calculate distance between two locations
+16. trade(merchantid: int, merchantnum: int, transactiontype: int): Trade an item
+17. use_item(merchantid: int, merchantnum: int): Use an item
 18. see_doctor(): Visit a doctor
 19. get_freelance_jobs(): Get list of available freelance jobs
 20. get_public_jobs(): Get list of available public jobs
 21. get_candidates(): Get list of candidates
-22. get_activity_subjects(): Get list of activity subjects
-23. get_talk_data(): Get conversation data
+22. get_activity_subjects(subjectid: int): Get list of activity subjects
+23. get_talk_data(talkid: str): Get conversation data
 24. get_position(): Get current position
 25. eat(): Eat food
 """
@@ -97,7 +94,12 @@ locations = """
 # 创建LLM和代理
 llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini")
 prompt = hub.pull("wfh/react-agent-executor")
-agent_executor = create_react_agent(llm, tool_list, messages_modifier=prompt)
+tool_node = ToolNode(tool_list)
+
+agent_with_tools = ChatOpenAI(
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini"
+).bind_tools(tool_list)
+
 
 # 定义提示模板
 obj_planner_prompt = ChatPromptTemplate.from_messages(
@@ -105,13 +107,13 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
         (
             "system",
             """You are the daily objectives planner in a RPG game. For the given user profile:\n
-            Name: 
-            Description: 
-            Role: 
-            Task: 
-            Location: 
-            Status: 
-            Inventory: 
+            Name:
+            Description:
+            Role:
+            Task:
+            Location:
+            Status:
+            Inventory:
             \n
             and the past daily objectives are:
             {past_objectives}.
@@ -158,13 +160,13 @@ detail_planner_prompt = ChatPromptTemplate.from_template(
     {tool_functions}
 ]\n
     The detailed plan may involve plans that are not in the daily objectives.(daily actions like eating meals, random actions like chatting with friends.)\n
-    
+
     The final format should be a list of daily objectives. for example:\n
     Working: "I should navigate to the farm, then do a freelance job."\n,
     daily_action:"I should eat breakfast, lunch and dinner."\n,
     Study:"I should study"\n,
     Socializing:"Perhaps I should go to the square and talk to someone."\n
-    
+
     """
 )
 
@@ -172,7 +174,7 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     """For the given detailed plan, think step by step to come up with a player action sequence only associated with the available actions/locations.\n
     {plan}
     \n
-    
+
     actions_available:
     {tool_functions}
     \n
@@ -196,8 +198,8 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
 )
 
 reflection_prompt = ChatPromptTemplate.from_template(
-    """Based on the following meta action sequence and their execution results, 
-    provide a brief reflection on the success of the plan, any unexpected outcomes, 
+    """Based on the following meta action sequence and their execution results,
+    provide a brief reflection on the success of the plan, any unexpected outcomes,
     and potential improvements for future planning:
 
     Meta Action Sequence:
@@ -234,9 +236,10 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
 
-reflector = reflection_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
-).with_structured_output(Reflection)
+# reflector = reflection_prompt | ChatOpenAI(
+#     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+# ).with_structured_output(Reflection)
+
 
 # # 定义执行步骤函数
 # async def execute_step(state: PlanExecute):
@@ -249,6 +252,8 @@ reflector = reflection_prompt | ChatOpenAI(
 #         {"messages": [("user", task_formatted)]}
 #     )
 #     return {"past_steps": [(task, agent_response["messages"][-1].content)]}
+async def call_tool_node(state: PlanExecute):
+    return  {"messages": [agent_with_tools.invoke(state)]}
 
 
 # async def plan_step(state: PlanExecute):
@@ -270,10 +275,10 @@ async def generate_daily_objective(state: PlanExecute):
         "objectives": daily_objective.objectives,
     }
     # Insert document using insert_document
-    inserted_id = insert_document(config.daily_objective_collection_name, document)
-    print(
-        f"Inserted daily objective with id {inserted_id} for userid {document['userid']}"
-    )
+    # inserted_id = insert_document(config.daily_objective_collection_name, document)
+    # print(
+    #     f"Inserted daily objective with id {inserted_id} for userid {document['userid']}"
+    # )
 
     return {"daily_objective": daily_objective.objectives}
 
@@ -287,10 +292,10 @@ async def generate_detailed_plan(state: PlanExecute):
         "detailed_plan": detailed_plan.detailed_plan,
     }
     # Insert document using insert_document
-    inserted_id = insert_document(config.plan_collection_name, document)
-    print(
-        f"Inserted detailed plan with id {inserted_id} for userid {document['userid']}"
-    )
+    # inserted_id = insert_document(config.plan_collection_name, document)
+    # print(
+    #     f"Inserted detailed plan with id {inserted_id} for userid {document['userid']}"
+    # )
 
     return {"plan": detailed_plan.detailed_plan}
 
@@ -305,44 +310,47 @@ async def generate_meta_action_sequence(state: PlanExecute):
         "meta_sequence": meta_action_sequence.meta_action_sequence,
     }
     # Insert document using insert_document
-    inserted_id = insert_document(config.meta_seq_collection_name, document)
-    print(
-        f"Inserted meta action sequence with id {inserted_id} for userid {document['userid']}"
-    )
+    #inserted_id = insert_document(config.meta_seq_collection_name, document)
+    # print(
+    #     f"Inserted meta action sequence with id {inserted_id} for userid {document['userid']}"
+    # )
 
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
 
 
-async def generate_reflection(state: PlanExecute):
-    meta_seq = state.get("meta_seq", [])
-    execution_results = state.get("execution_results", [])
+# async def generate_reflection(state: PlanExecute):
+#     meta_seq = state.get("meta_seq", [])
+#     execution_results = state.get("execution_results", [])
 
-    reflection = await reflector.ainvoke(
-        {"meta_seq": meta_seq, "execution_results": execution_results}
-    )
+#     reflection = await reflector.ainvoke(
+#         {"meta_seq": meta_seq, "execution_results": execution_results}
+#     )
 
-    # 准备要插入的文档
-    document = {
-        "userid": state["userid"],
-        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "meta_sequence": meta_seq,
-        "execution_results": execution_results,
-        "reflection": reflection.reflection,
-    }
+#     # 准备要插入的文档
+#     document = {
+#         "userid": state["userid"],
+#         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+#         "meta_sequence": meta_seq,
+#         "execution_results": execution_results,
+#         "reflection": reflection.reflection,
+#     }
 
-    # 使用 insert_document 插入文档
-    inserted_id = insert_document(config.reflection_collection_name, document)
-    print(f"Inserted reflection with id {inserted_id} for userid {document['userid']}")
+#     # 使用 insert_document 插入文档
+#     #inserted_id = insert_document(config.reflection_collection_name, document)
+#     print(f"Inserted reflection with id {inserted_id} for userid {document['userid']}")
 
-    return {"reflection": reflection.reflection}
+#     return {"reflection": reflection.reflection}
 
 
 async def invoke_tool_executor(state: PlanExecute):
     meta_seq = state.get("meta_seq", [])
     print("Executing the following actions:")
-    results = execute_action_sequence(meta_seq)
+    results = await call_tool_node(meta_seq)
+    #results = execute_action_sequence(meta_seq)
+    logger.info(results["messages"])
+    return {"messages": results["messages"]}
     execution_results = []
-    for action, result in zip(meta_seq, results):
+    for action, result in zip(meta_seq, results["messages"]):
         print(f"Action: {action}")
         print(f"Result: {result}")
         execution_results.append({"action": action, "result": result})
@@ -377,59 +385,61 @@ workflow = StateGraph(PlanExecute)
 workflow.add_node("Objectives_planner", generate_daily_objective)
 workflow.add_node("detailed_planner", generate_detailed_plan)
 workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
-workflow.add_node("tool_executor", invoke_tool_executor)
-workflow.add_node("reflector", generate_reflection)
+workflow.add_node("tool_call_generator", invoke_tool_executor)
+workflow.add_node("tool_executor", tool_node)
+# workflow.add_node("reflector", generate_reflection)
 
 # workflow.add_node("Executor", execute_step)
 # workflow.add_node("replan", replan_step)
 workflow.add_edge(START, "Objectives_planner")
 workflow.add_edge("Objectives_planner", "detailed_planner")
 workflow.add_edge("detailed_planner", "meta_action_sequence")
-workflow.add_edge("meta_action_sequence", "tool_executor")
-workflow.add_edge("tool_executor", "reflector")
-workflow.add_edge("reflector", END)
+workflow.add_edge("meta_action_sequence", "tool_call_generator")
+
+workflow.add_edge("tool_call_generator", "tool_executor")
+workflow.add_edge("tool_executor", END)
 # workflow.add_edge("Executor", "replan")
 # workflow.add_conditional_edges("replan", should_end)
 app = workflow.compile()
 
 
-# 主函数
-async def main():
-    config = {"recursion_limit": 10}
-    test_cases = [
-        # {"input": "go to the farm, do a freelance job for 2 hours, then go home and sleep for 8 hours"},
-        # {"input": "study for 3 hours, then do a public job for 4 hours"},
-        {
-            "userid": 8,
-            "input": """userid=8,
-            username="Henry",
-            gender="男",
-            slogan="到处走走",
-            description="闲不住，喜欢到处旅行",
-            role="旅行家",
-            task="每天至少去三个地方，即使重复了也要去",
-            """,
-            "tool_functions": tool_functions,
-            "locations": locations,
-        },
-        # {"input": "check character stats and inventory, then go to the hospital to see a doctor"},
-        # {"input": "navigate to the park, start a conversation with user123 saying 'Hello!', then end the conversation"},
-        # {"input": "do a freelance job for 4 hours, study for 2 hours, then sleep for 6 hours"},
-        # {"input": "check character stats, do a public job for 3 hours, then study for 2 hours"},
-        # {"input": "navigate to the gym, do a freelance job for 2 hours, then go home and sleep for 7 hours"},
-    ]
+# # 主函数
+# async def main():
+#     config = {"recursion_limit": 10}
+#     test_cases = [
+#         # {"input": "go to the farm, do a freelance job for 2 hours, then go home and sleep for 8 hours"},
+#         # {"input": "study for 3 hours, then do a public job for 4 hours"},
+#         {
+#             "userid": 8,
+#             "input": """userid=8,
+#             username="Henry",
+#             gender="男",
+#             slogan="到处走走",
+#             description="闲不住，喜欢到处旅行",
+#             role="旅行家",
+#             task="每天至少去三个地方，即使重复了也要去",
+#             """,
+#             "tool_functions": tool_functions,
+#             "locations": locations,
+#         },
+#         # {"input": "check character stats and inventory, then go to the hospital to see a doctor"},
+#         # {"input": "navigate to the park, start a conversation with user123 saying 'Hello!', then end the conversation"},
+#         # {"input": "do a freelance job for 4 hours, study for 2 hours, then sleep for 6 hours"},
+#         # {"input": "check character stats, do a public job for 3 hours, then study for 2 hours"},
+#         # {"input": "navigate to the gym, do a freelance job for 2 hours, then go home and sleep for 7 hours"},
+#     ]
 
-    for case in test_cases:
-        print(f"\nTest case: {case['input']}")
-        try:
-            async for event in app.astream(case, config=config):
-                for k, v in event.items():
-                    if k != "__end__":
-                        print(v)
-        except Exception as e:
-            print(f"An error occurred: {e}")
+#     for case in test_cases:
+#         print(f"\nTest case: {case['input']}")
+#         try:
+#             async for event in app.astream(case, config=config):
+#                 for k, v in event.items():
+#                     if k != "__end__":
+#                         print(v)
+#         except Exception as e:
+#             print(f"An error occurred: {e}")
 
 
-# Run the main function
-if __name__ == "__main__":
-    asyncio.run(main())
+# # Run the main function
+# if __name__ == "__main__":
+#     asyncio.run(main())

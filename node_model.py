@@ -24,6 +24,7 @@ class PlanExecute(TypedDict):
     past_objectives: List[List[str]]
     execution_results: List[Dict[str, Any]]
     reflection: str
+    messages: List[str]
 
 class DailyObjective(BaseModel):
     """Daily objective to follow in future"""

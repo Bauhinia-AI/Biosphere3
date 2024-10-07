@@ -607,4 +607,4 @@ if __name__ == "__main__":
     # uvicorn is a lightning-fast ASGI server implementation, using uvloop and httptools.
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, port=8000)

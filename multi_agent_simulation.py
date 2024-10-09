@@ -86,9 +86,6 @@ class Agent:
         self.task = config.task
         self.created_at = datetime.now()
 
-        # self.location = random.choice(
-        #     ["home", "park", "restaurant", "hospital", "school", "farm"]
-        # )
         self.inventory = self.generate_initial_inventory()
         # self.save_agent_to_mongo()
 

@@ -1,7 +1,7 @@
 import asyncio
 import random
 from datetime import datetime
-
+import time
 from agent_workflow import app
 from dataclasses import dataclass
 from langchain_openai import ChatOpenAI
@@ -15,43 +15,102 @@ from loguru import logger
 from database.mongo_utils import get_latest_k_documents, insert_document
 import uuid
 
+# tool_functions = """
+# 1. do_freelance_job(): Perform freelance work
+# 2. navigate_to(location): Navigate to a specified location
+# 3. sleep(hours): Sleep for specified number of hours
+# 4. work_change(): Change job
+# 5. get_character_stats(): Get character statistics
+# 6. get_character_status(): Get character status
+# 7. get_character_basic_info(): Get character basic information
+# 8. get_inventory(): Get inventory information
+# 9. submit_resume(): Submit resume
+# 10. vote(): Cast a vote
+# 11. do_public_job(): Perform public work
+# 12. study(hours): Study for specified number of hours
+# 13. talk(person): Talk to a specified person
+# 14. end_talk(): End conversation
+# 15. calculate_distance(location1, location2): Calculate distance between two locations
+# 16. trade(apple, price:float, quantity:int): Trade apple
+# 17. use_item(item): Use an item
+# 18. see_doctor(): Visit a doctor
+# 19. get_freelance_jobs(): Get list of available freelance jobs
+# 20. get_public_jobs(): Get list of available public jobs
+# 21. get_candidates(): Get list of candidates
+# 22. get_activity_subjects(): Get list of activity subjects
+# 23. get_talk_data(): Get conversation data
+# 24. get_position(): Get current position
+# 25. eat(): Eat food
+# """
+
+# locations = """
+# 1. Home
+# 2. Park
+# 3. Restaurant
+# 4. Hospital
+# 5. School
+# 6. Farm
+# """
 tool_functions = """
-1. do_freelance_job(): Perform freelance work
-2. navigate_to(location): Navigate to a specified location
-3. sleep(hours): Sleep for specified number of hours
-4. work_change(): Change job
-5. get_character_stats(): Get character statistics
-6. get_character_status(): Get character status
-7. get_character_basic_info(): Get character basic information
-8. get_inventory(): Get inventory information
-9. submit_resume(): Submit resume
-10. vote(): Cast a vote
-11. do_public_job(): Perform public work
-12. study(hours): Study for specified number of hours
-13. talk(person): Talk to a specified person
-14. end_talk(): End conversation
-15. calculate_distance(location1, location2): Calculate distance between two locations
-16. trade(apple, price:float, quantity:int): Trade apple
-17. use_item(item): Use an item
-18. see_doctor(): Visit a doctor
-19. get_freelance_jobs(): Get list of available freelance jobs
-20. get_public_jobs(): Get list of available public jobs
-21. get_candidates(): Get list of candidates
-22. get_activity_subjects(): Get list of activity subjects
-23. get_talk_data(): Get conversation data
-24. get_position(): Get current position
-25. eat(): Eat food
+1.	submit_cv(targetOccupation: OccupationType, content: string): Submit a resume for a public job.
+Constraints: Can only be submitted on ResumeSubmitDay which is Saturday.,OccupationType:(Teacher,Doctor)\n
+2.	vote(candidateName: string): Cast a vote for a candidate.
+Constraints: Can only vote on VoteDay which is Sunday.\n
+3.	work_as_public_occupation(hours: int): Perform work as a public occupation (e.g., teacher or doctor).
+Constraints: Must have a public occupation, be in the workplace, and have enough energy.\n
+4.	pick_apple(): Pick an apple, costing energy.
+Constraints: Must have enough energy and be in the orchard.\n
+5.	go_fishing(): Fish for resources, costing energy.
+Constraints: Must have enough energy and be in the fishing area.\n
+6.	mine(): Mine for resources, costing energy.
+Constraints: Must have enough energy and be in the mine.\n
+7.	harvest(): Harvest crops, costing energy.
+Constraints: Must have enough energy and be in the harvest area.\n
+8.	buy(itemType: ItemType, amount: int): Purchase items, costing money.
+Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
+9.	sell(itemType: ItemType, amount: int): Sell items for money.
+Constraints: Must have enough items in inventory.ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
+10.	use_item(itemType: ItemType, amount: int): Use an item.
+Constraints: Must have enough items in inventory.ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
+11.	see_doctor(hours: int): Visit a doctor, costing money.
+Constraints: Must have enough money and be in the hospital.\n
+12.	sleep(hours: int): Sleep to recover energy and health.
+Constraints: Must be at home.\n
+13.	study(hours: int): Study to achieve a higher degree.
+Constraints: Must be in school and have enough money.\n
+14.	nav(placeName: string): Navigate to a specified location.
+Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).
 """
+
+tool_functions_easy = """
+    4.	pick_apple(): Pick an apple, costing energy.
+Constraints: Must have enough energy and be in the orchard.\n
+	5.	go_fishing(): Fish for resources, costing energy.
+Constraints: Must have enough energy and be in the fishing area.\n
+	6.	mine(): Mine for resources, costing energy.
+Constraints: Must have enough energy and be in the mine.\n
+	7.	harvest(): Harvest crops, costing energy.
+Constraints: Must have enough energy and be in the harvest area.\n
+	8.	buy(itemType: ItemType, amount: int): Purchase items, costing money.
+Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
+	9.	sell(itemType: ItemType, amount: int): Sell items for money.
+Constraints: Must have enough items in inventory.ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
+	10.	use_item(itemType: ItemType, amount: int): Use an item.
+Constraints: Must have enough items in inventory.ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
+	11.	see_doctor(hours: int): Visit a doctor, costing money.
+Constraints: Must have enough money and be in the hospital.\n
+	12.	sleep(hours: int): Sleep to recover energy and health.
+Constraints: Must be at home.\n
+    13.	study(hours: int): Study to achieve a higher degree.
+Constraints: Must be in school and have enough money.\n
+    14.	nav(placeName: string): Navigate to a specified location.
+Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).
+"""
+
 
 locations = """
-1. Home
-2. Park
-3. Restaurant
-4. Hospital
-5. School
-6. Farm
+school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard
 """
-
 # setup the log file
 logger.add("logs/agent/multi_agent_simulation.log")
 
@@ -85,6 +144,7 @@ class Agent:
         self.role = config.role
         self.task = config.task
         self.created_at = datetime.now()
+        self.experienced_days = 0
 
         self.inventory = self.generate_initial_inventory()
         # self.save_agent_to_mongo()
@@ -112,36 +172,37 @@ class Agent:
         )
 
     async def take_action(self, app, config):
-        # objective = self.generate_objective()
         objective = self.generate_profile()
-        logger.info(objective)
+        # logger.info(f"Objective: {objective}")
         max_steps = 20  # 设置最大步骤数
         step_count = 0
+        start_time = time.time()
         async for event in app.astream(objective, config=config):
             for k, v in event.items():
                 if k != "__end__":
                     print(f"{self.username}: {v}")
                     # 记录信息到文件
-                    log_filename = f"agent_{self.userid}.log"
-                    with open(log_filename, "a") as log_file:
-                        log_file.write(f"{self.username}: {v}\n")
+                    # log_filename = f"agent_{self.userid}.log"
+                    # with open(log_filename, "a") as log_file:
+                    #     log_file.write(f"{self.username}: {v}\n")
                     # if k == "meta_action_sequence":
                     #     """
                     #     k:v
                     #     meta_action_sequence: {'meta_seq': ['get_inventory()', 'talk(traders)', 'trade(item, price)', 'eat()', 'sleep(8)']}
                     #     """
-                    #     for action in v["meta_seq"]:
-                    #         if action.find("trade") != -1:
-                    #             get_profit = trade_item(0, 2, "apple", 1, 1, 2)
-                    #             quantity = get_profit['data']['itemTradeQuantity']
-                    #             price = get_profit['data']['averagePrice']
-                    #             self.stats["cash"] += quantity * price
+                    if k == "adjust_meta_action_sequence":
+                        # print time consumed
+                        time_consumed = time.time() - start_time
+                        logger.info(f"Time consumed: {time_consumed}")
+                        for action in v["meta_seq"]:
+                            logger.info(action)
+                        logger.info("=================================")
 
             step_count += 1
             if step_count >= max_steps:
                 print(f"{self.username}: 达到最大步骤数")
-                with open(log_filename, "a") as log_file:
-                    log_file.write(f"{self.username}: 达到最大步骤数\n")
+                # with open(log_filename, "a") as log_file:
+                #     log_file.write(f"{self.username}: 达到最大步骤数\n")
                 break
         # self.update_stats()
 
@@ -200,7 +261,7 @@ class Agent:
             role="{self.role}",
             task="{self.task}",
             """,
-            "tool_functions": tool_functions,
+            "tool_functions": tool_functions_easy,
             "locations": locations,
             "past_objectives": get_latest_k_documents(
                 "daily_objective", 2, self.userid

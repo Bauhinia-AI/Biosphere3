@@ -5,30 +5,30 @@ import json
 # 记录连接到AI端的所有托管游戏玩家
 connected_clients = set()
 
-# 模拟数据库
+# 维护一个字典，将character_id映射到用户对象
+character_objects = {}
+
+# 模拟数据库，需要切换为数据库
 fake_db = {
     1: {"name": "PlayerOne", "level": 5},
     2: {"name": "PlayerTwo", "level": 3},
 }
 
-# 维护一个字典，将character_id映射到用户对象
-character_objects = {}
 
 # 尝试从数据库中获取用户信息并创建对象
 def create_character_object(character_id, websocket_address):
     user_info = fake_db.get(character_id)
     if user_info:
-        # 创建一个用户对象
         character_object = {
             "characterId": character_id,
             "name": user_info["name"],
             "level": user_info["level"],
             "websocket": websocket_address,
         }
-        # 将对象存储在字典中
         character_objects[character_id] = character_object
         return character_object
     return None
+
 
 # 处理游戏端发送的消息
 async def receive_messages(websocket):
@@ -83,14 +83,14 @@ def handle_message(message, websocket_address):
 #         await client.send(json.dumps(message))
 
 
-# 创建消息的辅助函数
-def create_message(message_name, message_code):
-    return {
-        "characterId": 1,
-        "messageCode": message_code,
-        "messageName": message_name,
-        "data": {"msg": f"server request {message_name}"},
-    }
+# # 创建消息的辅助函数
+# def create_message(message_name, message_code):
+#     return {
+#         "characterId": 1,
+#         "messageCode": message_code,
+#         "messageName": message_name,
+#         "data": {"msg": f"server request {message_name}"},
+#     }
 
 
 # 处理游戏端连接
@@ -104,6 +104,18 @@ async def handler(websocket, path):
     except websockets.ConnectionClosed:
         print(f"Connection closed from {websocket.remote_address}")
     finally:
+        character_id = next(
+            (
+                cid
+                for cid, obj in character_objects.items()
+                if obj["websocket"] == websocket.remote_address
+            ),
+            None,
+        )
+        if character_id is not None:
+            del character_objects[character_id]
+            print(f"Character object for ID {character_id} removed.")
+
         connected_clients.remove(websocket)
         print(
             f"Client disconnected from {websocket.remote_address}. Total connected clients: {len(connected_clients)}"

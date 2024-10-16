@@ -12,7 +12,7 @@ import os
 from loguru import logger
 
 # from tool_executor import trade_item
-from database.mongo_utils import get_latest_k_documents, insert_document
+from database_api_utils import make_api_request_sync
 import uuid
 
 # tool_functions = """
@@ -155,7 +155,7 @@ class Agent:
         return random.sample(possible_items, num_items)
 
     def save_agent_to_mongo(self):
-        doc = {
+        data = {
             "userid": self.userid,
             "username": self.username,
             "gender": self.gender,
@@ -166,7 +166,8 @@ class Agent:
             "created_at": self.created_at,
             "stats": self.stats,
         }
-        insert_document("agent_profile", doc)
+        endpoint = "/store_npc"
+        make_api_request_sync(endpoint, data)
         logger.info(
             f"Agent {self.userid} with name {self.username} saved to MongoDB Atlas."
         )
@@ -251,6 +252,18 @@ class Agent:
     #         return response.content
 
     def generate_profile(self):
+        data = {
+            "collection_name": "daily_objective",
+            "user_id": self.userid,
+            "k": 2,
+            "item": "objectives",  # Assuming 'objectives' is the field you're interested in
+        }
+        past_objectives_response = make_api_request_sync(
+            "POST", "/latest_k_documents", data=data
+        )
+        # Extract the objectives from the response if necessary
+        past_objectives = [doc.get("objectives") for doc in past_objectives_response]
+
         return {
             "userid": self.userid,
             "input": f"""userid={self.userid},
@@ -263,9 +276,7 @@ class Agent:
             """,
             "tool_functions": tool_functions_easy,
             "locations": locations,
-            "past_objectives": get_latest_k_documents(
-                "daily_objective", 2, self.userid
-            ),
+            "past_objectives": past_objectives("daily_objective", 2, self.userid),
         }
 
     def update_stats(self):

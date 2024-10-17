@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://images.emojiterra.com/openmoji/v15.0/1024px/1f47e.png" width="200" height="200">
+<img src="src/img/bio3_logo.png">
 <br>
 <em>Biosphere3</em>
 <br><br>

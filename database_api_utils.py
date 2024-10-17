@@ -95,9 +95,6 @@ if __name__ == "__main__":
     print("Storing Impression:", response)
 
     # 检索印象
-    # 定义 collection_name，可以根据您的实际配置进行修改
-    impression_collection_name = "impressions"
-
     get_impression_data = {
         "from_id": 1,
         "to_id": 2,

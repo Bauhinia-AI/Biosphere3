@@ -1,5 +1,5 @@
 <p align="center">
-<img src="src/img/bio3_logo.png">
+<img src="src/img/bio3_logo_with_bg.png">
 <br>
 <em>Biosphere3</em>
 <br><br>

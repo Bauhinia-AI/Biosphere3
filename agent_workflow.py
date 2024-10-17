@@ -20,8 +20,7 @@ from loguru import logger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database.mongo_utils import insert_document
-from database import config
+from database_api_utils import make_api_request_async
 
 # 设置环境变量
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
@@ -31,17 +30,17 @@ os.environ["LANGCHAIN_PROJECT"] = "Bio3_agent"
 
 # 定义工具列表
 tool_list = [
-pick_apple,
-go_fishing,
-mine,
-harvest,
-buy,
-sell,
-use_item,
-see_doctor,
-sleep,
-study,
-nav
+    pick_apple,
+    go_fishing,
+    mine,
+    harvest,
+    buy,
+    sell,
+    use_item,
+    see_doctor,
+    sleep,
+    study,
+    nav,
 ]
 # llm-readable
 # tool_functions = """
@@ -128,8 +127,8 @@ school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchar
 """
 
 # 创建LLM和代理
-#llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini")
-#prompt = hub.pull("wfh/react-agent-executor")
+# llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini")
+# prompt = hub.pull("wfh/react-agent-executor")
 tool_node = ToolNode(tool_list)
 
 agent_with_tools = ChatOpenAI(
@@ -305,56 +304,59 @@ async def generate_daily_objective(state: PlanExecute):
             "past_objectives": state.get("past_objectives", []),
         }
     )
-    # Prepare the document to insert
-    document = {
+    # Prepare data for API request
+    data = {
         "userid": state["userid"],
-        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "objectives": daily_objective.objectives,
     }
-    # Insert document using insert_document
-    inserted_id = insert_document(config.daily_objective_collection_name, document)
-    # print(
-    #     f"Inserted daily objective with id {inserted_id} for userid {document['userid']}"
-    # )
+    # Make API request to store_daily_objective
+    endpoint = "/store_daily_objective"
+    await make_api_request_async(endpoint, data)
 
     return {"daily_objective": daily_objective.objectives}
 
 
 async def generate_detailed_plan(state: PlanExecute):
     detailed_plan = await detail_planner.ainvoke(state)
-    # Prepare the document to insert
-    document = {
+    # Prepare data for API request
+    data = {
         "userid": state["userid"],
-        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "detailed_plan": detailed_plan.detailed_plan,
     }
-    # Insert document using insert_document
-    # inserted_id = insert_document(config.plan_collection_name, document)
-    # print(
-    #     f"Inserted detailed plan with id {inserted_id} for userid {document['userid']}"
-    # )
+    # Make API request to store_plan
+    endpoint = "/store_plan"
+    await make_api_request_async(endpoint, data)
 
     return {"plan": detailed_plan.detailed_plan}
 
 
 async def generate_meta_action_sequence(state: PlanExecute):
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(state)
-    document = {
+    # Prepare data for API request
+    data = {
         "userid": state["userid"],
-        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "meta_sequence": meta_action_sequence.meta_action_sequence,
     }
-    # Insert document using insert_document
-    # inserted_id = insert_document(config.meta_seq_collection_name, document)
-    # print(
-    #     f"Inserted meta action sequence with id {inserted_id} for userid {document['userid']}"
-    # )
+    # Make API request to store_meta_seq
+    endpoint = "/store_meta_seq"
+    await make_api_request_async(endpoint, data)
 
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
+
 
 async def adjust_meta_action_sequence(state: PlanExecute):
     meta_action_sequence = await meta_seq_adjuster.ainvoke(state)
+    # Prepare data for the API request
+    data = {
+        "userid": state["userid"],
+        "meta_sequence": meta_action_sequence.meta_action_sequence,
+    }
+    # Make API request to update_meta_seq
+    endpoint = "/update_meta_seq"
+    await make_api_request_async("POST", endpoint, data=data)
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
+
+
 # async def generate_reflection(state: PlanExecute):
 #     meta_seq = state.get("meta_seq", [])
 #     execution_results = state.get("execution_results", [])
@@ -363,19 +365,17 @@ async def adjust_meta_action_sequence(state: PlanExecute):
 #         {"meta_seq": meta_seq, "execution_results": execution_results}
 #     )
 
-#     # 准备要插入的文档
-#     document = {
+#     # Prepare data for API request
+#     data = {
 #         "userid": state["userid"],
-#         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 #         "meta_sequence": meta_seq,
 #         "execution_results": execution_results,
 #         "reflection": reflection.reflection,
 #     }
-
-#     # 使用 insert_document 插入文档
-#     #inserted_id = insert_document(config.reflection_collection_name, document)
-#     print(f"Inserted reflection with id {inserted_id} for userid {document['userid']}")
-
+#     # Make API request to store reflection (assuming an endpoint exists)
+#     endpoint = "/store_reflection"
+#     await make_api_request_async(endpoint, data)
+#
 #     return {"reflection": reflection.reflection}
 
 

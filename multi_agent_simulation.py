@@ -258,11 +258,11 @@ class Agent:
             "k": 2,
             "item": "objectives",  # Assuming 'objectives' is the field you're interested in
         }
-        past_objectives_response = make_api_request_sync(
-            "POST", "/latest_k_documents", data=data
-        )
+        # past_objectives_response = make_api_request_sync(
+        #     "POST", "/latest_k_documents", data=data
+        # )past
         # Extract the objectives from the response if necessary
-        past_objectives = [doc.get("objectives") for doc in past_objectives_response]
+        # _objectives = [doc.get("objectives") for doc in past_objectives_response]
 
         return {
             "userid": self.userid,
@@ -276,7 +276,7 @@ class Agent:
             """,
             "tool_functions": tool_functions_easy,
             "locations": locations,
-            "past_objectives": past_objectives("daily_objective", 2, self.userid),
+            "past_objectives": [],  # past_objectives("daily_objective", 2, self.userid),
         }
 
     def update_stats(self):
@@ -473,7 +473,7 @@ async def run_agent(agent, config, days):
 # 主函数
 async def main():
     config = {"recursion_limit": 3000}
-    days = 2
+    days = 1
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         tasks = [

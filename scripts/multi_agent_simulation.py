@@ -207,49 +207,7 @@ class Agent:
                 break
         # self.update_stats()
 
-    #     def generate_objective(self) -> str:
-    #         llm = ChatOpenAI(
-    #             base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", timeout=30
-    #         )  # 30秒超时
-
-    #         plan_prompt = ChatPromptTemplate.from_template(
-    #             """Generate a plan based on the agent's personal information and tasks. The plan should detail the agent's actions for an entire day, specifying how many hours each task takes. Avoid using vague terms.
-
-    # Agent's personal information:
-    # Name: {username}
-    # Description: {description}
-    # Role: {role}
-    # Task: {task}
-    # Location: {location}
-    # Status: {stats}
-    # Inventory: {inventory}
-
-    # You can use ONLY the following tool functions in your plan. Do not use any functions that are not listed here:
-    # {tool_functions}
-
-    # Available locations:
-    # {locations}
-
-    # Output the plan in a single sentence without any unnecessary words.
-    # Here is the format example and your plan should NOT be longer than this example:
-    # Wake up at 7 AM, go to the park and chat with people for 1 hour, study at school for 6 hours, have lunch at the restaurant, study at the school for three hours, return home and sleep."""
-    #         )
-
-    #         formatted_prompt = plan_prompt.format(
-    #             username=self.username,
-    #             description=self.description,
-    #             role=self.role,
-    #             task=self.task,
-    #             location=self.location,
-    #             stats=self.stats,
-    #             inventory=self.inventory,
-    #             tool_functions=tool_functions,
-    #             locations=locations,
-    #         )
-
-    #         response = llm.invoke(formatted_prompt)
-    #         print(response.content)
-    #         return response.content
+    
 
     def generate_profile(self):
         data = {

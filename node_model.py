@@ -24,7 +24,6 @@ class PlanExecute(TypedDict):
     past_objectives: List[List[str]]
     execution_results: List[Dict[str, Any]]
     reflection: str
-    messages: List[str]
 
 class DailyObjective(BaseModel):
     """Daily objective to follow in future"""
@@ -52,3 +51,11 @@ class Response(BaseModel):
 
     response: str
 
+
+class Act(BaseModel):
+    """Action to perform."""
+
+    action: Union[Response, Plan] = Field(
+        description="Action to perform. If you want to respond to user, use Response. "
+        "If you need to further use tools to get the answer, use Plan."
+    )

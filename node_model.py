@@ -25,6 +25,7 @@ class PlanExecute(TypedDict):
     execution_results: List[Dict[str, Any]]
     reflection: str
     messages: List[str]
+    need_replan: bool
 
 class DailyObjective(BaseModel):
     """Daily objective to follow in future"""

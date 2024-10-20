@@ -375,12 +375,11 @@ import websockets
 import json
 
 async def listen_for_action_results(state: PlanExecute):
-    uri = "ws://localhost:8765"  # 连接到本地的游戏服务器
+    uri = "ws://localhost:8765"  
     meta_seq = state.get("meta_seq", [])
     execution_results = []
 
     async with websockets.connect(uri) as websocket:
-        # 发送动作序列给游戏服务器
         await websocket.send(json.dumps({
             "userid": state["userid"],
             "meta_sequence": meta_seq,
@@ -388,7 +387,6 @@ async def listen_for_action_results(state: PlanExecute):
 
         print("Started listening for action results...")
 
-        # 初始化接收的动作结果数量
         received_actions = 0
 
         while True:
@@ -420,6 +418,7 @@ async def listen_for_action_results(state: PlanExecute):
                 action_success = action_result.get("data", {}).get("result", False)
                 if not action_success:
                     print(f"Action {data['action']} failed. No further actions will be executed.")
+                    state["need_replan"] = True
                     break
 
                 # 如果已收到与执行的动作数量相同的结果，且没有失败，则继续等待或退出
@@ -436,6 +435,12 @@ async def listen_for_action_results(state: PlanExecute):
 
     # 返回执行结果
     return {"execution_results": execution_results}
+
+def should_replan(state: PlanExecute):
+    if state.get("need_replan", False):
+        return True
+    else:
+        return False
 
 async def describe_action_results(state: PlanExecute):
     execution_results = state.get("execution_results", [])
@@ -459,8 +464,6 @@ async def describe_action_results(state: PlanExecute):
 
     return {"action_descriptions": descriptions}
 
-# def tool_caller(state: PlanExecute):
-#     return {"messages": [agent_with_tools.invoke(state)]}
 # # 创建工作流
 workflow = StateGraph(PlanExecute)
 workflow.add_node("Objectives_planner", generate_daily_objective)

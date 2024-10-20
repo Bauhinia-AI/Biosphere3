@@ -1,9 +1,35 @@
 import asyncio
 from agent_srv.node_engines import *
+from agent_srv.factories import initialize_running_state
+from agent_srv.node_model import RunningState
 from langgraph.graph import StateGraph, START, END
 import os
 import asyncio
+import pprint
+character_params = {
+        "name": "Aria Windrunner",
+        "gender": "Female",
+        "slogan": "Seek and you shall find",
+        "description": "A brave adventurer with a keen sense of direction.",
+        "role": "Explorer",
+        "inventory": {
+            "map": "Ancient World Map",
+            "compass": "Golden Compass",
+            "backpack": "Leather Backpack",
+            "tools": ["Torch", "Rope", "Knife"]
+        },
+        "health": 100,
+        "energy": 75
+    }
 
+decision_params = {
+    "need_replan": False,
+    "action_description": [],
+    "new_plan": [],
+    "daily_objective": [],
+    "meta_seq": [],
+    "reflection": []
+}
 tool_functions_easy = """
     4.	pick_apple(): Pick an apple, costing energy.
 Constraints: Must have enough energy and be in the orchard.\n
@@ -28,13 +54,30 @@ Constraints: Must be in school and have enough money.\n
     14.	nav(placeName: string): Navigate to a specified location.
 Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).
 """
+meta_params = {
+    "tool_functions": tool_functions_easy,
+    "day": "Monday"
+}
+
 
 class LangGraphInstance:
     def __init__(self, user_id):
         self.user_id = user_id
         # 初始化 langgraph 实例
+        # 根据user_id 检索数据库中的信息，更新stat
+
         self.graph = self._get_workflow_without_listener()
+        self.state: RunningState = initialize_running_state(user_id,character_params, decision_params, meta_params)
         logger.info(f"User {self.user_id} workflow initialized")
+
+        logger.info("🎭 character_stats: \n" + pprint.pformat(self.state["character_stats"]))
+
+        logger.info("🧠 decision: \n" + pprint.pformat(self.state["decision"]))
+
+
+    def init_character_stats(self):
+        # 根据user_id 检索数据库中的信息，更新stats
+        pass
 
 
     async def handle_action(self, action, data):
@@ -78,11 +121,12 @@ class LangGraphInstance:
         # workflow.add_node("detailed_planner", generate_detailed_plan)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
         workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
-
-        workflow.add_edge(START, "Objectives_planner")
+        workflow.set_entry_point("Objectives_planner")
+        workflow.set_finish_point("adjust_meta_action_sequence")
+        #workflow.add_edge(START, "Objectives_planner")
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
-        workflow.add_edge("adjust_meta_action_sequence", END)
+        #workflow.add_edge("adjust_meta_action_sequence", END)
 
 
         # workflow.add_conditional_edges("replan", should_end)
@@ -101,13 +145,15 @@ class LangGraphInstance:
             """,
             "tool_functions": tool_functions_easy,
             "locations": ["New York", "San Francisco"],
-            "past_objectives": ["Complete project X", "Improve system performance"],
+            "past_objectives": ["Complete project hahahahahahahahahaha", "Improve system performance"],
 
         }
-        return await self.graph.ainvoke(state)
+        return await self.graph.ainvoke(state,stream_mode="values")
 
 
 if __name__ == "__main__":
     instance = LangGraphInstance(12345)
-    res = asyncio.run(instance.ainvoke())
-    print(res)
+    #res = asyncio.run(instance.ainvoke())
+    #print(res)
+    #res 
+    

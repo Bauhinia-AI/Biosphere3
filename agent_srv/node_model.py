@@ -11,6 +11,7 @@ class Plan(BaseModel):
     )
 
 
+
 class PlanExecute(TypedDict):
     userid: int
     input: str
@@ -26,6 +27,46 @@ class PlanExecute(TypedDict):
     reflection: str
     messages: List[str]
     need_replan: bool
+
+
+class CharacterStats(TypedDict):
+    #static stats
+    name: str
+    gender: str
+    slogan: str
+    description: str
+    role: str
+    #dynamic stats
+    inventory: Dict[str, Any]
+    health: int
+    energy: int
+
+
+class Decision(TypedDict):
+    need_replan: bool
+    #action_description: ["I successfully pick an apple", "I failed to navigate home",...]
+    action_description: Annotated[List[str], operator.add]
+    #new_plan: ["I should rest first, then I should go home",...]
+    new_plan: Annotated[List[str], operator.add]
+    #daily_objective: ["I should learn how to navigate home",...]
+    daily_objective: Annotated[List[str], operator.add]
+
+    meta_seq: List[str]
+    reflection: Annotated[List[str], operator.add]
+
+class Meta(TypedDict):
+    tool_functions: str
+    day:str
+
+class RunningState(TypedDict):
+    userid: int
+    character_stats: CharacterStats
+    decision: Decision
+    meta: Meta
+
+
+
+
 
 class DailyObjective(BaseModel):
     """Daily objective to follow in future"""

@@ -110,12 +110,17 @@ class LangGraphInstance:
         # workflow.add_conditional_edges("replan", should_end)
         return workflow.compile()
     def signal_decision(self,state: RunningState):
+
         if state['signal'] == "SIGNAL_err":
             logger.info("❌ Received SIGNAL_err, starting planning...")
+            #更新错误信息
             return "Objectives_planner"
         elif state['signal'] == "SIGNAL_plan":
             logger.info("✅ Received SIGNAL_plan, starting planning...")
             return "Objectives_planner"
+        elif state['signal'] == "SIGNAL_action_result":
+            logger.info("🤔 Received SIGNAL_action_result,sensing")
+            return "Listener"
         else:
             # 未知信号，继续监听
             logger.info("🟡 Received unknown signal, continuing...")
@@ -152,13 +157,16 @@ async def test_langgraph_instance():
         await instance.send_signal('SIGNAL_plan')
 
         # 等待代理处理信号
-        await asyncio.sleep(10)
+        for i in range(10):
+            await instance.send_signal('SIGNAL_action_result')
 
         # 模拟发送 SIGNAL_err 信号
         await instance.send_signal('SIGNAL_err')
 
+
+
         # 再次等待代理处理信号
-        await asyncio.sleep(1)
+        await asyncio.sleep(20)
 
         # 可以根据需要继续发送信号
 

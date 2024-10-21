@@ -1,10 +1,19 @@
-from agent_srv.node_model import PlanExecute, DailyObjective, DetailedPlan, MetaActionSequence
+from agent_srv.node_model import (
+    PlanExecute,
+    DailyObjective,
+    DetailedPlan,
+    MetaActionSequence,
+    Decision,
+    Meta,
+    RunningState,
+)
 from agent_srv.prompts import *
 from langchain_openai import ChatOpenAI
 from loguru import logger
 import websockets
 import json
 import os
+
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
@@ -30,15 +39,13 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
 ).with_structured_output(MetaActionSequence)
 
 
-
-
-async def generate_daily_objective(state: PlanExecute):
-    daily_objective = await obj_planner.ainvoke(
+async def generate_daily_objective(state: RunningState):
+    planner_response: RunningState = await obj_planner.ainvoke(
         {
-            "messages": [("user", state["input"])],
-            "tool_functions": state["tool_functions"],
-            "locations": state["locations"],
-            "past_objectives": state.get("past_objectives", []),
+            "character_stats": state["character_stats"],
+            "tool_functions": state["meta"]["tool_functions"],
+            "locations": state["meta"]["available_locations"],
+            "past_objectives": state.get("decision", {}).get("daily_objective", []),
         }
     )
     # Prepare data for API request
@@ -93,16 +100,21 @@ async def adjust_meta_action_sequence(state: PlanExecute):
     # await make_api_request_async("POST", endpoint, data=data)
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
 
+
 async def listen_for_action_results(state: PlanExecute):
-    uri = "ws://localhost:8765"  
+    uri = "ws://localhost:8765"
     meta_seq = state.get("meta_seq", [])
     execution_results = []
 
     async with websockets.connect(uri) as websocket:
-        await websocket.send(json.dumps({
-            "userid": state["userid"],
-            "meta_sequence": meta_seq,
-        }))
+        await websocket.send(
+            json.dumps(
+                {
+                    "userid": state["userid"],
+                    "meta_sequence": meta_seq,
+                }
+            )
+        )
 
         print("Started listening for action results...")
 
@@ -117,11 +129,13 @@ async def listen_for_action_results(state: PlanExecute):
 
                 # 处理动作结果
                 description = await process_action_result(action_result)
-                execution_results.append({
-                    "action": action_result.get("data", {}).get("actionName", ""),
-                    "result": action_result,
-                    "description": description
-                })
+                execution_results.append(
+                    {
+                        "action": action_result.get("data", {}).get("actionName", ""),
+                        "result": action_result,
+                        "description": description,
+                    }
+                )
 
                 # 存储结果
                 data = {
@@ -136,7 +150,9 @@ async def listen_for_action_results(state: PlanExecute):
                 # 检查动作是否失败
                 action_success = action_result.get("data", {}).get("result", False)
                 if not action_success:
-                    print(f"Action {data['action']} failed. No further actions will be executed.")
+                    print(
+                        f"Action {data['action']} failed. No further actions will be executed."
+                    )
                     state["need_replan"] = True
                     break
 
@@ -155,6 +171,7 @@ async def listen_for_action_results(state: PlanExecute):
     # 返回执行结果
     return {"execution_results": execution_results}
 
+
 async def process_action_result(action_result):
     # 提取必要的信息
     data = action_result.get("data", {})
@@ -163,7 +180,7 @@ async def process_action_result(action_result):
     msg = data.get("msg", "")
 
     # 构建描述
-    #description = f"Action '{action_name}' execution {'succeeded' if result else 'failed'}. Message: {msg}"
+    # description = f"Action '{action_name}' execution {'succeeded' if result else 'failed'}. Message: {msg}"
     # 如果需要使用 LLM 生成更丰富的描述，可以取消注释以下代码
     description = await descritor.ainvoke({"action_result": str(data)})
     response = description.content

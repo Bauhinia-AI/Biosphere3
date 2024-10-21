@@ -5,13 +5,7 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
         (
             "system",
             """You are the daily objectives planner in a RPG game. For the given user profile:\n
-            Name:
-            Description:
-            Role:
-            Task:
-            Location:
-            Status:
-            Inventory:
+            {character_stats}
             \n
             and the past daily objectives(can be empty) are:
             {past_objectives}.
@@ -27,7 +21,7 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             ["Working: Working in the farm","Studying: Discover something about science", "Socializing: Try to make friends"]\n
             """,
         ),
-        ("placeholder", "{messages}"),
+        
     ]
 )
 

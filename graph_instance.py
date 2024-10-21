@@ -56,7 +56,8 @@ Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harve
 """
 meta_params = {
     "tool_functions": tool_functions_easy,
-    "day": "Monday"
+    "day": "Monday",
+    "available_locations": ["school", "workshop", "home", "farm", "mall", "square", "hospital", "fruit", "harvest", "fishing", "mine", "orchard"]
 }
 
 

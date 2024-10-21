@@ -2,6 +2,7 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from typing import Union, List, Annotated, Tuple, TypedDict, Dict, Any
 import operator
 from langgraph.graph import StateGraph
+import asyncio
 #带有合并逻辑的鸡肋
 
 class Plan(BaseModel):
@@ -71,7 +72,8 @@ class RunningState(TypedDict):
     character_stats: Annotated[CharacterStats, generic_reducer]
     decision: Annotated[Decision, generic_reducer]
     meta: Annotated[Meta, generic_reducer]
-
+    signal: str
+    signal_queue: asyncio.Queue
 
 
 

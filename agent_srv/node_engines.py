@@ -13,7 +13,7 @@ from loguru import logger
 import websockets
 import json
 import os
-
+import pprint
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
@@ -37,10 +37,10 @@ meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
 meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
-import pprint
+
 
 async def generate_daily_objective(state: RunningState):
-    pprint.pprint(state)
+
     planner_response: RunningState = await obj_planner.ainvoke(
         {
             "character_stats": state["character_stats"],
@@ -65,7 +65,7 @@ async def generate_daily_objective(state: RunningState):
     }
 
 
-async def generate_detailed_plan(state: PlanExecute):
+async def generate_detailed_plan(state: RunningState):
     detailed_plan = await detail_planner.ainvoke(state)
     # Prepare data for API request
     data = {
@@ -122,9 +122,9 @@ async def adjust_meta_action_sequence(state: RunningState):
     }
 
 
-async def listen_for_action_results(state: PlanExecute):
+async def listen_for_action_results(state: RunningState):
     uri = "ws://localhost:8765"
-    meta_seq = state.get("meta_seq", [])
+    meta_seq = state.get("decision", {}).get("meta_seq", [])
     execution_results = []
 
     async with websockets.connect(uri) as websocket:
@@ -207,3 +207,18 @@ async def process_action_result(action_result):
     response = description.content
     logger.info(response)
     return response
+
+async def wait_for_signal(state: RunningState):
+    # 实现一个异步的信号监听器
+    # 这里可以使用 asyncio.Queue 或其他机制
+    # 假设我们在 state 中有一个 signal_queue
+    signal = await state['signal_queue'].get()
+    logger.info(f"Received signal: {signal}")
+    return signal
+
+
+async def Listener(state: RunningState):
+    # 等待信号
+
+    signal = await wait_for_signal(state)  # 将信号存储在状态中
+    return {"signal": signal}

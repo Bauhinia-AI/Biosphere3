@@ -6,30 +6,9 @@ from langgraph.graph import StateGraph, START, END
 import os
 import asyncio
 import pprint
-character_params = {
-        "name": "Aria Windrunner",
-        "gender": "Female",
-        "slogan": "Seek and you shall find",
-        "description": "A brave adventurer with a keen sense of direction.",
-        "role": "Explorer",
-        "inventory": {
-            "map": "Ancient World Map",
-            "compass": "Golden Compass",
-            "backpack": "Leather Backpack",
-            "tools": ["Torch", "Rope", "Knife"]
-        },
-        "health": 100,
-        "energy": 75
-    }
 
-decision_params = {
-    "need_replan": False,
-    "action_description": [],
-    "new_plan": [],
-    "daily_objective": [],
-    "meta_seq": [],
-    "reflection": []
-}
+
+
 tool_functions_easy = """
     4.	pick_apple(): Pick an apple, costing energy.
 Constraints: Must have enough energy and be in the orchard.\n
@@ -54,87 +33,8 @@ Constraints: Must be in school and have enough money.\n
     14.	nav(placeName: string): Navigate to a specified location.
 Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).
 """
-meta_params = {
-    "tool_functions": tool_functions_easy,
-    "day": "Monday",
-    "available_locations": ["school", "workshop", "home", "farm", "mall", "square", "hospital", "fruit", "harvest", "fishing", "mine", "orchard"]
-}
 
-
-class LangGraphInstance:
-    def __init__(self, user_id):
-        self.user_id = user_id
-        # 初始化 langgraph 实例
-        # 根据user_id 检索数据库中的信息，更新stat
-
-        self.graph = self._get_workflow_without_listener()
-        #self.state: RunningState = initialize_running_state(user_id,character_params, decision_params, meta_params)
-        logger.info(f"User {self.user_id} workflow initialized")
-
-        # logger.info("🎭 character_stats: \n" + pprint.pformat(self.state["character_stats"]))
-
-        # logger.info("🧠 decision: \n" + pprint.pformat(self.state["decision"]))
-
-
-    def init_character_stats(self):
-        # 根据user_id 检索数据库中的信息，更新stats
-        pass
-
-
-    async def handle_action(self, action, data):
-        # 根据 action 执行相应的处理
-        if action == 'process_message':
-            # 处理来自客户端的消息
-            # 例如，执行工作流，生成响应
-            response = await self.process_message(data)
-            return response
-        else:
-            return {'error': 'Unknown action'}
-
-    async def process_message(self, data):
-        # 实现您的处理逻辑
-        # 调用 langgraph 实例执行工作流
-        # 返回处理结果
-        return {'result': 'Message processed'}
-    
-    def _get_workflow_with_listener(self):
-        workflow = StateGraph(PlanExecute)
-        workflow.add_node("Objectives_planner", generate_daily_objective)
-        # workflow.add_node("detailed_planner", generate_detailed_plan)
-        workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
-        workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
-        workflow.add_node("Action_Result_Listener", listen_for_action_results)
-        
-        
-
-
-        # workflow.add_node("reflector", generate_reflection)
-
-        workflow.add_edge(START, "Objectives_planner")
-        workflow.add_edge("Objectives_planner", "meta_action_sequence")
-        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
-        workflow.add_edge("adjust_meta_action_sequence", "Action_Result_Listener")
-        workflow.add_edge("Action_Result_Listener", END)
-        return workflow.compile()
-    def _get_workflow_without_listener(self):
-        workflow = StateGraph(RunningState)
-        workflow.add_node("Objectives_planner", generate_daily_objective)
-        # workflow.add_node("detailed_planner", generate_detailed_plan)
-        workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
-        workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
-        workflow.set_entry_point("Objectives_planner")
-        workflow.set_finish_point("adjust_meta_action_sequence")
-        #workflow.add_edge(START, "Objectives_planner")
-        workflow.add_edge("Objectives_planner", "meta_action_sequence")
-        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
-        #workflow.add_edge("adjust_meta_action_sequence", END)
-
-
-        # workflow.add_conditional_edges("replan", should_end)
-        return workflow.compile()
-    
-    async def ainvoke(self):
-        initial_state = {
+initial_state = {
         'userid': 12,
         'character_stats': {
             'name': 'Alice',
@@ -158,14 +58,119 @@ class LangGraphInstance:
             'tool_functions': tool_functions_easy,
             'day': 'Monday',
             'available_locations': ['school', 'workshop', 'home', 'farm', 'mall', 'square', 'hospital', 'fruit', 'harvest', 'fishing', 'mine', 'orchard'],
-        }
+        },
+        'signal': '',
+        'signal_queue': asyncio.Queue(),
     }
+
+class LangGraphInstance:
+    def __init__(self, user_id):
+        self.user_id = user_id
+        # 初始化 langgraph 实例
+        # 根据user_id 检索数据库中的信息，更新stat
+        self.state = RunningState(**initial_state)
+        self.graph = self._get_workflow_with_signal()
+        #TODO We should get and init state from database
+        #self.state: RunningState = initialize_running_state(user_id,character_params, decision_params, meta_params)
+        logger.info(f"User {self.user_id} workflow initialized")
+
+        self.task = asyncio.create_task(self.a_run())
+
+    async def send_signal(self, signal):
+        await self.state['signal_queue'].put(signal)
+    
+    def _get_workflow_with_listener(self):
+        workflow = StateGraph(PlanExecute)
+        workflow.add_node("Objectives_planner", generate_daily_objective)
+        # workflow.add_node("detailed_planner", generate_detailed_plan)
+        workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
+        workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
+        workflow.add_node("Action_Result_Listener", listen_for_action_results)
+        
+        
+
+
+        # workflow.add_node("reflector", generate_reflection)
+
+        workflow.add_edge(START, "Objectives_planner")
+        workflow.add_edge("Objectives_planner", "meta_action_sequence")
+        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
+        workflow.add_edge("adjust_meta_action_sequence", "Action_Result_Listener")
+        workflow.add_edge("Action_Result_Listener", END)
+        return workflow.compile()
+    def _get_workflow_without_listener(self):
+        workflow = StateGraph(RunningState)
+        workflow.add_node("Objectives_planner", generate_daily_objective)
+        workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
+        workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
+        workflow.set_entry_point("Objectives_planner")
+        workflow.set_finish_point("adjust_meta_action_sequence")
+        workflow.add_edge("Objectives_planner", "meta_action_sequence")
+        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
+        # workflow.add_conditional_edges("replan", should_end)
+        return workflow.compile()
+    def signal_decision(self,state: RunningState):
+        if state['signal'] == "SIGNAL_err":
+            logger.info("❌ Received SIGNAL_err, starting planning...")
+            return "Objectives_planner"
+        elif state['signal'] == "SIGNAL_plan":
+            logger.info("✅ Received SIGNAL_plan, starting planning...")
+            return "Objectives_planner"
+        else:
+            # 未知信号，继续监听
+            logger.info("🟡 Received unknown signal, continuing...")
+            return "Listener"
+        
+    def _get_workflow_with_signal(self):
+        workflow = StateGraph(RunningState)
+        workflow.add_node("Listener", Listener)
+        workflow.add_node("Objectives_planner", generate_daily_objective)
+        workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
+        workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
+        workflow.add_conditional_edges("Listener", self.signal_decision)
+
+        workflow.set_entry_point("Listener")
+        workflow.set_finish_point("Listener")
+
+        workflow.add_edge("Objectives_planner", "meta_action_sequence")
+        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
+        workflow.add_edge("adjust_meta_action_sequence", "Listener")
+        return workflow.compile()
+    async def a_run(self):
         return await self.graph.ainvoke(initial_state)
 
+async def test_langgraph_instance():
+        user_id = 'test_user'
+        instance = LangGraphInstance(user_id)
+
+        # 等待代理启动并进入监听状态
+        await asyncio.sleep(1)
+        
+        # 现在实例已经在运行，并在等待信号
+
+        #模拟发送 SIGNAL_plan 信号
+        await instance.send_signal('SIGNAL_plan')
+
+        # 等待代理处理信号
+        await asyncio.sleep(10)
+
+        # 模拟发送 SIGNAL_err 信号
+        await instance.send_signal('SIGNAL_err')
+
+        # 再次等待代理处理信号
+        await asyncio.sleep(1)
+
+        # 可以根据需要继续发送信号
+
+        # 最后，取消代理任务（如果需要）
+        instance.task.cancel()
+        try:
+            await instance.task
+        except asyncio.CancelledError:
+            pass
 
 if __name__ == "__main__":
-    instance = LangGraphInstance(12345)
-    res = asyncio.run(instance.ainvoke())
-    pprint.pprint(res['decision'])
-    #res 
     
+
+    # 运行测试
+    asyncio.run(test_langgraph_instance())

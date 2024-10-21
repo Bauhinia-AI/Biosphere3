@@ -68,12 +68,12 @@ class LangGraphInstance:
         # 根据user_id 检索数据库中的信息，更新stat
 
         self.graph = self._get_workflow_without_listener()
-        self.state: RunningState = initialize_running_state(user_id,character_params, decision_params, meta_params)
+        #self.state: RunningState = initialize_running_state(user_id,character_params, decision_params, meta_params)
         logger.info(f"User {self.user_id} workflow initialized")
 
-        logger.info("🎭 character_stats: \n" + pprint.pformat(self.state["character_stats"]))
+        # logger.info("🎭 character_stats: \n" + pprint.pformat(self.state["character_stats"]))
 
-        logger.info("🧠 decision: \n" + pprint.pformat(self.state["decision"]))
+        # logger.info("🧠 decision: \n" + pprint.pformat(self.state["decision"]))
 
 
     def init_character_stats(self):
@@ -117,7 +117,7 @@ class LangGraphInstance:
         workflow.add_edge("Action_Result_Listener", END)
         return workflow.compile()
     def _get_workflow_without_listener(self):
-        workflow = StateGraph(PlanExecute)
+        workflow = StateGraph(RunningState)
         workflow.add_node("Objectives_planner", generate_daily_objective)
         # workflow.add_node("detailed_planner", generate_detailed_plan)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
@@ -134,27 +134,38 @@ class LangGraphInstance:
         return workflow.compile()
     
     async def ainvoke(self):
-        state = {
-            "userid": "12345",
-            "input": f"""userid=12345,
-            username="JohnDoe",
-            gender="male",
-            slogan="Innovate and Inspire",
-            description="A passionate developer with a knack for problem-solving.",
-            role="developer",
-            task="Build a scalable web application",
-            """,
-            "tool_functions": tool_functions_easy,
-            "locations": ["New York", "San Francisco"],
-            "past_objectives": ["Complete project hahahahahahahahahaha", "Improve system performance"],
-
+        initial_state = {
+        'userid': 12,
+        'character_stats': {
+            'name': 'Alice',
+            'gender': 'Female',
+            'slogan': 'Adventure awaits!',
+            'description': 'A brave explorer.',
+            'role': 'Explorer',
+            'inventory': {},
+            'health': 100,
+            'energy': 100,
+        },
+        'decision': {
+            'need_replan': False,
+            'action_description': ["I successfully picked a banana."],
+            'new_plan': [],
+            'daily_objective': [],
+            'meta_seq': [],
+            'reflection': ["Nice"],
+        },
+        'meta': {
+            'tool_functions': tool_functions_easy,
+            'day': 'Monday',
+            'available_locations': ['school', 'workshop', 'home', 'farm', 'mall', 'square', 'hospital', 'fruit', 'harvest', 'fishing', 'mine', 'orchard'],
         }
-        return await self.graph.ainvoke(state,stream_mode="values")
+    }
+        return await self.graph.ainvoke(initial_state)
 
 
 if __name__ == "__main__":
     instance = LangGraphInstance(12345)
-    #res = asyncio.run(instance.ainvoke())
-    #print(res)
+    res = asyncio.run(instance.ainvoke())
+    pprint.pprint(res['decision'])
     #res 
     

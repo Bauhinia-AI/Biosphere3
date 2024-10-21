@@ -37,9 +37,10 @@ meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
 meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
-
+import pprint
 
 async def generate_daily_objective(state: RunningState):
+    pprint.pprint(state)
     planner_response: RunningState = await obj_planner.ainvoke(
         {
             "character_stats": state["character_stats"],
@@ -49,15 +50,19 @@ async def generate_daily_objective(state: RunningState):
         }
     )
     # Prepare data for API request
-    data = {
-        "userid": state["userid"],
-        "objectives": daily_objective.objectives,
-    }
+    # data = {
+    #     "userid": state["userid"],
+    #     "objectives": daily_objective.objectives,
+    # }
     # Make API request to store_daily_objective
     # endpoint = "/store_daily_objective"
     # await make_api_request_async(endpoint, data)
 
-    return {"daily_objective": daily_objective.objectives}
+    return {
+        "decision": {
+            "daily_objective": planner_response.objectives
+        }
+    }
 
 
 async def generate_detailed_plan(state: PlanExecute):
@@ -74,22 +79,34 @@ async def generate_detailed_plan(state: PlanExecute):
     return {"plan": detailed_plan.detailed_plan}
 
 
-async def generate_meta_action_sequence(state: PlanExecute):
-    meta_action_sequence = await meta_action_sequence_planner.ainvoke(state)
+async def generate_meta_action_sequence(state: RunningState):
+    meta_action_sequence = await meta_action_sequence_planner.ainvoke({
+        "daily_objective": state["decision"]["daily_objective"],
+        "tool_functions": state["meta"]["tool_functions"],
+        "locations": state["meta"]["available_locations"],
+    })
     # Prepare data for API request
-    data = {
-        "userid": state["userid"],
-        "meta_sequence": meta_action_sequence.meta_action_sequence,
-    }
+    # data = {
+    #     "userid": state["userid"],
+    #     "meta_sequence": meta_action_sequence.meta_action_sequence,
+    # }
     # Make API request to store_meta_seq
     # endpoint = "/store_meta_seq"
     # await make_api_request_async(endpoint, data)
 
-    return {"meta_seq": meta_action_sequence.meta_action_sequence}
+    return {
+        "decision": {
+            "meta_seq": meta_action_sequence.meta_action_sequence
+        }
+    }
 
 
-async def adjust_meta_action_sequence(state: PlanExecute):
-    meta_action_sequence = await meta_seq_adjuster.ainvoke(state)
+async def adjust_meta_action_sequence(state: RunningState):
+    meta_action_sequence = await meta_seq_adjuster.ainvoke({
+        "meta_seq": state["decision"]["meta_seq"],
+        "tool_functions": state["meta"]["tool_functions"],
+        "locations": state["meta"]["available_locations"],
+    })
     # Prepare data for the API request
     data = {
         "userid": state["userid"],
@@ -98,7 +115,11 @@ async def adjust_meta_action_sequence(state: PlanExecute):
     # Make API request to update_meta_seq
     # endpoint = "/update_meta_seq"
     # await make_api_request_async("POST", endpoint, data=data)
-    return {"meta_seq": meta_action_sequence.meta_action_sequence}
+    return {
+        "decision": {
+            "meta_seq": meta_action_sequence.meta_action_sequence
+        }
+    }
 
 
 async def listen_for_action_results(state: PlanExecute):

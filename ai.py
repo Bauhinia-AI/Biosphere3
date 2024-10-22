@@ -2,31 +2,46 @@ import asyncio
 import websockets
 import json
 import os
-from datetime import datetime
-
-# 记录连接到AI端的所有托管游戏玩家
-connected_clients = set()
+from datetime import datetime, timedelta
+from task_scheduler import TaskScheduler, Task
+from collections import defaultdict
+from llm_tools.single_command_generator import CommandGenerator
+from llm_tools.action_list_generator import ActionListGenerator
 
 # websocket连接->character_id
 character_objects = {}
 
-# 记录每个客户端的动作结果
-action_results = {}
+# 使用 defaultdict 初始化 action_results
+action_results = defaultdict(list)
 
 
-# 任务1: 事件驱动的任务
-async def receive_messages(websocket):
+# 每一个websocket连接的处理器流程
+async def handler(websocket, path):
     try:
-        async for message in websocket:
-            print(f"Received message from game endpoint: {message}")
-            response = generate_response(json.loads(message), websocket.remote_address)
-            await websocket.send(json.dumps(response))
+        # 初始化websocket连接
+        init_message = await websocket.recv()
+        init_data = json.loads(init_message)
+        character_id = init_data.get("characterId")
+
+        response = await process_request(init_data, websocket.remote_address)
+        await websocket.send(json.dumps(response))
+
+        scheduler = TaskScheduler(websocket, character_id)
+
+        # 开始多个并发任务
+        await asyncio.gather(
+            receive_messages(websocket),
+            send_scheduled_messages(websocket, character_id),
+            # schedule_tasks(scheduler),
+        )
     except websockets.ConnectionClosed:
-        print("Connection closed while receiving messages.")
+        print(f"Connection closed from {websocket.remote_address}")
+    finally:
+        delete_websocket_connection(websocket.remote_address)
 
 
 # 根据消息类型处理消息并生成响应
-def generate_response(message, websocket_address):
+async def process_request(message, websocket_address):
     message_name = message.get("messageName")
     character_id = message.get("characterId")
     message_code = message.get("messageCode")
@@ -40,50 +55,113 @@ def generate_response(message, websocket_address):
 
     # 连接初始化
     if message_name == "connectionInit":
-        character_objects[websocket_address] = character_id
-        response["data"] = {"result": True, "msg": "character init success"}
+        data = await add_websocket_connection(websocket_address, character_id)
+        response["data"] = data
     # 动作结果
     elif message_name == "actionresult":
-        record_action_result(data, websocket_address)
+        data = await record_action_result(data, websocket_address)
+        response["data"] = data
     # 还有其他的游戏事件待补充
     else:
-        response["data"]["msg"] = "Unknown message type."
+        data = {"result": False, "msg": "Unknown message type."}
+        response["data"] = data
 
     return response
 
 
-# 处理游戏端返回消息的函数
-def record_action_result(data, websocket_address):
-    character_id = character_objects.get(websocket_address)
-    if character_id:
-        if character_id not in action_results:
-            action_results[character_id] = []
-        action_results[character_id].append(data)
+"""
+处理websocket request并返回对应response的函数
+"""
 
 
-# 任务2: 定时发送actionList消息
-async def send_scheduled_messages(client):
+async def add_websocket_connection(websocket_address, character_id):
+    if not character_id:
+        return {"result": False, "msg": "character init failed"}
+    if character_id in character_objects.values():
+        return {"result": False, "msg": "character ID is already in use"}
+    if websocket_address in character_objects:
+        return {"result": False, "msg": "websocket address is already in use"}
+
+    character_objects[websocket_address] = character_id
+    print(f"Connection from {websocket_address} and character_id: {character_id}")
+    return {"result": True, "msg": "character init success"}
+
+
+async def record_action_result(data, websocket_address):
+    try:
+        character_id = character_objects.get(websocket_address)
+        if character_id:
+            action_results[character_id].append(data)
+            return {"result": True, "msg": "action result recorded"}
+        else:
+            return {"result": False, "msg": "character ID not found"}
+    except Exception as e:
+        return {"result": False, "msg": f"An error occurred: {str(e)}"}
+
+
+"""
+定时任务
+"""
+
+
+# 监听游戏端发送的消息：actionresult、gameevent等
+async def receive_messages(websocket):
+    try:
+        async for message in websocket:
+            print(f"Received message from game endpoint: {message}")
+            response = await process_request(json.loads(message), websocket.remote_address)
+            await websocket.send(json.dumps(response))
+    except websockets.ConnectionClosed:
+        print("Connection closed while receiving messages.")
+
+
+# 每隔一段时间发送一个action List消息
+async def send_scheduled_messages(client, character_id):
     while True:
-        await asyncio.sleep(5)
-        for client in connected_clients:
-            character_id = character_objects.get(client.remote_address)
-            if character_id is not None:
-                message = create_message(
-                    character_id,
-                    "actionList",
-                    6,
-                    command=[
-                        "goto orchard",
-                        "pickapple 20",
-                        "goto mine",
-                        "gomining 10",
-                        "goto fishing",
-                        "gofishing 20",
-                        "goto home",
-                        "sleep 8",
-                    ],
-                )
-                await client.send(json.dumps(message))
+        character_profile = "The character is energetic, and the goal is to earn as much money as possible."
+        memory = "The character has recently caught 10 fish and picked 10 apples."
+        status = "Energy: 100, Health:100, Money: 20, Hungry: 100, Study XP: 0, Education Level: PrimarySchool"
+        action_list_generator = ActionListGenerator()
+        action_list = action_list_generator.generate_action_list(
+            character_profile, memory, status
+        )
+        print(action_list)
+        message = create_message(character_id, "actionList", 6, command=action_list)
+        await client.send(json.dumps(message))
+        await asyncio.sleep(3600)
+
+
+# 生成一个任务表，解析成多个排列好的单个任务，交给scheduler规划
+async def schedule_tasks(scheduler):
+    task_list = [
+        "去果园",
+        "摘10个苹果",
+        "去矿场",
+        "挖3个铁矿",
+        "去鱼塘",
+        "钓8条鱼",
+        "看看自己的所有物品",
+        "卖掉5个苹果",
+        "卖掉3个铁矿",
+        "卖掉8条鱼",
+        "回家",
+        "睡10小时",
+    ]
+    # 引入command generator
+    command_generator = CommandGenerator()
+    task_commands = []
+    for task in task_list:
+        command = command_generator.generate_single_command_body(
+            task, scheduler.character_id
+        )
+        task_commands.append(command)
+    print(task_commands)
+    # await scheduler.schedule_task(task)
+
+
+"""
+辅助函数
+"""
 
 
 # 创建消息的辅助函数
@@ -96,33 +174,14 @@ def create_message(character_id, message_name, message_code, **kwargs):
     }
 
 
-# 处理游戏端连接
-async def handler(websocket, path):
-    connected_clients.add(websocket)
-    print(
-        f"Client connected from {websocket.remote_address}. Total connected clients: {len(connected_clients)}"
-    )
-    try:
-        # 并发任务1: 接收消息
-        receive_task = asyncio.create_task(receive_messages(websocket))
-        # 并发任务2: 定时发送消息
-        send_task = asyncio.create_task(send_scheduled_messages(websocket))
-        await asyncio.gather(receive_task, send_task)
-    except websockets.ConnectionClosed:
-        print(f"Connection closed from {websocket.remote_address}")
-    finally:
-        persist_data(websocket.remote_address)
-        character_id = character_objects[websocket.remote_address]
-        del character_objects[websocket.remote_address]
-        print(f"Character object for ID {character_id} removed.")
-
-        connected_clients.remove(websocket)
-        print(
-            f"Client disconnected from {websocket.remote_address}. Total connected clients: {len(connected_clients)}"
-        )
+# 删除websocket连接并保存action_results数据
+def delete_websocket_connection(websocket_address):
+    if websocket_address in character_objects:
+        persist_data(websocket_address)
+        del character_objects[websocket_address]
 
 
-# 在连接断开时持久化数据
+# 保存action_results数据
 def persist_data(websocket_address):
     character_id = character_objects.get(websocket_address)
     if character_id and character_id in action_results:

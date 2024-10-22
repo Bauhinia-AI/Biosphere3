@@ -4,8 +4,7 @@ import datetime
 from langchain import hub
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import ToolNode
-from tools import *
-from node_model import (
+from agent_srv.node_model import (
     PlanExecute,
     DailyObjective,
     DetailedPlan,
@@ -15,13 +14,11 @@ from node_model import (
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import StateGraph, START, END
 import asyncio
-from tool_executor import execute_action_sequence
 from loguru import logger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database.mongo_utils import insert_document
-from database import config
+from database_api_utils import make_api_request_async
 
 # 设置环境变量
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
@@ -30,44 +27,20 @@ os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "Bio3_agent"
 
 # 定义工具列表
-tool_list = [
-pick_apple,
-go_fishing,
-mine,
-harvest,
-buy,
-sell,
-use_item,
-see_doctor,
-sleep,
-study,
-nav
-]
-# llm-readable
-# tool_functions = """
-# 1. do_freelance_job(timelength: int): Perform freelance work \n
-# 2. navigate_to(location: str): Navigate to a specified location
-# 3. sleep(hours: int): Sleep for specified number of hours
-# 4. work_change(jobid: int): Change job
-# 8. get_inventory(): Get inventory information
-# 9. submit_resume(jobid: int, cvurl: str): Submit resume
-# 10. vote(userid: int): Cast a vote
-# 11. do_public_job(jobid: int, timelength: int): Perform public work
-# 12. study(hours: int): Study for specified number of hours
-# 13. talk(person: str, talkcontent: str): Talk to a specified person
-# 14. end_talk(userid: str, talkid: str): End conversation
-# 15. calculate_distance(location1: str, location2: str): Calculate distance between two locations
-# 16. trade(merchantid: int, merchantnum: int, transactiontype: int): Trade an item
-# 17. use_item(merchantid: int, merchantnum: int): Use an item
-# 18. see_doctor(): Visit a doctor
-# 19. get_freelance_jobs(): Get list of available freelance jobs
-# 20. get_public_jobs(): Get list of available public jobs
-# 21. get_candidates(): Get list of candidates
-# 22. get_activity_subjects(subjectid: int): Get list of activity subjects
-# 23. get_talk_data(talkid: str): Get conversation data
-# 24. get_position(): Get current position
-# 25. eat(): Eat food
-# """
+# tool_list = [
+#     pick_apple,
+#     go_fishing,
+#     mine,
+#     harvest,
+#     buy,
+#     sell,
+#     use_item,
+#     see_doctor,
+#     sleep,
+#     study,
+#     nav,
+# ]
+
 tool_functions = """
 1.	submit_cv(targetOccupation: OccupationType, content: string): Submit a resume for a public job.
 Constraints: Can only be submitted on ResumeSubmitDay which is Saturday.,OccupationType:(Teacher,Doctor)\n
@@ -128,13 +101,13 @@ school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchar
 """
 
 # 创建LLM和代理
-#llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini")
-#prompt = hub.pull("wfh/react-agent-executor")
-tool_node = ToolNode(tool_list)
+# llm = ChatOpenAI(base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini")
+# prompt = hub.pull("wfh/react-agent-executor")
+# tool_node = ToolNode(tool_list)
 
-agent_with_tools = ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini"
-).bind_tools(tool_list)
+# agent_with_tools = ChatOpenAI(
+#     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini"
+# ).bind_tools(tool_list)
 
 
 # 定义提示模板
@@ -169,24 +142,7 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-# replanner_prompt = ChatPromptTemplate.from_template(
-#     """For the given objective, come up with a simple step by step plan. \
-# This plan should involve individual tasks, that if executed correctly will yield the correct answer. Do not add any superfluous steps. \
-# The result of the final step should be the final answer. Make sure that each step has all the information needed - do not skip steps.
 
-# Additionally, if during the execution of a step you encounter a tool call with missing required parameters, randomly generate a reasonable parameter value to fill in, rather than throwing an error. For example, if a duration is needed but not specified, you might randomly choose a value between 1 and 8 hours.
-
-# Your objective was this:
-# {input}
-
-# Your original plan was this:
-# {plan}
-
-# You have currently done the follow steps:
-# {past_steps}
-
-# Update your plan accordingly. If no more steps are needed and you can return to the user, then respond with that. Otherwise, fill out the plan. Only add steps to the plan that still NEED to be done. Do not return previously done steps as part of the plan."""
-# )
 
 detail_planner_prompt = ChatPromptTemplate.from_template(
     """For the given daily objectives,
@@ -252,6 +208,12 @@ reflection_prompt = ChatPromptTemplate.from_template(
     """
 )
 
+describe_action_result_prompt = ChatPromptTemplate.from_template(
+    """Based on the following action result,
+    provide a brief description for the action result, like: I successfully studied for 2 hours.
+    {action_result}
+    """
+)
 
 # 创建规划器和重新规划器
 
@@ -259,7 +221,9 @@ obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)
 
-
+descritor = describe_action_result_prompt | ChatOpenAI(
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+)
 # replanner = replanner_prompt | ChatOpenAI(
 #     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 # ).with_structured_output(Act)
@@ -281,19 +245,6 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
 # ).with_structured_output(Reflection)
 
 
-# # 定义执行步骤函数
-# async def execute_step(state: PlanExecute):
-#     plan = state["plan"]
-#     plan_str = "\n".join(f"{i+1}. {step}" for i, step in enumerate(plan))
-#     task = plan[0]
-#     task_formatted = f"""For the following plan:
-# {plan_str}\n\nYou are tasked with executing step {1}, {task}."""
-#     agent_response = await agent_executor.ainvoke(
-#         {"messages": [("user", task_formatted)]}
-#     )
-#     return {"past_steps": [(task, agent_response["messages"][-1].content)]}
-async def call_tool_node(state: PlanExecute):
-    return {"messages": [agent_with_tools.invoke(state)]}
 
 
 async def generate_daily_objective(state: PlanExecute):
@@ -305,56 +256,59 @@ async def generate_daily_objective(state: PlanExecute):
             "past_objectives": state.get("past_objectives", []),
         }
     )
-    # Prepare the document to insert
-    document = {
+    # Prepare data for API request
+    data = {
         "userid": state["userid"],
-        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "objectives": daily_objective.objectives,
     }
-    # Insert document using insert_document
-    inserted_id = insert_document(config.daily_objective_collection_name, document)
-    # print(
-    #     f"Inserted daily objective with id {inserted_id} for userid {document['userid']}"
-    # )
+    # Make API request to store_daily_objective
+    # endpoint = "/store_daily_objective"
+    # await make_api_request_async(endpoint, data)
 
     return {"daily_objective": daily_objective.objectives}
 
 
 async def generate_detailed_plan(state: PlanExecute):
     detailed_plan = await detail_planner.ainvoke(state)
-    # Prepare the document to insert
-    document = {
+    # Prepare data for API request
+    data = {
         "userid": state["userid"],
-        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "detailed_plan": detailed_plan.detailed_plan,
     }
-    # Insert document using insert_document
-    # inserted_id = insert_document(config.plan_collection_name, document)
-    # print(
-    #     f"Inserted detailed plan with id {inserted_id} for userid {document['userid']}"
-    # )
+    # Make API request to store_plan
+    # endpoint = "/store_plan"
+    # await make_api_request_async(endpoint, data)
 
     return {"plan": detailed_plan.detailed_plan}
 
 
 async def generate_meta_action_sequence(state: PlanExecute):
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(state)
-    document = {
+    # Prepare data for API request
+    data = {
         "userid": state["userid"],
-        "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "meta_sequence": meta_action_sequence.meta_action_sequence,
     }
-    # Insert document using insert_document
-    # inserted_id = insert_document(config.meta_seq_collection_name, document)
-    # print(
-    #     f"Inserted meta action sequence with id {inserted_id} for userid {document['userid']}"
-    # )
+    # Make API request to store_meta_seq
+    # endpoint = "/store_meta_seq"
+    # await make_api_request_async(endpoint, data)
 
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
+
 
 async def adjust_meta_action_sequence(state: PlanExecute):
     meta_action_sequence = await meta_seq_adjuster.ainvoke(state)
+    # Prepare data for the API request
+    data = {
+        "userid": state["userid"],
+        "meta_sequence": meta_action_sequence.meta_action_sequence,
+    }
+    # Make API request to update_meta_seq
+    # endpoint = "/update_meta_seq"
+    # await make_api_request_async("POST", endpoint, data=data)
     return {"meta_seq": meta_action_sequence.meta_action_sequence}
+
+
 # async def generate_reflection(state: PlanExecute):
 #     meta_seq = state.get("meta_seq", [])
 #     execution_results = state.get("execution_results", [])
@@ -363,35 +317,18 @@ async def adjust_meta_action_sequence(state: PlanExecute):
 #         {"meta_seq": meta_seq, "execution_results": execution_results}
 #     )
 
-#     # 准备要插入的文档
-#     document = {
+#     # Prepare data for API request
+#     data = {
 #         "userid": state["userid"],
-#         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
 #         "meta_sequence": meta_seq,
 #         "execution_results": execution_results,
 #         "reflection": reflection.reflection,
 #     }
-
-#     # 使用 insert_document 插入文档
-#     #inserted_id = insert_document(config.reflection_collection_name, document)
-#     print(f"Inserted reflection with id {inserted_id} for userid {document['userid']}")
-
+#     # Make API request to store reflection (assuming an endpoint exists)
+#     endpoint = "/store_reflection"
+#     await make_api_request_async(endpoint, data)
+#
 #     return {"reflection": reflection.reflection}
-
-
-async def invoke_tool_executor(state: PlanExecute):
-    meta_seq = state.get("meta_seq", [])
-    print("Executing the following actions:")
-    results = await call_tool_node(meta_seq)
-    # results = execute_action_sequence(meta_seq)
-    logger.info(results["messages"])
-    return {"messages": results["messages"]}
-    execution_results = []
-    for action, result in zip(meta_seq, results["messages"]):
-        print(f"Action: {action}")
-        print(f"Result: {result}")
-        execution_results.append({"action": action, "result": result})
-    return {"execution_results": execution_results}
 
 
 # async def replan_step(state: PlanExecute):
@@ -416,6 +353,114 @@ async def invoke_tool_executor(state: PlanExecute):
 #     else:
 #         return "Executor"
 
+# agent.py
+async def process_action_result(action_result):
+    # 提取必要的信息
+    data = action_result.get("data", {})
+    action_name = data.get("actionName", "")
+    result = data.get("result", False)
+    msg = data.get("msg", "")
+
+    # 构建描述
+    #description = f"Action '{action_name}' execution {'succeeded' if result else 'failed'}. Message: {msg}"
+    # 如果需要使用 LLM 生成更丰富的描述，可以取消注释以下代码
+    description = await descritor.ainvoke({"action_result": str(data)})
+    response = description.content
+    logger.info(response)
+    return response
+import asyncio
+import websockets
+import json
+
+async def listen_for_action_results(state: PlanExecute):
+    uri = "ws://localhost:8765"  
+    meta_seq = state.get("meta_seq", [])
+    execution_results = []
+
+    async with websockets.connect(uri) as websocket:
+        await websocket.send(json.dumps({
+            "userid": state["userid"],
+            "meta_sequence": meta_seq,
+        }))
+
+        print("Started listening for action results...")
+
+        received_actions = 0
+
+        while True:
+            try:
+                # 等待下一个动作结果
+                message = await websocket.recv()
+                action_result = json.loads(message)
+                received_actions += 1
+
+                # 处理动作结果
+                description = await process_action_result(action_result)
+                execution_results.append({
+                    "action": action_result.get("data", {}).get("actionName", ""),
+                    "result": action_result,
+                    "description": description
+                })
+
+                # 存储结果
+                data = {
+                    "userid": state["userid"],
+                    "action": action_result.get("data", {}).get("actionName", ""),
+                    "result": action_result,
+                    "description": description,
+                }
+                # endpoint = "/store_action_result"
+                # await make_api_request_async(endpoint, data)
+
+                # 检查动作是否失败
+                action_success = action_result.get("data", {}).get("result", False)
+                if not action_success:
+                    print(f"Action {data['action']} failed. No further actions will be executed.")
+                    state["need_replan"] = True
+                    break
+
+                # 如果已收到与执行的动作数量相同的结果，且没有失败，则继续等待或退出
+                if received_actions >= len(meta_seq):
+                    print("All action results received.")
+                    break
+
+            except websockets.ConnectionClosed:
+                print("WebSocket connection closed.")
+                break
+            except Exception as e:
+                print(f"Error while receiving action result: {e}")
+                break
+
+    # 返回执行结果
+    return {"execution_results": execution_results}
+
+def should_replan(state: PlanExecute):
+    if state.get("need_replan", False):
+        return True
+    else:
+        return False
+
+async def describe_action_results(state: PlanExecute):
+    execution_results = state.get("execution_results", [])
+    descriptions = []
+
+    for result in execution_results:
+        action_result = result.get("result", {})
+        description = await process_action_result(action_result)
+        descriptions.append(description)
+    
+    # 将描述存储到状态中，或者发送到需要的地方
+    state["action_descriptions"] = descriptions
+
+    # 如果需要，将描述存储到数据库或发送到API
+    data = {
+        "userid": state["userid"],
+        "descriptions": descriptions,
+    }
+    # endpoint = "/store_action_descriptions"
+    # await make_api_request_async(endpoint, data)
+
+    return {"action_descriptions": descriptions}
 
 # # 创建工作流
 workflow = StateGraph(PlanExecute)
@@ -423,21 +468,20 @@ workflow.add_node("Objectives_planner", generate_daily_objective)
 # workflow.add_node("detailed_planner", generate_detailed_plan)
 workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
 workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
-# workflow.add_node("tool_call_generator", invoke_tool_executor)
-workflow.add_node("tool_executor", tool_node)
+
+workflow.add_node("Action_Result_Listener", listen_for_action_results)
+workflow.add_edge("adjust_meta_action_sequence", "Action_Result_Listener")
+workflow.add_edge("Action_Result_Listener", END)
+
+
 # workflow.add_node("reflector", generate_reflection)
 
-# workflow.add_node("Executor", execute_step)
-# workflow.add_node("replan", replan_step)
 workflow.add_edge(START, "Objectives_planner")
 workflow.add_edge("Objectives_planner", "meta_action_sequence")
-# workflow.add_edge("detailed_planner", "meta_action_sequence")
 workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
 workflow.add_edge("adjust_meta_action_sequence", END)
 
-# workflow.add_edge("tool_call_generator", "tool_executor")
-# workflow.add_edge("tool_executor", END)
-# workflow.add_edge("Executor", "replan")
+
 # workflow.add_conditional_edges("replan", should_end)
 app = workflow.compile()
 

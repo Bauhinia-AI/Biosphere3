@@ -134,16 +134,16 @@ def execute_action_sequence(action_sequence: List[str]) -> List[Dict[str, Any]]:
 
 
 # Example usage
-result = execute_tool(
-    "trade_item",
-    character_id=0,
-    trade_type=2,
-    item_name="apple",
-    item_quantity=1,
-    item_trade_quantity=1,
-    money=2.0,
-)
+# result = execute_tool(
+#     "trade_item",
+#     character_id=0,
+#     trade_type=2,
+#     item_name="apple",
+#     item_quantity=1,
+#     item_trade_quantity=1,
+#     money=2.0,
+# )
 # result = execute_tool("get_freelance_jobs")
 # result = execute_tool("get_public_jobs")
 
-print(result)
+# print(result)

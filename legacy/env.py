@@ -13,7 +13,7 @@ from fake_data import *
 from loguru import logger
 from fastapi import FastAPI, HTTPException
 
-from database.mongo_utils import get_candidates_from_mongo
+from database_api_utils import make_api_request_async
 from model import CandidateInfo
 
 
@@ -380,7 +380,9 @@ async def get_public_jobs(jobid: Optional[int] = None):
 
 @app.get("/candidates", response_model=List[CandidateInfo])
 async def get_candidates():
-    candidates = get_candidates_from_mongo()
+    endpoint = "/get_candidates"
+    candidates = await make_api_request_async("GET", endpoint)
+    # 如果 API 返回的数据格式符合预期，可以直接返回
     return candidates
 
 
@@ -596,7 +598,8 @@ async def eat(request: EatRequest):
         raise HTTPException(status_code=400, detail="Invalid time length")
     if request.timelength > 5:
         raise HTTPException(
-            status_code=400, detail="You cannot eat for more than 5 hours.")
+            status_code=400, detail="You cannot eat for more than 5 hours."
+        )
     if random.random() > 0.1:
         return {"code": 200, "fullnessnew": 10 * request.timelength}
     else:

@@ -5,6 +5,7 @@ import os
 from datetime import datetime, timedelta
 from task_scheduler import TaskScheduler, Task
 from collections import defaultdict
+from graph_instance import LangGraphInstance
 from llm_tools.single_command_generator import CommandGenerator
 from llm_tools.action_list_generator import ActionListGenerator
 
@@ -22,18 +23,22 @@ async def handler(websocket, path):
         init_message = await websocket.recv()
         init_data = json.loads(init_message)
         character_id = init_data.get("characterId")
+        #这时初始化一个agent实例
+        agent_instance = LangGraphInstance(character_id,websocket)
+        character_objects[websocket.remote_address] = agent_instance
 
         response = await process_request(init_data, websocket.remote_address)
         await websocket.send(json.dumps(response))
 
-        scheduler = TaskScheduler(websocket, character_id)
+        # scheduler = TaskScheduler(websocket, character_id)
+        await agent_instance.task
 
         # 开始多个并发任务
-        await asyncio.gather(
-            receive_messages(websocket),
-            send_scheduled_messages(websocket, character_id),
-            # schedule_tasks(scheduler),
-        )
+        # await asyncio.gather(
+        #     receive_messages(websocket, agent_instance),
+        #     send_scheduled_messages(websocket, character_id),
+        #     # schedule_tasks(scheduler),
+        # )
     except websockets.ConnectionClosed:
         print(f"Connection closed from {websocket.remote_address}")
     finally:
@@ -105,15 +110,24 @@ async def record_action_result(data, websocket_address):
 
 
 # 监听游戏端发送的消息：actionresult、gameevent等
-async def receive_messages(websocket):
+# async def receive_messages(websocket):
+#     try:
+#         async for message in websocket:
+#             print(f"Received message from game endpoint: {message}")
+#             response = await process_request(json.loads(message), websocket.remote_address)
+#             await websocket.send(json.dumps(response))
+#     except websockets.ConnectionClosed:
+#         print("Connection closed while receiving messages.")
+
+async def receive_messages(websocket, user_agent):
     try:
         async for message in websocket:
             print(f"Received message from game endpoint: {message}")
-            response = await process_request(json.loads(message), websocket.remote_address)
-            await websocket.send(json.dumps(response))
+            data = json.loads(message)
+            # 将消息交给agent处理
+            await user_agent.handle_message(data)
     except websockets.ConnectionClosed:
         print("Connection closed while receiving messages.")
-
 
 # 每隔一段时间发送一个action List消息
 async def send_scheduled_messages(client, character_id):

@@ -57,10 +57,12 @@ class CharacterStats(TypedDict):
 class Decision(TypedDict):
     need_replan: bool
     action_description: List[str]
+    action_result: List[str]
     new_plan: List[str]
     daily_objective: List[str]
     meta_seq: List[str]
     reflection: List[str]
+
 
 class Meta(TypedDict):
     tool_functions: str
@@ -72,8 +74,8 @@ class RunningState(TypedDict):
     character_stats: Annotated[CharacterStats, generic_reducer]
     decision: Annotated[Decision, generic_reducer]
     meta: Annotated[Meta, generic_reducer]
-    signal: str
-    signal_queue: asyncio.Queue
+    message_queue: asyncio.Queue
+    websocket: Any
 
 
 

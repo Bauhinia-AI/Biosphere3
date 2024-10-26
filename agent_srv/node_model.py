@@ -5,12 +5,6 @@ from langgraph.graph import StateGraph
 import asyncio
 #带有合并逻辑的鸡肋
 
-class Plan(BaseModel):
-    """Plan to follow in future"""
-
-    steps: List[str] = Field(
-        description="different steps to follow, should be in sorted order"
-    )
 def generic_reducer(a, b):
     if isinstance(a, dict) and isinstance(b, dict):
         result = a.copy()
@@ -25,24 +19,6 @@ def generic_reducer(a, b):
         return a + b
     else:
         return b
-
-
-class PlanExecute(TypedDict):
-    userid: int
-    input: str
-    plan: List[str]
-    past_steps: Annotated[List[Tuple], operator.add]
-    response: str
-    daily_objective: List[str]
-    meta_seq: List[str]
-    tool_functions: str
-    locations: str
-    past_objectives: List[List[str]]
-    execution_results: List[Dict[str, Any]]
-    reflection: str
-    messages: List[str]
-    need_replan: bool
-
 
 class CharacterStats(TypedDict):
     name: str
@@ -75,7 +51,9 @@ class RunningState(TypedDict):
     decision: Annotated[Decision, generic_reducer]
     meta: Annotated[Meta, generic_reducer]
     message_queue: asyncio.Queue
+    event_queue: asyncio.Queue
     websocket: Any
+    current_pointer: str
 
 
 

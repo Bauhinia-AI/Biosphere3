@@ -68,7 +68,7 @@ def generate_initial_state(userid, websocket):
 
 
 tool_functions_easy = """
-    1. nav [placeName:string]: Navigate to a specified location.
+    1. goto [placeName:string]: Go to a specified location.
 Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).\n
     2. pickapple [number:int]: Pick an apple, costing energy.
 Constraints: Must have enough energy and be in the orchard.\n

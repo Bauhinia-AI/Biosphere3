@@ -1,5 +1,4 @@
 from agent_srv.node_model import (
-    PlanExecute,
     DailyObjective,
     DetailedPlan,
     MetaActionSequence,
@@ -47,7 +46,8 @@ async def generate_daily_objective(state: RunningState):
             "character_stats": state["character_stats"],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
-            "past_objectives": state.get("decision", {}).get("daily_objective", []),
+            #get the last 3 objectives
+            "past_objectives": state.get("decision", {}).get("daily_objective", [])[-3:],
         }
     )
     # Prepare data for API request
@@ -58,20 +58,13 @@ async def generate_daily_objective(state: RunningState):
     # Make API request to store_daily_objective
     # endpoint = "/store_daily_objective"
     # await make_api_request_async(endpoint, data)
-    logger.info(f"🧠 OBJ_PLANNER INVOKED...")
+    logger.info(f"🌞 OBJ_PLANNER INVOKED...")
     return {"decision": {"daily_objective": planner_response.objectives}}
 
 
 async def generate_detailed_plan(state: RunningState):
     detailed_plan = await detail_planner.ainvoke(state)
-    # Prepare data for API request
-    data = {
-        "userid": state["userid"],
-        "detailed_plan": detailed_plan.detailed_plan,
-    }
-    # Make API request to store_plan
-    # endpoint = "/store_plan"
-    # await make_api_request_async(endpoint, data)
+
 
     return {"plan": detailed_plan.detailed_plan}
 
@@ -79,13 +72,13 @@ async def generate_detailed_plan(state: RunningState):
 async def generate_meta_action_sequence(state: RunningState):
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(
         {
-            "daily_objective": state["decision"]["daily_objective"],
+            "daily_objective": state["decision"]["daily_objective"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
         }
     )
-    logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED...")
-    logger.info(meta_action_sequence.meta_action_sequence)
+    #logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED...")
+    
 
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
@@ -93,17 +86,13 @@ async def generate_meta_action_sequence(state: RunningState):
 async def adjust_meta_action_sequence(state: RunningState):
     meta_action_sequence = await meta_seq_adjuster.ainvoke(
         {
-            "meta_seq": state["decision"]["meta_seq"],
+            "meta_seq": state["decision"]["meta_seq"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
         }
     )
-    # Prepare data for the API request
-    data = {
-        "userid": state["userid"],
-        "meta_sequence": meta_action_sequence.meta_action_sequence,
-    }
-    logger.info(f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...")
+
+    logger.info(f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...with {meta_action_sequence.meta_action_sequence}")
     # Make API request to update_meta_seq
     # endpoint = "/update_meta_seq"
     # await make_api_request_async("POST", endpoint, data=data)
@@ -115,4 +104,7 @@ async def adjust_meta_action_sequence(state: RunningState):
 
 async def sensing_environment(state: RunningState):
     logger.info(f"👀 User {state['userid']}: Sensing environment...")
-    return "Process_Messages"
+    #list all the messages in the message_queue
+    #logger.info(f"🏃 User {state['userid']} now have task:{state['message_queue']}")
+
+    return {"current_pointer": "Process_Messages"}

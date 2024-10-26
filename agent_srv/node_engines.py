@@ -91,7 +91,7 @@ async def adjust_meta_action_sequence(state: RunningState):
     )
 
     logger.info(f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...with {meta_action_sequence.meta_action_sequence}")
-    await state["instance"].send_message({"characterId":state["userid"],"messageName": "actionList", "messageCode": 6, "message": meta_action_sequence.meta_action_sequence})
+    await state["instance"].send_message({"characterId":state["userid"],"messageName": "actionList", "messageCode": 6, "data": {"command": meta_action_sequence.meta_action_sequence}})
     # Make API request to update_meta_seq
     # endpoint = "/update_meta_seq"
     # await make_api_request_async("POST", endpoint, data=data)

@@ -94,7 +94,6 @@ class LangGraphInstance:
             self.state["event_queue"].put_nowait("PLAN")
             logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
 
-
     async def queue_visulizer(self):
         while True:
             await asyncio.sleep(10)
@@ -152,7 +151,6 @@ class LangGraphInstance:
         workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
 
         return workflow.compile()
-    
 
     async def a_run(self):
         try:
@@ -173,11 +171,11 @@ class LangGraphInstance:
                 await self.websocket.send(json.dumps(message))
                 logger.info(f"📤 User {self.user_id}: Sent message: {message}")
             except websockets.ConnectionClosed:
-                logger.warning(f"User {self.user_id}: WebSocket connection closed during send.")
+                logger.warning(
+                    f"User {self.user_id}: WebSocket connection closed during send."
+                )
                 # TODO 这里的逻辑之后再写
+                self.signal = "TERMINATE"
                 pass
             except Exception as e:
                 logger.error(f"User {self.user_id}: Error sending message: {e}")
-
-
-    

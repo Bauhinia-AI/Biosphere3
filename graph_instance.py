@@ -25,7 +25,7 @@ class LangGraphInstance:
         self.state_lock = asyncio.Lock()
         self.websocket_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
-        self.graph_config = {"recursion_limit": 20}
+        self.graph_config = {"recursion_limit": 1000}
         # 三个协程
         self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())

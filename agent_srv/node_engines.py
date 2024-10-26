@@ -2,8 +2,6 @@ from agent_srv.node_model import (
     DailyObjective,
     DetailedPlan,
     MetaActionSequence,
-    Decision,
-    Meta,
     RunningState,
 )
 from agent_srv.prompts import *
@@ -47,7 +45,7 @@ async def generate_daily_objective(state: RunningState):
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
             #get the last 3 objectives
-            "past_objectives": state.get("decision", {}).get("daily_objective", [])[-3:],
+            "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
         }
     )
     # Prepare data for API request
@@ -93,7 +91,7 @@ async def adjust_meta_action_sequence(state: RunningState):
     )
 
     logger.info(f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...with {meta_action_sequence.meta_action_sequence}")
-    await state["instance"].send_message({"messageName": "ADJUST_META_ACTION_SEQUENCE", "messageCode": "ADJUST_META_ACTION_SEQUENCE", "message": meta_action_sequence.meta_action_sequence})
+    await state["instance"].send_message({"characterId":state["userid"],"messageName": "actionList", "messageCode": 6, "message": meta_action_sequence.meta_action_sequence})
     # Make API request to update_meta_seq
     # endpoint = "/update_meta_seq"
     # await make_api_request_async("POST", endpoint, data=data)
@@ -107,9 +105,4 @@ async def sensing_environment(state: RunningState):
     logger.info(f"👀 User {state['userid']}: Sensing environment...")
     #list all the messages in the message_queue
     #logger.info(f"🏃 User {state['userid']} now have task:{state['message_queue']}")
-
-    return {"current_pointer": "Process_Messages"}
-
-async def sender(state: RunningState):
-    logger.info(f"🏃 User {state['userid']}: Sending message...")
     return {"current_pointer": "Process_Messages"}

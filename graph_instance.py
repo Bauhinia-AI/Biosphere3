@@ -9,10 +9,6 @@ from pprint import pprint
 from agent_srv.utils import generate_initial_state, check_termination
 
 
-
-
-
-
 class LangGraphInstance:
     def __init__(self, user_id, websocket=None):
         self.user_id = user_id
@@ -27,7 +23,7 @@ class LangGraphInstance:
         # 数据竞争时，锁住state
         self.state_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
-        self.graph_config = {"recursion_limit": 30}
+        self.graph_config = {"recursion_limit": 2}
         # 三个协程
         self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
@@ -87,33 +83,47 @@ class LangGraphInstance:
             else:
                 logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
-    @check_termination
     async def event_scheduler(self):
         while True:
+            if self.signal == "TERMINATE":
+                logger.error(
+                    f"⛔ Task event_scheduler terminated due to termination signal."
+                )
+                break
             await asyncio.sleep(10)
             self.state["event_queue"].put_nowait("PLAN")
             logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
 
-    @check_termination
     async def a_run(self):
         try:
             await self.graph.ainvoke(self.state, config=self.graph_config)
         except Exception as e:
             self.signal = "TERMINATE"
+
             logger.error(f"User {self.user_id} Error in workflow: {e}")
-    @check_termination
+            logger.error(f"⛔ Task a_run terminated due to termination signal.")
+            self.task.cancel()
+
     async def queue_visulizer(self):
         while True:
             await asyncio.sleep(10)
-            logger.info(f"🧾 User {self.user_id} event_queue: {self.state['event_queue']}")
-            logger.info(f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}")
+            if self.signal == "TERMINATE":
+                logger.error(
+                    f"⛔ Task queue_visulizer terminated due to termination signal."
+                )
+                break
+            logger.info(
+                f"🧾 User {self.user_id} event_queue: {self.state['event_queue']}"
+            )
+            logger.info(
+                f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
+            )
 
-    @check_termination
     async def event_router(self, state: RunningState):
         while True:
             async with self.state_lock:
                 event = await state["event_queue"].get()
-            
+
             if event == "PLAN":
                 return "Objectives_planner"
 
@@ -151,6 +161,3 @@ class LangGraphInstance:
         workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
 
         return workflow.compile()
-
-
-

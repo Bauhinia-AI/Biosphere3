@@ -82,7 +82,7 @@ Constraints: Must have enough energy and be in the harvest area.\n
 Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
     7. sell [itemType:string] [amount:int]: Sell items for money.
 Constraints: Must have enough items in inventory.ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
-    9. see_doctor [hours:int]: Visit a doctor, costing money.
+    9. seedoctor [hours:int]: Visit a doctor, costing money.
 Constraints: Must have enough money and be in the hospital.\n
     10. sleep [hours:int]: Sleep to recover energy and health.
 Constraints: Must be at home.\n

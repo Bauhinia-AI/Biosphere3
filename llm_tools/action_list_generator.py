@@ -62,13 +62,15 @@ class ActionListGenerator:
         Here is an example format that you should follow strictly:
         {example}
         """
-        self.example = json.dumps([
-            "goto orchard",
-            "pickapple 10",
-            "sell apple 7",
-            "goto home",
-            "sleep 8",
-        ])
+        self.example = json.dumps(
+            [
+                "goto orchard",
+                "pickapple 10",
+                "sell apple 7",
+                "goto home",
+                "sleep 8",
+            ]
+        )
 
     def generate_prompt(self, character_profile, memory, status):
         return self.prompt_template.format(
@@ -104,10 +106,13 @@ class ActionListGenerator:
         except json.JSONDecodeError as e:
             raise ValueError(f"Failed to parse JSON: {e}")
 
+
 # Example usage
 if __name__ == "__main__":
     action_list_generator = ActionListGenerator()
-    character_profile = "The character is energetic, and the goal is to earn as much money as possible."
+    character_profile = (
+        "The character is energetic, and the goal is to earn as much money as possible."
+    )
     memory = "The character has recently caught 10 fish and picked 10 apples."
     status = "Energy: 100, Health:100, Money: 20, Hungry: 100, Study XP: 0, Education Level: PrimarySchool"
     try:

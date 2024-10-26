@@ -40,7 +40,7 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
 
 
 async def generate_daily_objective(state: RunningState):
-
+#BUG 这里如果检验失败会报错，需要重试
     planner_response: RunningState = await obj_planner.ainvoke(
         {
             "character_stats": state["character_stats"],
@@ -93,6 +93,7 @@ async def adjust_meta_action_sequence(state: RunningState):
     )
 
     logger.info(f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...with {meta_action_sequence.meta_action_sequence}")
+    await state["instance"].send_message({"messageName": "ADJUST_META_ACTION_SEQUENCE", "messageCode": "ADJUST_META_ACTION_SEQUENCE", "message": meta_action_sequence.meta_action_sequence})
     # Make API request to update_meta_seq
     # endpoint = "/update_meta_seq"
     # await make_api_request_async("POST", endpoint, data=data)
@@ -107,4 +108,8 @@ async def sensing_environment(state: RunningState):
     #list all the messages in the message_queue
     #logger.info(f"🏃 User {state['userid']} now have task:{state['message_queue']}")
 
+    return {"current_pointer": "Process_Messages"}
+
+async def sender(state: RunningState):
+    logger.info(f"🏃 User {state['userid']}: Sending message...")
     return {"current_pointer": "Process_Messages"}

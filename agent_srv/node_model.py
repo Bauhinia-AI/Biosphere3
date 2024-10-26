@@ -54,6 +54,7 @@ class RunningState(TypedDict):
     event_queue: asyncio.Queue
     websocket: Any
     current_pointer: str
+    instance: Any
 
 
 

@@ -19,11 +19,13 @@ class LangGraphInstance:
         self.state = RunningState(
             **generate_initial_state(self.user_id, self.websocket)
         )
+        self.state["instance"] = self
         self.connection_stats = {}
         # 数据竞争时，锁住state
         self.state_lock = asyncio.Lock()
+        self.websocket_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
-        self.graph_config = {"recursion_limit": 2}
+        self.graph_config = {"recursion_limit": 20}
         # 三个协程
         self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
@@ -35,7 +37,6 @@ class LangGraphInstance:
         self.task = asyncio.create_task(self.a_run())
 
     # 生产者listener，独立于graph运行
-    @check_termination
     async def listener(self):
         websocket = self.state["websocket"]
         message_queue = self.state["message_queue"]
@@ -58,7 +59,6 @@ class LangGraphInstance:
         except Exception as e:
             logger.error(f"User {self.user_id}: Error in listener: {e}")
 
-    @check_termination
     async def msg_processor(self):
         while True:
             with self.state_lock:
@@ -94,15 +94,6 @@ class LangGraphInstance:
             self.state["event_queue"].put_nowait("PLAN")
             logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
 
-    async def a_run(self):
-        try:
-            await self.graph.ainvoke(self.state, config=self.graph_config)
-        except Exception as e:
-            self.signal = "TERMINATE"
-
-            logger.error(f"User {self.user_id} Error in workflow: {e}")
-            logger.error(f"⛔ Task a_run terminated due to termination signal.")
-            self.task.cancel()
 
     async def queue_visulizer(self):
         while True:
@@ -161,3 +152,32 @@ class LangGraphInstance:
         workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
 
         return workflow.compile()
+    
+
+    async def a_run(self):
+        try:
+            await self.graph.ainvoke(self.state, config=self.graph_config)
+        except Exception as e:
+            self.signal = "TERMINATE"
+
+            logger.error(f"User {self.user_id} Error in workflow: {e}")
+            logger.error(f"⛔ Task a_run terminated due to termination signal.")
+            self.task.cancel()
+
+    async def send_message(self, message):
+        async with self.websocket_lock:
+            if self.websocket is None or self.websocket.closed:
+                logger.error(f"⛔ User {self.user_id}: WebSocket is not connected.")
+                return
+            try:
+                await self.websocket.send(json.dumps(message))
+                logger.info(f"📤 User {self.user_id}: Sent message: {message}")
+            except websockets.ConnectionClosed:
+                logger.warning(f"User {self.user_id}: WebSocket connection closed during send.")
+                # TODO 这里的逻辑之后再写
+                pass
+            except Exception as e:
+                logger.error(f"User {self.user_id}: Error sending message: {e}")
+
+
+    

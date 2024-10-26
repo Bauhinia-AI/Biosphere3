@@ -1,7 +1,8 @@
 import asyncio
 import websockets
+import ssl
 import json
-import os
+import sys
 from datetime import datetime, timedelta
 from task_scheduler import TaskScheduler, Task
 from collections import defaultdict
@@ -25,9 +26,9 @@ async def handler(websocket, path):
         character_id = init_data.get("characterId")
         response = await process_request(init_data, websocket.remote_address)
         await websocket.send(json.dumps(response))
-        if response["data"]["result"]:  
-            #这时初始化一个agent实例
-            agent_instance = LangGraphInstance(character_id,websocket)
+        if response["data"]["result"]:
+            # 这时初始化一个agent实例
+            agent_instance = LangGraphInstance(character_id, websocket)
             character_objects[websocket.remote_address] = agent_instance
             # scheduler = TaskScheduler(websocket, character_id)
             await agent_instance.task
@@ -64,8 +65,8 @@ async def process_request(message, websocket_address):
     # 动作结果
     elif message_name == "actionresult":
         pass
-        #data = await record_action_result(data, websocket_address)
-        #response["data"] = data
+        # data = await record_action_result(data, websocket_address)
+        # response["data"] = data
     # 还有其他的游戏事件待补充
     else:
         data = {"result": False, "msg": "Unknown message type."}
@@ -119,6 +120,7 @@ async def record_action_result(data, websocket_address):
 #     except websockets.ConnectionClosed:
 #         print("Connection closed while receiving messages.")
 
+
 async def receive_messages(websocket, user_agent):
     try:
         async for message in websocket:
@@ -128,6 +130,7 @@ async def receive_messages(websocket, user_agent):
             await user_agent.handle_message(data)
     except websockets.ConnectionClosed:
         print("Connection closed while receiving messages.")
+
 
 # 每隔一段时间发送一个action List消息
 async def send_scheduled_messages(client, character_id):
@@ -214,11 +217,24 @@ def persist_data(websocket_address):
 
 
 async def main():
-    host = "localhost"
-    port = 6789
-    server = await websockets.serve(handler, host, port)
-    print(f"WebSocket server started at ws://{host}:{port}")
-    await server.wait_closed()
+
+    # if is linux
+    if sys.platform.startswith("linux"):
+        host = "0.0.0.0"
+        port = 8099
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(
+            certfile="/etc/ssl/certs/bio3.crt", keyfile="/etc/ssl/certs/bio3.key"
+        )
+        server = await websockets.serve(handler, host, port, ssl=ssl_context)
+        print(f"WebSocket server started at ws://{host}:{port}")
+        await server.wait_closed()
+    elif sys.platform.startswith("darwin"):
+        host = "localhost"
+        port = 6789
+        server = await websockets.serve(handler, host, port)
+        print(f"WebSocket server started at ws://{host}:{port}")
+        await server.wait_closed()
 
 
 if __name__ == "__main__":

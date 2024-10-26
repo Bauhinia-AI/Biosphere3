@@ -58,7 +58,7 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     locations_available:\n
     {locations}
     The final format should be a list of meta actions. for example:\n
-    [meta_action1(param1),meta_action2(param1),...,meta_actionN(param1,param2,param3)]
+    [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
     \n
     """
 )

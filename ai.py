@@ -23,15 +23,14 @@ async def handler(websocket, path):
         init_message = await websocket.recv()
         init_data = json.loads(init_message)
         character_id = init_data.get("characterId")
-        #这时初始化一个agent实例
-        agent_instance = LangGraphInstance(character_id,websocket)
-        character_objects[websocket.remote_address] = agent_instance
-
         response = await process_request(init_data, websocket.remote_address)
         await websocket.send(json.dumps(response))
-
-        # scheduler = TaskScheduler(websocket, character_id)
-        await agent_instance.task
+        if response["data"]["result"]:  
+            #这时初始化一个agent实例
+            agent_instance = LangGraphInstance(character_id,websocket)
+            character_objects[websocket.remote_address] = agent_instance
+            # scheduler = TaskScheduler(websocket, character_id)
+            await agent_instance.task
 
         # 开始多个并发任务
         # await asyncio.gather(
@@ -64,8 +63,9 @@ async def process_request(message, websocket_address):
         response["data"] = data
     # 动作结果
     elif message_name == "actionresult":
-        data = await record_action_result(data, websocket_address)
-        response["data"] = data
+        pass
+        #data = await record_action_result(data, websocket_address)
+        #response["data"] = data
     # 还有其他的游戏事件待补充
     else:
         data = {"result": False, "msg": "Unknown message type."}

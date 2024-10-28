@@ -38,16 +38,29 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
 
 
 async def generate_daily_objective(state: RunningState):
-#BUG 这里如果检验失败会报错，需要重试
-    planner_response: RunningState = await obj_planner.ainvoke(
-        {
-            "character_stats": state["character_stats"],
-            "tool_functions": state["meta"]["tool_functions"],
-            "locations": state["meta"]["available_locations"],
-            #get the last 3 objectives
-            "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
-        }
-    )
+    # BUG 这里如果检验失败会报错，需要重试
+    # 重试一次
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            planner_response: RunningState = await obj_planner.ainvoke(
+                {
+                    "character_stats": state["character_stats"],
+                    "tool_functions": state["meta"]["tool_functions"],
+                    "locations": state["meta"]["available_locations"],
+                    # get the last 3 objectives
+                    "past_objectives": state.get("decision", []).get(
+                        "daily_objective", []
+                    )[-3:],
+                }
+            )
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in generate_daily_objective: {e}"
+            )
+            retry_count += 1
+            continue
     # Prepare data for API request
     # data = {
     #     "userid": state["userid"],
@@ -63,7 +76,6 @@ async def generate_daily_objective(state: RunningState):
 async def generate_detailed_plan(state: RunningState):
     detailed_plan = await detail_planner.ainvoke(state)
 
-
     return {"plan": detailed_plan.detailed_plan}
 
 
@@ -75,8 +87,7 @@ async def generate_meta_action_sequence(state: RunningState):
             "locations": state["meta"]["available_locations"],
         }
     )
-    #logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED...")
-    
+    # logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED...")
 
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
@@ -90,19 +101,25 @@ async def adjust_meta_action_sequence(state: RunningState):
         }
     )
 
-    logger.info(f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...with {meta_action_sequence.meta_action_sequence}")
-    await state["instance"].send_message({"characterId":state["userid"],"messageName": "actionList", "messageCode": 6, "data": {"command": meta_action_sequence.meta_action_sequence}})
+    logger.info(
+        f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...with {meta_action_sequence.meta_action_sequence}"
+    )
+    await state["instance"].send_message(
+        {
+            "characterId": state["userid"],
+            "messageName": "actionList",
+            "messageCode": 6,
+            "data": {"command": meta_action_sequence.meta_action_sequence},
+        }
+    )
     # Make API request to update_meta_seq
     # endpoint = "/update_meta_seq"
     # await make_api_request_async("POST", endpoint, data=data)
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
-
-
-
 async def sensing_environment(state: RunningState):
     logger.info(f"👀 User {state['userid']}: Sensing environment...")
-    #list all the messages in the message_queue
-    #logger.info(f"🏃 User {state['userid']} now have task:{state['message_queue']}")
+    # list all the messages in the message_queue
+    # logger.info(f"🏃 User {state['userid']} now have task:{state['message_queue']}")
     return {"current_pointer": "Process_Messages"}

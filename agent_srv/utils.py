@@ -84,8 +84,10 @@ Constraints: Must have enough money, and items must be available in sufficient q
 Constraints: Must have enough items in inventory.ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
     9. seedoctor [hours:int]: Visit a doctor, costing money.
 Constraints: Must have enough money and be in the hospital.\n
-    10. sleep [hours:int]: Sleep to recover energy and health.
-Constraints: Must be at home.\n
-    11. study [hours:int]: Study to achieve a higher degree.
+    10. study [hours:int]: Study to achieve a higher degree.
 Constraints: Must be in school and have enough money.\n
 """
+
+
+#     10. sleep [hours:int]: Sleep to recover energy and health.
+# Constraints: Must be at home.\n

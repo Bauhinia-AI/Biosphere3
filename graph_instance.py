@@ -90,7 +90,7 @@ class LangGraphInstance:
                     f"⛔ Task event_scheduler terminated due to termination signal."
                 )
                 break
-            await asyncio.sleep(10)
+            await asyncio.sleep(30)
             self.state["event_queue"].put_nowait("PLAN")
             logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
 

@@ -29,7 +29,7 @@ async def handler(websocket, path):
         if response["data"]["result"]:
             # 这时初始化一个agent实例
             agent_instance = LangGraphInstance(character_id, websocket)
-            character_objects[str(websocket.remote_address) + ":" + character_id] = (
+            character_objects[str(websocket.remote_address) + ":" + str(character_id)] = (
                 agent_instance
             )
             # scheduler = TaskScheduler(websocket, character_id)

@@ -166,6 +166,7 @@ class LangGraphInstance:
         async with self.websocket_lock:
             if self.websocket is None or self.websocket.closed:
                 logger.error(f"⛔ User {self.user_id}: WebSocket is not connected.")
+                self.signal = "TERMINATE"
                 return
             try:
                 await self.websocket.send(json.dumps(message))

@@ -223,7 +223,7 @@ async def main():
     # if is linux
     if sys.platform.startswith("linux"):
         host = "0.0.0.0"
-        port = 8099
+        port = 8080
         ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         ssl_context.load_cert_chain(
             certfile="/etc/ssl/certs/bio3.crt", keyfile="/etc/ssl/certs/bio3.key"

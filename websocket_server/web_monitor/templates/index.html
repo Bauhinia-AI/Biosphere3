@@ -88,7 +88,6 @@
         function formatData(data) {
             const monitorStatus = data.character_monitor?.monitor_status || {};
             const clients = data.character_monitor?.clients || { active_characters: [], hosted_characters: [] };
-            const orphanedTasks = data.orphaned_tasks || {};
 
             // 更新服务器时间
             document.getElementById('server-time').textContent = 
@@ -142,7 +141,7 @@
             const hostedCharactersTable = clients.hosted_characters.length > 0 ? clients.hosted_characters.map(client => `
                 <tr>
                     <td>${client.character_id}</td>
-                    <td class="status-hosted">Hosted</td>
+                    <td class="status-hosted">hosted</td>
                     <td>${client.last_heartbeat_time}</td>
                     <td>${client.heartbeat_count}</td>
                     <td>${client.has_callback ? '✓' : '✗'}</td>
@@ -166,29 +165,6 @@
                 </table>
             `;
 
-            // 更新孤立任务表格
-            const orphanedTasksTable = Object.entries(orphanedTasks).length > 0 ? Object.entries(orphanedTasks).map(([character_id, taskInfo]) => `
-                <tr>
-                    <td>${character_id}</td>
-                    <td>${taskInfo.active_tasks_number}</td>
-                    <td>${taskInfo.remaining_time.toFixed(2)}s</td>
-                </tr>
-            `).join('') : '<tr><td colspan="3" style="text-align: center;">No orphaned tasks</td></tr>';
-
-            document.getElementById('orphaned-tasks-table').innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Character ID</th>
-                            <th>Active Tasks</th>
-                            <th>Remaining Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${orphanedTasksTable}
-                    </tbody>
-                </table>
-            `;
         }
 
         function refreshData() {
@@ -240,13 +216,6 @@
         <div class="card">
             <h2>Hosted Characters</h2>
             <div id="hosted-characters-table">
-                Loading...
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Orphaned Tasks</h2>
-            <div id="orphaned-tasks-table">
                 Loading...
             </div>
         </div>

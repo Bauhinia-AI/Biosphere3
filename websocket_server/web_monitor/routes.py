@@ -3,9 +3,8 @@ from datetime import datetime
 from pathlib import Path
 
 class WebMonitor:
-    def __init__(self, character_manager, orphaned_task_manager):
+    def __init__(self, character_manager):
         self.character_manager = character_manager
-        self.orphaned_task_manager = orphaned_task_manager
         self.template_dir = Path(__file__).parent / "templates"
 
     async def index(self, request):
@@ -18,12 +17,10 @@ class WebMonitor:
         """返回服务器状态的 JSON 数据"""
         try:
             character_status = await self.character_manager.get_status()
-            orphaned_task_status = await self.orphaned_task_manager.get_status()
 
             status = {
                 "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "character_monitor": character_status,
-                "orphaned_tasks": orphaned_task_status,
+                "character_monitor": character_status
             }
 
             return web.json_response(status)

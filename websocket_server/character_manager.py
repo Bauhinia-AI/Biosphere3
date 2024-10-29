@@ -104,8 +104,9 @@ class CharacterManager:
                     self.host_character(character_id)
             await asyncio.sleep(self.timeout / 2)
 
+    """获取心跳管理器的状态信息"""
+
     async def get_status(self) -> Dict[str, Any]:
-        """获取心跳管理器的状态信息"""
         active_characters = [
             {
                 "character_id": character_id,

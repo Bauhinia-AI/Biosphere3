@@ -30,7 +30,7 @@ class LangGraphInstance:
         self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        self.queue_visulizer_task = asyncio.create_task(self.queue_visulizer())
+        self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")
@@ -94,12 +94,12 @@ class LangGraphInstance:
             self.state["event_queue"].put_nowait("PLAN")
             logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
 
-    async def queue_visulizer(self):
+    async def queue_visualizer(self):
         while True:
             await asyncio.sleep(10)
             if self.signal == "TERMINATE":
                 logger.error(
-                    f"⛔ Task queue_visulizer terminated due to termination signal."
+                    f"⛔ Task queue_visualizer terminated due to termination signal."
                 )
                 break
             logger.info(
@@ -145,9 +145,8 @@ class LangGraphInstance:
 
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
-        workflow.add_edge(
-            "meta_action_sequence", "adjust_meta_action_sequence"
-        )  # 循环回消息处理
+        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
+        # 循环回消息处理
         workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
 
         return workflow.compile()

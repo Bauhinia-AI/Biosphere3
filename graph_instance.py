@@ -27,7 +27,7 @@ class LangGraphInstance:
         self.graph = self._get_workflow_with_listener()
         self.graph_config = {"recursion_limit": 1000}
         # 三个协程
-        self.listener_task = asyncio.create_task(self.listener())
+        # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
         self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
@@ -36,28 +36,28 @@ class LangGraphInstance:
         logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
-    # 生产者listener，独立于graph运行
-    async def listener(self):
-        websocket = self.state["websocket"]
-        message_queue = self.state["message_queue"]
-        # logger.info(f"👂 User {self.user_id}: LISTENER started...")
+    # # 生产者listener，独立于graph运行
+    # async def listener(self):
+    #     websocket = self.state["websocket"]
+    #     message_queue = self.state["message_queue"]
+    #     # logger.info(f"👂 User {self.user_id}: LISTENER started...")
 
-        try:
-            async for message in websocket:
-                data = json.loads(message)
-                async with self.state_lock:
-                    await message_queue.put(data)
-                # logger.info(
-                #     f"👂 User {self.user_id}: Received message: {data} and put into queue"
-                # )
-                logger.info(
-                    f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
-                )
-        except websockets.ConnectionClosed:
-            logger.error(f"User {self.user_id}: WebSocket connection closed.")
+    #     try:
+    #         async for message in websocket:
+    #             data = json.loads(message)
+    #             async with self.state_lock:
+    #                 await message_queue.put(data)
+    #             # logger.info(
+    #             #     f"👂 User {self.user_id}: Received message: {data} and put into queue"
+    #             # )
+    #             logger.info(
+    #                 f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
+    #             )
+    #     except websockets.ConnectionClosed:
+    #         logger.error(f"User {self.user_id}: WebSocket connection closed.")
 
-        except Exception as e:
-            logger.error(f"User {self.user_id}: Error in listener: {e}")
+    #     except Exception as e:
+    #         logger.error(f"User {self.user_id}: Error in listener: {e}")
 
     async def msg_processor(self):
         while True:

@@ -21,10 +21,14 @@ async def handler(websocket, path):
         success, character_id, response = await initialize_connection(websocket)
         await websocket.send(json.dumps(response))
         if not success:
-            logger.error(f"❌ Initialize failed from {websocket.remote_address}")
+            logger.warning(
+                f"🔗 Failed to connect to remote websocket: {websocket.remote_address}"
+            )
             return
 
-        logger.info(f"✅ Initialized successfully from {websocket.remote_address}")
+        logger.warning(
+            f"🔗 Successfully connected to remote websocket: {websocket.remote_address}"
+        )
         agent_instance = character_objects[websocket.remote_address]
 
         # 设置心跳超时回调
@@ -65,19 +69,17 @@ async def handler(websocket, path):
                 logger.info(
                     f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
                 )
-            except websockets.ConnectionClosed:
-                logger.warning(f"❌ Connection closed from {websocket.remote_address}")
-                raise
-            except Exception as e:
-                logger.error(f"❌ Error processing message: {str(e)}")
+            except websockets.ConnectionClosed as e:
+                logger.warning(f"🔗 Connection closed from {websocket.remote_address}")
                 break
-    except Exception as e:
-        logger.error(f"❌ Error in main loop: {str(e)}")
+            except Exception as e:
+                logger.error(f"❌ Error in message loop: {str(e)}")
+                break
     finally:
-        if character_id:
-            heartbeat_manager.remove_client(character_id)
+        heartbeat_manager.remove_client(character_id)
         if websocket.remote_address in character_objects:
             del character_objects[websocket.remote_address]
+        logger.info(f"🧹 Cleaned up resources for {websocket.remote_address}")
 
 
 async def initialize_connection(websocket):
@@ -162,13 +164,13 @@ async def main():
             certfile="/etc/ssl/certs/bio3.crt", keyfile="/etc/ssl/certs/bio3.key"
         )
         server = await websockets.serve(handler, host, port, ssl=ssl_context)
-        logger.info(f"🔗 WebSocket server started at ws://{host}:{port}")
+        logger.warning(f"🔗 WebSocket server started at ws://{host}:{port}")
         await server.wait_closed()
     elif sys.platform.startswith("darwin"):
         host = "localhost"
         port = 6789
         server = await websockets.serve(handler, host, port)
-        logger.info(f"🔗 WebSocket server started at ws://{host}:{port}")
+        logger.warning(f"🔗 WebSocket server started at ws://{host}:{port}")
         await server.wait_closed()
 
 

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Server Monitor</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px;
+            background-color: #f0f2f5;
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .card { 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .refresh-btn {
+            padding: 10px 20px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .refresh-btn:hover {
+            background: #45a049;
+        }
+        .status-active { color: #4CAF50; }
+        .status-timeout { color: #f44336; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            background: white;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .server-time {
+            color: #666;
+            font-size: 14px;
+            text-align: right;
+            margin-bottom: 10px;
+        }
+    </style>
+    <script>
+        function formatData(data) {
+            const monitorStatus = data.heartbeat_monitor?.monitor_status || {};
+            const clients = data.heartbeat_monitor?.clients || { total_count: 0, active_count: 0, timeout_count: 0, active_clients: [], timeout_clients: [] };
+            const orphanedTasks = data.orphaned_tasks || {};
+
+            // 更新服务器时间
+            document.getElementById('server-time').textContent = 
+                `Server Time: ${data.server_time || 'N/A'}`;
+            
+            // 更新统计数据
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${monitorStatus.uptime_seconds || 'N/A'}</div>
+                    <div class="stat-label">Uptime (seconds)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${monitorStatus.total_count}</div>
+                    <div class="stat-label">Total Clients</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${monitorStatus.active_count}</div>
+                    <div class="stat-label">Active Clients</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${monitorStatus.timeout_count}</div>
+                    <div class="stat-label">Timeout Clients</div>
+                </div>
+            `;
+            
+            // 更新活跃客户端表格
+            const activeClientsTable = clients.active_clients.length > 0 ? clients.active_clients.map(client => `
+                <tr>
+                    <td>${client.character_id}</td>
+                    <td class="status-${client.status}">${client.status}</td>
+                    <td>${client.last_heartbeat_time}</td>
+                    <td>${client.heartbeat_count}</td>
+                    <td>${client.has_callback ? '✓' : '✗'}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="6" style="text-align: center;">No active clients</td></tr>';
+
+            document.getElementById('active-clients-table').innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Character ID</th>
+                            <th>Status</th>
+                            <th>Last Heartbeat</th>
+                            <th>Heartbeat Count</th>
+                            <th>Has Callback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${activeClientsTable}
+                    </tbody>
+                </table>
+            `;
+
+            // 更新超时客户端表格
+            const timeoutClientsTable = clients.timeout_clients.length > 0 ? clients.timeout_clients.map(client => `
+                <tr>
+                    <td>${client.character_id}</td>
+                    <td class="status-timeout">Timeout</td>
+                    <td>${client.last_heartbeat_time}</td>
+                    <td>${client.heartbeat_count}</td>
+                    <td>${client.has_callback ? '✓' : '✗'}</td>
+                </tr>
+            `).join('') : '<tr><td colspan="6" style="text-align: center;">No timeout clients</td></tr>';
+
+            document.getElementById('timeout-clients-table').innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Character ID</th>
+                            <th>Status</th>
+                            <th>Last Heartbeat</th>
+                            <th>Heartbeat Count</th>
+                            <th>Has Callback</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${timeoutClientsTable}
+                    </tbody>
+                </table>
+            `;
+
+            // 更新孤立任务表格
+            const orphanedTasksTable = Object.entries(orphanedTasks).length > 0 ? Object.entries(orphanedTasks).map(([character_id, taskInfo]) => `
+                <tr>
+                    <td>${character_id}</td>
+                    <td>${taskInfo.active_tasks_number}</td>
+                    <td>${taskInfo.remaining_time.toFixed(2)}s</td>
+                </tr>
+            `).join('') : '<tr><td colspan="3" style="text-align: center;">No orphaned tasks</td></tr>';
+
+            document.getElementById('orphaned-tasks-table').innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Character ID</th>
+                            <th>Active Tasks</th>
+                            <th>Remaining Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${orphanedTasksTable}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function refreshData() {
+            fetch('/status')
+                .then(response => response.json())
+                .then(data => {
+                    formatData(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('stats').innerHTML = 'Error loading data';
+                    document.getElementById('active-clients-table').innerHTML = 'Error loading data';
+                    document.getElementById('timeout-clients-table').innerHTML = 'Error loading data';
+                    document.getElementById('orphaned-tasks-table').innerHTML = 'Error loading data';
+                });
+        }
+
+        // 页面加载时刷新一次
+        document.addEventListener('DOMContentLoaded', refreshData);
+        // 每5秒自动刷新
+        setInterval(refreshData, 5000);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WebSocket Server Monitor</h1>
+            <button class="refresh-btn" onclick="refreshData()">Refresh</button>
+        </div>
+        
+        <div class="server-time" id="server-time">
+            Server Time: Loading...
+        </div>
+
+        <div class="card">
+            <h2>System Statistics</h2>
+            <div class="stats-grid" id="stats">
+                Loading...
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Connected Clients</h2>
+            <div id="active-clients-table">
+                Loading...
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Timeout Clients</h2>
+            <div id="timeout-clients-table">
+                Loading...
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Orphaned Tasks</h2>
+            <div id="orphaned-tasks-table">
+                Loading...
+            </div>
+        </div>
+    </div>
+</body>
+</html>

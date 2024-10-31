@@ -73,15 +73,14 @@ class OrphanedTaskManager:
                     f"⏱️ Extended expiration time for character {character_id} by {additional_time} seconds"
                 )
 
-    async def get_all_active_tasks_status(self):
+    async def get_status(self):
         async with self.lock:
             status = {}
-            for character_id, (tasks, expiration_time) in self.orphaned_tasks.items():
+            for character_id, (tasks, _) in self.orphaned_tasks.items():
                 active_tasks = [task for task in tasks if not task.done()]
-                remaining_time = (expiration_time - datetime.now()).total_seconds()
                 status[character_id] = {
-                    "active_tasks": len(active_tasks),
-                    "remaining_time": remaining_time,
+                    "active_tasks_number": len(active_tasks),
+                    "active_tasks": active_tasks,
+                    "remaining_time": self.get_remaining_time(character_id)
                 }
-            logger.info(f"🔍 All active tasks status: {status}")
             return status

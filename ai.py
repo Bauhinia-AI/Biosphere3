@@ -3,10 +3,11 @@ import websockets
 import ssl
 import json
 import sys
+from loguru import logger
 from websocket_server.task_manager import OrphanedTaskManager
 from websocket_server.heartbeat_manager import HeartbeatManager
+from websocket_server.web_monitor.routes import WebMonitor
 from graph_instance import LangGraphInstance
-from loguru import logger
 
 # 全局实例
 character_objects = {}  # websocket -> agent_instance
@@ -29,7 +30,7 @@ async def handler(websocket, path):
         # 设置心跳超时回调
         async def timeout_callback():
             if websocket.remote_address in character_objects:
-                logger.error(f"💔 Character {character_id} turn to orphaned...")
+                logger.info(f"🤖 {character_id} timeout, add tasks to manager...")
                 await orphaned_task_manager.add_orphaned_tasks(
                     agent_instance.user_id, agent_instance.tasks
                 )
@@ -146,6 +147,12 @@ def create_message(character_id, message_name, message_code, **kwargs):
 async def main():
     # 启动心跳监控
     await heartbeat_manager.start_monitoring()
+
+    # 启动 HTTP 监控服务器
+    web_monitor = WebMonitor(heartbeat_manager, orphaned_task_manager)
+    await web_monitor.setup(host="localhost", port=8000)
+    logger.info(f"🌐 HTTP Monitor started at http://localhost:8000")
+
     # if is linux
     if sys.platform.startswith("linux"):
         host = "0.0.0.0"

@@ -6,11 +6,12 @@ import sys
 from loguru import logger
 from websocket_server.task_manager import OrphanedTaskManager
 from websocket_server.heartbeat_manager import HeartbeatManager
+from websocket_server.character_manager import CharacterManager
 from websocket_server.web_monitor.routes import WebMonitor
 from graph_instance import LangGraphInstance
 
 # 全局实例
-character_objects = {}  # websocket -> agent_instance
+character_manager = CharacterManager()
 orphaned_task_manager = OrphanedTaskManager()
 heartbeat_manager = HeartbeatManager(timeout=60)  # 60秒超时
 
@@ -29,16 +30,15 @@ async def handler(websocket, path):
         logger.warning(
             f"🔗 Successfully connected to remote websocket: {websocket.remote_address}"
         )
-        agent_instance = character_objects[websocket.remote_address]
+        agent_instance = character_manager.get_character(character_id)
 
         # 设置心跳超时回调
         async def timeout_callback():
-            if websocket.remote_address in character_objects:
-                logger.info(f"🤖 {character_id} timeout, add tasks to manager...")
+            if character_manager.has_character(character_id):
                 await orphaned_task_manager.add_orphaned_tasks(
                     agent_instance.user_id, agent_instance.tasks
                 )
-                del character_objects[websocket.remote_address]
+                character_manager.remove_character(character_id)
 
         # 添加心跳监控
         heartbeat_manager.add_client(character_id, timeout_callback)
@@ -77,8 +77,7 @@ async def handler(websocket, path):
                 break
     finally:
         heartbeat_manager.remove_client(character_id)
-        if websocket.remote_address in character_objects:
-            del character_objects[websocket.remote_address]
+        character_manager.remove_character(character_id)
         logger.info(f"🧹 Cleaned up resources for {websocket.remote_address}")
 
 
@@ -88,7 +87,6 @@ async def initialize_connection(websocket):
     character_id = init_data.get("characterId")
     message_name = init_data.get("messageName")
     message_code = init_data.get("messageCode")
-    websocket_address = websocket.remote_address
 
     if not character_id:
         return (
@@ -102,7 +100,7 @@ async def initialize_connection(websocket):
             ),
         )
 
-    if character_id in [agent.user_id for agent in character_objects.values()]:
+    if character_manager.has_character(character_id):
         return (
             False,
             character_id,
@@ -122,7 +120,7 @@ async def initialize_connection(websocket):
     else:
         agent_instance = LangGraphInstance(character_id, websocket)
 
-    character_objects[websocket_address] = agent_instance
+    character_manager.add_character(character_id, agent_instance)
 
     return (
         True,

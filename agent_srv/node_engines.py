@@ -153,3 +153,30 @@ async def sensing_environment(state: RunningState):
     
     return {"current_pointer": "Process_Messages"}
 
+async def replan_action(state: RunningState):
+    latest_result = state["decision"]["action_result"][-1]
+    failed_action = latest_result.get("action")
+    error_message = latest_result.get("error")
+    
+    logger.info(f"🔄 User {state['userid']}: Replanning failed action: {failed_action}")
+    
+    # Generate new meta sequence excluding the failed action
+    meta_action_sequence = await meta_seq_adjuster.ainvoke({
+        "meta_seq": state["decision"]["meta_seq"][-1],
+        "tool_functions": state["meta"]["tool_functions"],
+        "locations": state["meta"]["available_locations"],
+        "failed_action": failed_action,
+        "error_message": error_message
+    })
+    
+    logger.info(f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}")
+    
+    # Send new action sequence to client
+    await state["instance"].send_message({
+        "characterId": state["userid"],
+        "messageName": "actionList",
+        "messageCode": 6,
+        "data": {"command": meta_action_sequence.meta_action_sequence},
+    })
+    
+    return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}

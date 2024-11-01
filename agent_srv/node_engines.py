@@ -11,6 +11,7 @@ import websockets
 import json
 import os
 import pprint
+import asyncio
 
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
 obj_planner = obj_planner_prompt | ChatOpenAI(
@@ -120,6 +121,35 @@ async def adjust_meta_action_sequence(state: RunningState):
 
 async def sensing_environment(state: RunningState):
     logger.info(f"👀 User {state['userid']}: Sensing environment...")
-    # list all the messages in the message_queue
-    # logger.info(f"🏃 User {state['userid']} now have task:{state['message_queue']}")
+    
+    # Check if there was a failed action that needs replanning
+    if state.get("decision", {}).get("action_result"):
+        latest_result = state["decision"]["action_result"][-1]
+        if latest_result.get("status") == "failed":
+            logger.info(f"🔄 User {state['userid']}: Action failed, triggering replan")
+            return {"current_pointer": "Replan_Action"}
+    
+    try:
+        # Send environment query message
+        await state["instance"].send_message({
+            "characterId": state["userid"],
+            "messageName": "queryEnvironment",
+            "messageCode": 7,
+            "data": {
+                "query": ["location", "nearby_objects", "nearby_characters"]
+            }
+        })
+        
+        await asyncio.sleep(1)
+        
+        # Check message queue for environment data
+        while not state["message_queue"].empty():
+            message = state["message_queue"].get_nowait()
+            if message.get("messageName") == "environment_data":
+                state["environment"] = message.get("data", {})
+                logger.info(f"🌍 User {state['userid']}: Environment updated - {state['environment']}")
+    except Exception as e:
+        logger.error(f"❌ User {state['userid']}: Error sensing environment - {str(e)}")
+    
     return {"current_pointer": "Process_Messages"}
+

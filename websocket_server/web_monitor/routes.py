@@ -4,9 +4,9 @@ import os
 from pathlib import Path
 
 class WebMonitor:
-    def __init__(self, heartbeat_manager, task_manager):
-        self.heartbeat_manager = heartbeat_manager
-        self.task_manager = task_manager
+    def __init__(self, character_manager, orphaned_task_manager):
+        self.character_manager = character_manager
+        self.orphaned_task_manager = orphaned_task_manager
         self.template_dir = Path(__file__).parent / "templates"
 
     async def index(self, request):
@@ -18,12 +18,12 @@ class WebMonitor:
     async def get_status(self, request):
         """返回服务器状态的 JSON 数据"""
         try:
-            heartbeat_status = await self.heartbeat_manager.get_status()
-            orphaned_task_status = await self.task_manager.get_status()
+            character_status = await self.character_manager.get_status()
+            orphaned_task_status = await self.orphaned_task_manager.get_status()
 
             status = {
                 "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "heartbeat_monitor": heartbeat_status,
+                "character_monitor": character_status,
                 "orphaned_tasks": orphaned_task_status,
             }
 

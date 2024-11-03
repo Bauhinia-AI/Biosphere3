@@ -5,29 +5,27 @@ import json
 import sys
 from loguru import logger
 from websocket_server.task_manager import OrphanedTaskManager
-from websocket_server.heartbeat_manager import HeartbeatManager
 from websocket_server.character_manager import CharacterManager
 from websocket_server.web_monitor.routes import WebMonitor
 from graph_instance import LangGraphInstance
 
 # 全局实例
-character_manager = CharacterManager()
+character_manager = CharacterManager(timeout=60)
 orphaned_task_manager = OrphanedTaskManager()
-heartbeat_manager = HeartbeatManager(timeout=60)  # 60秒超时
 
 
 async def handler(websocket, path):
     character_id = None
     try:
         success, character_id, response = await initialize_connection(websocket)
-        await websocket.send(json.dumps(response))
+        await websocket.send(response)
         if not success:
             logger.warning(
                 f"🔗 Failed to connect to remote websocket: {websocket.remote_address}"
             )
             return
 
-        logger.warning(
+        logger.info(
             f"🔗 Successfully connected to remote websocket: {websocket.remote_address}"
         )
         agent_instance = character_manager.get_character(character_id)
@@ -38,11 +36,9 @@ async def handler(websocket, path):
                 await orphaned_task_manager.add_orphaned_tasks(
                     agent_instance.user_id, agent_instance.tasks
                 )
-                character_manager.remove_character(character_id)
 
         # 添加心跳监控
-        heartbeat_manager.add_client(character_id, timeout_callback)
-        heartbeat_manager.update_heartbeat(character_id)
+        character_manager.add_heartbeat(character_id, timeout_callback)
 
         # 处理消息循环
         while True:
@@ -52,13 +48,9 @@ async def handler(websocket, path):
 
                 # 处理心跳消息
                 if data.get("messageName") == "heartbeat":
-                    heartbeat_manager.update_heartbeat(character_id)
+                    character_manager.update_heartbeat(character_id)
                     await websocket.send(
-                        json.dumps(
-                            create_message(
-                                character_id, "heartbeat", 0, **{"status": "ok"}
-                            )
-                        )
+                        create_message(character_id, "heartbeat", 0, **{"status": "ok"})
                     )
                     continue
 
@@ -76,9 +68,9 @@ async def handler(websocket, path):
                 logger.error(f"❌ Error in message loop: {str(e)}")
                 break
     finally:
-        heartbeat_manager.remove_client(character_id)
+        character_manager.remove_heartbeat(character_id)
         character_manager.remove_character(character_id)
-        logger.info(f"🧹 Cleaned up resources for {websocket.remote_address}")
+        logger.info(f"🧹 Cleaned up resources for Character {character_id}")
 
 
 async def initialize_connection(websocket):
@@ -136,20 +128,22 @@ async def initialize_connection(websocket):
 
 # 创建消息的辅助函数
 def create_message(character_id, message_name, message_code, **kwargs):
-    return {
-        "characterId": character_id,
-        "messageCode": message_code,
-        "messageName": message_name,
-        "data": kwargs,
-    }
+    return json.dumps(
+        {
+            "characterId": character_id,
+            "messageCode": message_code,
+            "messageName": message_name,
+            "data": kwargs,
+        }
+    )
 
 
 async def main():
     # 启动心跳监控
-    await heartbeat_manager.start_monitoring()
+    await character_manager.start_monitoring()
 
     # 启动 HTTP 监控服务器
-    web_monitor = WebMonitor(heartbeat_manager, orphaned_task_manager)
+    web_monitor = WebMonitor(character_manager, orphaned_task_manager)
     await web_monitor.setup(host="localhost", port=8000)
     logger.info(f"🌐 HTTP Monitor started at http://localhost:8000")
 

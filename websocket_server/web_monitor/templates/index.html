@@ -86,8 +86,8 @@
     </style>
     <script>
         function formatData(data) {
-            const monitorStatus = data.heartbeat_monitor?.monitor_status || {};
-            const clients = data.heartbeat_monitor?.clients || { total_count: 0, active_count: 0, timeout_count: 0, active_clients: [], timeout_clients: [] };
+            const monitorStatus = data.character_monitor?.monitor_status || {};
+            const clients = data.character_monitor?.clients || { total_count: 0, active_count: 0, timeout_count: 0, active_clients: [], timeout_clients: [] };
             const orphanedTasks = data.orphaned_tasks || {};
 
             // 更新服务器时间

@@ -27,37 +27,37 @@ class LangGraphInstance:
         self.graph = self._get_workflow_with_listener()
         self.graph_config = {"recursion_limit": 1000}
         # 三个协程
-        self.listener_task = asyncio.create_task(self.listener())
+        # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        self.queue_visulizer_task = asyncio.create_task(self.queue_visulizer())
+        self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
-    # 生产者listener，独立于graph运行
-    async def listener(self):
-        websocket = self.state["websocket"]
-        message_queue = self.state["message_queue"]
-        # logger.info(f"👂 User {self.user_id}: LISTENER started...")
+    # # 生产者listener，独立于graph运行
+    # async def listener(self):
+    #     websocket = self.state["websocket"]
+    #     message_queue = self.state["message_queue"]
+    #     # logger.info(f"👂 User {self.user_id}: LISTENER started...")
 
-        try:
-            async for message in websocket:
-                data = json.loads(message)
-                async with self.state_lock:
-                    await message_queue.put(data)
-                # logger.info(
-                #     f"👂 User {self.user_id}: Received message: {data} and put into queue"
-                # )
-                logger.info(
-                    f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
-                )
-        except websockets.ConnectionClosed:
-            logger.error(f"User {self.user_id}: WebSocket connection closed.")
+    #     try:
+    #         async for message in websocket:
+    #             data = json.loads(message)
+    #             async with self.state_lock:
+    #                 await message_queue.put(data)
+    #             # logger.info(
+    #             #     f"👂 User {self.user_id}: Received message: {data} and put into queue"
+    #             # )
+    #             logger.info(
+    #                 f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
+    #             )
+    #     except websockets.ConnectionClosed:
+    #         logger.error(f"User {self.user_id}: WebSocket connection closed.")
 
-        except Exception as e:
-            logger.error(f"User {self.user_id}: Error in listener: {e}")
+    #     except Exception as e:
+    #         logger.error(f"User {self.user_id}: Error in listener: {e}")
 
     async def msg_processor(self):
         while True:
@@ -94,12 +94,12 @@ class LangGraphInstance:
             self.state["event_queue"].put_nowait("PLAN")
             logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
 
-    async def queue_visulizer(self):
+    async def queue_visualizer(self):
         while True:
             await asyncio.sleep(10)
             if self.signal == "TERMINATE":
                 logger.error(
-                    f"⛔ Task queue_visulizer terminated due to termination signal."
+                    f"⛔ Task queue_visualizer terminated due to termination signal."
                 )
                 break
             logger.info(
@@ -145,9 +145,8 @@ class LangGraphInstance:
 
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
-        workflow.add_edge(
-            "meta_action_sequence", "adjust_meta_action_sequence"
-        )  # 循环回消息处理
+        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
+        # 循环回消息处理
         workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
 
         return workflow.compile()

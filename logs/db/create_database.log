@@ -1,3 +1,0 @@
-2024-10-04 19:37:36.483 | INFO     | __main__:setup_npc_database:81 - Collection 'agent_profile' deleted.
-2024-10-04 19:37:36.525 | INFO     | __main__:setup_npc_database:155 - Collection 'agent_profile' created with validator.
-2024-10-04 19:37:36.526 | INFO     | __main__:setup_npc_database:157 - NPC Data saved to MongoDB Atlas.

@@ -29,46 +29,61 @@ class CharacterManager:
         self._hosted_characters: Dict[int, Character] = {}  # 当前托管的角色实例
 
     """添加一个新的角色实例"""
+
     def add_character(
         self,
         character_id: int,
         agent_instance: LangGraphInstance,
-        callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None
+        callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None,
     ) -> None:
         self._characters[character_id] = Character(agent_instance)
         if callback:
             self._characters[character_id].callback = callback
 
     """托管一个角色实例"""
+
     def host_character(self, character_id: int) -> None:
-        self._hosted_characters[character_id] = self._characters[character_id]
-        self._characters.pop(character_id, None)
+        if character_id in self._characters:
+            self._hosted_characters[character_id] = self._characters[character_id]
+            self._characters.pop(character_id, None)
+
+            async def schedule_removal():
+                await asyncio.sleep(60 * 60)
+                self.remove_character(character_id)
+
+            asyncio.create_task(schedule_removal())
 
     """移除一个角色实例"""
+
     def remove_character(self, character_id: int) -> None:
         self._characters.pop(character_id, None)
         self._hosted_characters.pop(character_id, None)
 
     """获取一个角色实例"""
+
     def get_character(self, character_id: int) -> Optional[Character]:
         if character_id in self._hosted_characters:
             return self._hosted_characters[character_id]
         return self._characters.get(character_id, None)
 
     """检查角色实例是否存在"""
+
     def has_character(self, character_id: int) -> bool:
         return character_id in self._characters
 
     """检查托管角色实例是否存在"""
+
     def has_hosted_character(self, character_id: int) -> bool:
         return character_id in self._hosted_characters
 
     """启动心跳监控"""
+
     async def start_monitoring(self) -> None:
         self._monitor_task = asyncio.create_task(self._check_heartbeats())
         logger.info("🫀 Heartbeat monitoring started")
 
     """检查心跳状态"""
+
     async def _check_heartbeats(self) -> None:
         while True:
             logger.info("🔍 Performing heartbeat check...")
@@ -91,7 +106,7 @@ class CharacterManager:
                     "%Y-%m-%d %H:%M:%S", time.localtime(character.last_heartbeat)
                 ),
                 "heartbeat_count": character.heartbeat_count,
-                "has_callback": character.callback is not None
+                "has_callback": character.callback is not None,
             }
             for character_id, character in self._characters.items()
         ]
@@ -104,7 +119,7 @@ class CharacterManager:
                     "%Y-%m-%d %H:%M:%S", time.localtime(character.last_heartbeat)
                 ),
                 "heartbeat_count": character.heartbeat_count,
-                "has_callback": character.callback is not None
+                "has_callback": character.callback is not None,
             }
             for character_id, character in self._hosted_characters.items()
         ]

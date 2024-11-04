@@ -87,7 +87,7 @@
     <script>
         function formatData(data) {
             const monitorStatus = data.character_monitor?.monitor_status || {};
-            const clients = data.character_monitor?.clients || { total_count: 0, active_count: 0, timeout_count: 0, active_clients: [], timeout_clients: [] };
+            const clients = data.character_monitor?.clients || { active_characters: [], hosted_characters: [] };
             const orphanedTasks = data.orphaned_tasks || {};
 
             // 更新服务器时间
@@ -101,31 +101,27 @@
                     <div class="stat-label">Uptime (seconds)</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">${monitorStatus.total_count}</div>
-                    <div class="stat-label">Total Clients</div>
+                    <div class="stat-value">${clients.active_characters.length}</div>
+                    <div class="stat-label">Active Characters</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">${monitorStatus.active_count}</div>
-                    <div class="stat-label">Active Clients</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${monitorStatus.timeout_count}</div>
-                    <div class="stat-label">Timeout Clients</div>
+                    <div class="stat-value">${clients.hosted_characters.length}</div>
+                    <div class="stat-label">Hosted Characters</div>
                 </div>
             `;
             
-            // 更新活跃客户端表格
-            const activeClientsTable = clients.active_clients.length > 0 ? clients.active_clients.map(client => `
+            // 更新活跃角色表格
+            const activeCharactersTable = clients.active_characters.length > 0 ? clients.active_characters.map(client => `
                 <tr>
                     <td>${client.character_id}</td>
-                    <td class="status-${client.status}">${client.status}</td>
+                    <td class="status-active">${client.status}</td>
                     <td>${client.last_heartbeat_time}</td>
                     <td>${client.heartbeat_count}</td>
                     <td>${client.has_callback ? '✓' : '✗'}</td>
                 </tr>
-            `).join('') : '<tr><td colspan="6" style="text-align: center;">No active clients</td></tr>';
+            `).join('') : '<tr><td colspan="5" style="text-align: center;">No active characters</td></tr>';
 
-            document.getElementById('active-clients-table').innerHTML = `
+            document.getElementById('active-characters-table').innerHTML = `
                 <table>
                     <thead>
                         <tr>
@@ -137,23 +133,23 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${activeClientsTable}
+                        ${activeCharactersTable}
                     </tbody>
                 </table>
             `;
 
-            // 更新超时客户端表格
-            const timeoutClientsTable = clients.timeout_clients.length > 0 ? clients.timeout_clients.map(client => `
+            // 更新托管角色表格
+            const hostedCharactersTable = clients.hosted_characters.length > 0 ? clients.hosted_characters.map(client => `
                 <tr>
                     <td>${client.character_id}</td>
-                    <td class="status-timeout">Timeout</td>
+                    <td class="status-hosted">Hosted</td>
                     <td>${client.last_heartbeat_time}</td>
                     <td>${client.heartbeat_count}</td>
                     <td>${client.has_callback ? '✓' : '✗'}</td>
                 </tr>
-            `).join('') : '<tr><td colspan="6" style="text-align: center;">No timeout clients</td></tr>';
+            `).join('') : '<tr><td colspan="5" style="text-align: center;">No hosted characters</td></tr>';
 
-            document.getElementById('timeout-clients-table').innerHTML = `
+            document.getElementById('hosted-characters-table').innerHTML = `
                 <table>
                     <thead>
                         <tr>
@@ -165,7 +161,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${timeoutClientsTable}
+                        ${hostedCharactersTable}
                     </tbody>
                 </table>
             `;
@@ -204,8 +200,8 @@
                 .catch(error => {
                     console.error('Error fetching data:', error);
                     document.getElementById('stats').innerHTML = 'Error loading data';
-                    document.getElementById('active-clients-table').innerHTML = 'Error loading data';
-                    document.getElementById('timeout-clients-table').innerHTML = 'Error loading data';
+                    document.getElementById('active-characters-table').innerHTML = 'Error loading data';
+                    document.getElementById('hosted-characters-table').innerHTML = 'Error loading data';
                     document.getElementById('orphaned-tasks-table').innerHTML = 'Error loading data';
                 });
         }
@@ -235,15 +231,15 @@
         </div>
 
         <div class="card">
-            <h2>Connected Clients</h2>
-            <div id="active-clients-table">
+            <h2>Connected Characters</h2>
+            <div id="active-characters-table">
                 Loading...
             </div>
         </div>
 
         <div class="card">
-            <h2>Timeout Clients</h2>
-            <div id="timeout-clients-table">
+            <h2>Hosted Characters</h2>
+            <div id="hosted-characters-table">
                 Loading...
             </div>
         </div>

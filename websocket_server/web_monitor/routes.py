@@ -1,6 +1,5 @@
 from aiohttp import web
 from datetime import datetime
-import os
 from pathlib import Path
 
 class WebMonitor:

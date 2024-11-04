@@ -5,7 +5,7 @@ import json
 import sys
 from loguru import logger
 from websocket_server.task_manager import OrphanedTaskManager
-from websocket_server.character_manager import CharacterManager
+from websocket_server.character_manager import CharacterManager, Character
 from websocket_server.web_monitor.routes import WebMonitor
 from graph_instance import LangGraphInstance
 
@@ -28,17 +28,8 @@ async def handler(websocket, path):
         logger.info(
             f"🔗 Successfully connected to remote websocket: {websocket.remote_address}"
         )
-        agent_instance = character_manager.get_character(character_id)
-
-        # 设置心跳超时回调
-        async def timeout_callback():
-            if character_manager.has_character(character_id):
-                await orphaned_task_manager.add_orphaned_tasks(
-                    agent_instance.user_id, agent_instance.tasks
-                )
-
-        # 添加心跳监控
-        character_manager.add_heartbeat(character_id, timeout_callback)
+        character = character_manager.get_character(character_id)
+        agent_instance = character.instance
 
         # 处理消息循环
         while True:
@@ -48,7 +39,7 @@ async def handler(websocket, path):
 
                 # 处理心跳消息
                 if data.get("messageName") == "heartbeat":
-                    character_manager.update_heartbeat(character_id)
+                    character.update_heartbeat()
                     await websocket.send(
                         create_message(character_id, "heartbeat", 0, **{"status": "ok"})
                     )
@@ -68,8 +59,7 @@ async def handler(websocket, path):
                 logger.error(f"❌ Error in message loop: {str(e)}")
                 break
     finally:
-        character_manager.remove_heartbeat(character_id)
-        character_manager.remove_character(character_id)
+        character_manager.host_character(character_id)
         logger.info(f"🧹 Cleaned up resources for Character {character_id}")
 
 
@@ -104,15 +94,15 @@ async def initialize_connection(websocket):
             ),
         )
 
-    # 恢复或创建agent实例
-    if await orphaned_task_manager.has_orphaned_tasks(character_id):
-        existing_tasks = await orphaned_task_manager.get_tasks(character_id)
-        agent_instance = LangGraphInstance(character_id, websocket)
-        agent_instance.tasks = existing_tasks
-    else:
-        agent_instance = LangGraphInstance(character_id, websocket)
+    agent_instance = LangGraphInstance(character_id, websocket)
 
-    character_manager.add_character(character_id, agent_instance)
+    async def timeout_callback():
+        if character_manager.has_character(character_id):
+            await orphaned_task_manager.add_orphaned_tasks(
+                agent_instance.user_id, agent_instance.tasks
+            )
+
+    character_manager.add_character(character_id, agent_instance, timeout_callback)
 
     return (
         True,

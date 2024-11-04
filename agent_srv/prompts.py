@@ -66,12 +66,20 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
 meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     """For the given meta action sequence, adjust the sequence to make sure the player can finish all the daily objectives and follow the constraints.
     tool_functions and constraints:
-    {tool_functions}\n
-    available locations:\n
+    {tool_functions}
+
+    available locations:
     {locations}
-    For example, if you are already at the location, you don't need to navigate to it again.
+
+    {% if failed_action %}
+    The following action has failed and needs to be replanned:
+    Failed Action: {failed_action}
+    Error Message: {error_message}
+    Please provide an alternative approach that avoids this specific failure.
+    {% endif %}
+
+    Current sequence:
     {meta_seq}
-    \n
     """
 )
 

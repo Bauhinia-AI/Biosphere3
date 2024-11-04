@@ -43,7 +43,7 @@ class CharacterManager:
     """托管一个角色实例"""
 
     def host_character(self, character_id: int) -> None:
-        if character_id in self._characters:
+        if self.has_character(character_id):
             self._hosted_characters[character_id] = self._characters[character_id]
             self._characters.pop(character_id, None)
 
@@ -52,6 +52,14 @@ class CharacterManager:
                 self.remove_character(character_id)
 
             asyncio.create_task(schedule_removal())
+
+    """取消托管一个角色实例"""
+
+    def unhost_character(self, character_id: int) -> None:
+        if self.has_hosted_character(character_id):
+            self._characters[character_id] = self._hosted_characters[character_id]
+            self._hosted_characters.pop(character_id, None)
+            logger.info(f"🔄 Character {character_id} moved back to active characters")
 
     """移除一个角色实例"""
 
@@ -62,7 +70,7 @@ class CharacterManager:
     """获取一个角色实例"""
 
     def get_character(self, character_id: int) -> Optional[Character]:
-        if character_id in self._hosted_characters:
+        if self.has_hosted_character(character_id):
             return self._hosted_characters[character_id]
         return self._characters.get(character_id, None)
 

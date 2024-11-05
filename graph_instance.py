@@ -134,15 +134,17 @@ class LangGraphInstance:
 
     def _get_workflow_with_listener(self):
         workflow = StateGraph(RunningState)
-        # workflow.add_node("Process_Messages", self.process_messages)
         workflow.add_node("Sensing_Route", sensing_environment)
         workflow.add_node("Objectives_planner", generate_daily_objective)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
         workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
+        workflow.add_node("Replan_Action", replan_action)
+        
         workflow.set_entry_point("Sensing_Route")
         workflow.add_conditional_edges("Sensing_Route", self.event_router)
-        # workflow.set_conditional_entry_point(self.process_messages)
-
+        
+        workflow.add_edge("Replan_Action", "Sensing_Route")
+        
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")

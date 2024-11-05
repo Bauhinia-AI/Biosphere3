@@ -5,7 +5,7 @@ from loguru import logger
 
 
 class TestClient:
-    def __init__(self, uri="wss://47.95.21.135:8080", character_id=29):
+    def __init__(self, uri="ws://localhost:6789", character_id=29):
         self.uri = uri
         self.character_id = character_id
         self.websocket = None

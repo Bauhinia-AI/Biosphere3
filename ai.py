@@ -42,20 +42,24 @@ class AI_WS_Server:
             character = self.character_manager.get_character(character_id)
             agent_instance = character.instance
 
+            character.log_message("received", response)
+
             # 处理消息循环
             while True:
                 try:
                     message = await websocket.recv()
                     data = json.loads(message)
 
+                    character.log_message("sent", message)
+
                     # 处理心跳消息
                     if data.get("messageName") == "heartbeat":
                         character.update_heartbeat()
-                        await websocket.send(
-                            self.create_message(
-                                character_id, "heartbeat", 0, **{"status": "ok"}
-                            )
+                        heartbeat_response = self.create_message(
+                            character_id, "heartbeat", 0, **{"status": "ok"}
                         )
+                        await websocket.send(heartbeat_response)
+                        character.log_message("received", heartbeat_response)
                         continue
 
                     # 处理其他消息：放到对应agent的消息队列
@@ -112,6 +116,7 @@ class AI_WS_Server:
         agent_instance = LangGraphInstance(character_id, websocket)
 
         self.character_manager.add_character(character_id, agent_instance)
+        self.character_manager.get_character(character_id).log_message("sent", init_message)
 
         return (
             True,

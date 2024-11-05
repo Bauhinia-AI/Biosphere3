@@ -14,10 +14,19 @@ class Character:
         self.last_heartbeat = time.time()
         self.heartbeat_count = 1
         self.callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None
+        self.message_log = []  # 新增：用于存储消息记录
 
     def update_heartbeat(self):
         self.last_heartbeat = time.time()
         self.heartbeat_count += 1
+
+    def log_message(self, direction: str, message: str):
+        """记录消息"""
+        self.message_log.append({
+            "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "direction": direction,
+            "message": message
+        })
 
 
 class CharacterManager:

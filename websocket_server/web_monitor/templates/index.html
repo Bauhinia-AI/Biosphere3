@@ -112,7 +112,7 @@
             // 更新活跃角色表格
             const activeCharactersTable = clients.active_characters.length > 0 ? clients.active_characters.map(client => `
                 <tr>
-                    <td>${client.character_id}</td>
+                    <td><a href="/user/${client.character_id}">${client.character_id}</a></td>
                     <td class="status-active">${client.status}</td>
                     <td>${client.last_heartbeat_time}</td>
                     <td>${client.heartbeat_count}</td>

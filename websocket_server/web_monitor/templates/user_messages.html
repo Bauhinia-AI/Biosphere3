@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Character Messages</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery-jsonview/1.2.3/jquery.jsonview.min.css" rel="stylesheet">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px;
+            background-color: #f0f2f5;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+        }
+        .card { 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .direction-sent {
+            color: #4CAF50; /* 绿色 */
+        }
+        .direction-received {
+            color: #f44336; /* 红色 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Messages for Character ID: <span id="character-id"></span></h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Direction</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody id="message-log">
+                    <!-- Messages will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-jsonview/1.2.3/jquery.jsonview.min.js"></script>
+    <script>
+        const characterId = window.location.pathname.split('/').pop();
+        document.getElementById('character-id').textContent = characterId;
+
+        function loadMessages() {
+            fetch(`/api/messages/${characterId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const messageLog = data.map(log => `
+                        <tr>
+                            <td>${log.time}</td>
+                            <td class="${log.direction === 'sent' ? 'direction-sent' : 'direction-received'}">
+                                ${log.direction === 'sent' ? 'Sent' : 'Received'}
+                            </td>
+                            <td><div class="json-viewer" data-json='${log.message}'></div></td>
+                        </tr>
+                    `).join('');
+                    document.getElementById('message-log').innerHTML = messageLog;
+
+                    $('.json-viewer').each(function() {
+                        const jsonData = $(this).data('json');
+                        $(this).JSONView(jsonData, { collapsed: true });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading messages:', error);
+                    document.getElementById('message-log').innerHTML = '<tr><td colspan="3">Error loading messages</td></tr>';
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadMessages);
+    </script>
+</body>
+</html> 

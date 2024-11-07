@@ -1,13 +1,19 @@
 # post
 import requests
 import json
+import os
 from typing import Any, Dict, List, Callable
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SERVER_IP = os.getenv("SERVER_IP")
 
 # 扩展的工具配置字典
 TOOL_CONFIG = {
     "trade_item": {
         "method": "POST",
-        "url": "http://47.95.21.135:8082/ammPool/trade",
+        "url": f"http://{SERVER_IP}:8082/ammPool/trade",
         "headers": {"Content-Type": "application/json"},
         "params": {
             # param_name: (api_param_name, param_type)
@@ -21,13 +27,13 @@ TOOL_CONFIG = {
     },
     "get_freelance_jobs": {
         "method": "GET",
-        "url": "http://47.95.21.135:8082/freelanceWork/getAll",
+        "url": f"http://{SERVER_IP}:8082/freelanceWork/getAll",
         "headers": {"Content-Type": "application/json"},
         "params": {},
     },
     "get_public_jobs": {
         "method": "GET",
-        "url": "http://47.95.21.135:8082/publicWork/getAll",
+        "url": f"http://{SERVER_IP}:8082/publicWork/getAll",
         "headers": {"Content-Type": "application/json"},
         "params": {},
     },
@@ -127,7 +133,7 @@ def execute_action_sequence(action_sequence: List[str]) -> List[Dict[str, Any]]:
         except Exception as e:
             # 捕获所有异常,并将错误信息作为结果
             result = {"Error": f"Action execution failed: {str(e)}"}
-        
+
         results.append({action: result})
 
     return results

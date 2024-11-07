@@ -11,15 +11,18 @@ import os
 import pprint
 from database_api_utils import make_api_request_async, make_api_request_sync
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
-os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+load_dotenv()
+
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
 conversation_topic_planner = conversation_topic_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.0
 ).with_structured_output(ConversationTopics)
 
 conversation_planner = conversation_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.0
 ).with_structured_output(PreConversationTask)
 
 conversation_check = conversation_check_prompt | ChatOpenAI(
@@ -39,7 +42,7 @@ knowledge_generator = knowledge_generator_prompt | ChatOpenAI(
 ).with_structured_output(Knowledge)
 
 conversation_intimacy_mark = intimacy_mark_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.0
 ).with_structured_output(IntimacyMark)
 
 
@@ -65,16 +68,15 @@ async def generate_daily_conversation_plan(state: ConversationState):
     memory = []
     # 生成对话主题列表
     topic_list = conversation_topic_planner.invoke(
-        {
-            "character_stats": state["character_stats"],
-            "memory": memory
-        }
+        {"character_stats": state["character_stats"], "memory": memory}
     )
-    logger.info(f"Today User {state['userid']} is going to talk with others about: {topic_list['topics']}")
+    logger.info(
+        f"Today User {state['userid']} is going to talk with others about: {topic_list['topics']}"
+    )
 
     # rag对话对象candidate
     final_topic_list = []  # 每个条目包含topic，对话对象，impression三个字段
-    for topic in topic_list['topics']:
+    for topic in topic_list["topics"]:
         # To do
         # 在给定范围的列表中进行rag
         # neighbour_list加入
@@ -88,17 +90,21 @@ async def generate_daily_conversation_plan(state: ConversationState):
         # 模拟rag结果
         rag_response = {"data": [{"characterId": 2}, {"characterId": 1}]}
 
-        if len(rag_response['data']) == 0:
-            logger.info(f"User {state['userid']}: There is no suitable person to talk to on this topic {topic}.")
+        if len(rag_response["data"]) == 0:
+            logger.info(
+                f"User {state['userid']}: There is no suitable person to talk to on this topic {topic}."
+            )
 
         for user in rag_response["data"]:
             if user["characterId"] != state["userid"]:  # 排除自己和自己对话
                 impression_query_data = {
                     "from_id": state["userid"],
                     "to_id": user["characterId"],
-                    "k": 1
+                    "k": 1,
                 }
-                impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
+                impression_response = make_api_request_sync(
+                    "POST", "/impressions/get", data=impression_query_data
+                )
 
                 # impression为空报错机制
                 if impression_response["data"]:
@@ -108,7 +114,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
                 current_topic_list = {
                     "topic": topic,
                     "userid": user["characterId"],
-                    "impression": current_impression
+                    "impression": current_impression,
                 }
                 final_topic_list.append(current_topic_list)
                 break
@@ -123,7 +129,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
             }
         )
 
-        start_time = str(timetable)+":"+f"{state['userid'] % 60:02}"
+        start_time = str(timetable) + ":" + f"{state['userid'] % 60:02}"
         timetable += 1
         # 重组格式
         single_conversation = ConversationTask(
@@ -131,8 +137,14 @@ async def generate_daily_conversation_plan(state: ConversationState):
             to_id=talk["userid"],
             start_time=start_time,
             topic=talk["topic"],
-            dialogue=[{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
-            Finish=[False, False]
+            dialogue=[
+                {
+                    state["character_stats"]["characterName"]: pre_single_conversation[
+                        "first_sentence"
+                    ]
+                }
+            ],
+            Finish=[False, False],
         )
         conversation_plan.conversations.append(single_conversation)
 
@@ -143,11 +155,15 @@ async def generate_daily_conversation_plan(state: ConversationState):
     # insert daily conversation plan to db
 
     logger.info(f"🧠 DAILY CONVERSATION PLAN GENERATED...")
-    logger.info(f"Daily conversation plan of User {state['userid']}: {state['daily_task']}")
+    logger.info(
+        f"Daily conversation plan of User {state['userid']}: {state['daily_task']}"
+    )
     return state
 
 
-def create_message(character_id, message_name, conversation: RunningConversation, message_code=0):
+def create_message(
+    character_id, message_name, conversation: RunningConversation, message_code=0
+):
     return {
         "characterId": character_id,
         "messageCode": message_code,
@@ -157,7 +173,9 @@ def create_message(character_id, message_name, conversation: RunningConversation
 
 
 # 发送消息
-async def send_conversation_message(state: ConversationState, conversation: RunningConversation):
+async def send_conversation_message(
+    state: ConversationState, conversation: RunningConversation
+):
     websocket = state["websocket"]
     if websocket is None or websocket.closed:
         logger.error(f"⛔ User {state['userid']}: WebSocket is not connected.")
@@ -166,12 +184,14 @@ async def send_conversation_message(state: ConversationState, conversation: Runn
         message = create_message(
             character_id=state["userid"],
             message_name="to_agent",
-            conversation=conversation
+            conversation=conversation,
         )
         await websocket.send(json.dumps(message))
         logger.info(f"📤 User {state['userid']}: Sent a response message: {message}")
     except websockets.ConnectionClosed:
-        logger.warning(f"User {state['userid']}: WebSocket connection closed during send.")
+        logger.warning(
+            f"User {state['userid']}: WebSocket connection closed during send."
+        )
     except Exception as e:
         logger.error(f"User {state['userid']}: Error sending message: {e}")
 
@@ -188,12 +208,21 @@ async def start_conversation(state: ConversationState):
     current_time = calculate_game_time(datetime.now())
     if current_time[1] <= start_hour:
         # 计算下一次开始对话时间
-        sleep_time = ((-current_time[1]+start_hour)*60*60 + (-current_time[2]+start_minute)*60)//7
-        logger.info(f"User {state['userid']}: next conversation will be started after {sleep_time} seconds.")
-        await asyncio.sleep(sleep_time-5)  # 设定定时任务，考虑执行check步骤需要的时间-5秒
+        sleep_time = (
+            (-current_time[1] + start_hour) * 60 * 60
+            + (-current_time[2] + start_minute) * 60
+        ) // 7
+        logger.info(
+            f"User {state['userid']}: next conversation will be started after {sleep_time} seconds."
+        )
+        await asyncio.sleep(
+            sleep_time - 5
+        )  # 设定定时任务，考虑执行check步骤需要的时间-5秒
     else:
-        logger.info(f"User {state['userid']} missed one conversation. Start this task right now...")
-        current_talk['start_time'] = str(current_time[1])+":"+str(current_time[2])
+        logger.info(
+            f"User {state['userid']} missed one conversation. Start this task right now..."
+        )
+        current_talk["start_time"] = str(current_time[1]) + ":" + str(current_time[2])
 
     # 从数据库获取当前用户的最新状态
     userid = state["userid"]
@@ -209,21 +238,31 @@ async def start_conversation(state: ConversationState):
     talked = [
         [
             {"Bob": "Hello Alice! Why do you look so tired?"},
-            {"Alice": "Hello Bob! I'm preparing for the final exams. I've been staying up late for days."},
-            {"Bob": "Although final exams are very important, you still need to have enough sleep."},
-            {"Alice": "But math courses are too difficult. I'm really worried whether I could pass the exams."},
-            {"Bob": "You don't need to worry about that. I'm good at math. I can help you prepare for the exams."},
-            {"Alice": "That's great! Are you free tomorrow evening? We can meet at the library to study together."},
-            {"Bob": "Sure. See you tomorrow."}
+            {
+                "Alice": "Hello Bob! I'm preparing for the final exams. I've been staying up late for days."
+            },
+            {
+                "Bob": "Although final exams are very important, you still need to have enough sleep."
+            },
+            {
+                "Alice": "But math courses are too difficult. I'm really worried whether I could pass the exams."
+            },
+            {
+                "Bob": "You don't need to worry about that. I'm good at math. I can help you prepare for the exams."
+            },
+            {
+                "Alice": "That's great! Are you free tomorrow evening? We can meet at the library to study together."
+            },
+            {"Bob": "Sure. See you tomorrow."},
         ]
     ]
 
     logger.info(f"🧠 CHECKING WHETHER TO START THE CONVERSATION ...")
     check_response = conversation_check.invoke(
         {
-            "profile": state['character_stats'],
+            "profile": state["character_stats"],
             "current_talk": current_talk,
-            "finished_talk": talked
+            "finished_talk": talked,
         }
     )  # 检验对话任务是否有必要
 
@@ -234,15 +273,19 @@ async def start_conversation(state: ConversationState):
             start_time=current_talk["start_time"],
             latest_message=current_talk["dialogue"][0],
             dialogue=current_talk["dialogue"],
-            Finish=[False, False]
+            Finish=[False, False],
         )
 
         # 发送消息
         await send_conversation_message(state, talk_message)
 
-        logger.info(f"The conversation FROM {current_talk['from_id']} TO {current_talk['to_id']} at {current_talk['start_time']} has started.")
+        logger.info(
+            f"The conversation FROM {current_talk['from_id']} TO {current_talk['to_id']} at {current_talk['start_time']} has started."
+        )
     else:
-        logger.info(f"The conversation FROM {current_talk['from_id']} TO {current_talk['to_id']} at {current_talk['start_time']} is canceled after check.")
+        logger.info(
+            f"The conversation FROM {current_talk['from_id']} TO {current_talk['to_id']} at {current_talk['start_time']} is canceled after check."
+        )
 
     # 更新daily_task队列
     if len(state["daily_task"]) > 1:
@@ -278,17 +321,21 @@ async def generate_response(state: ConversationState):
     impression_query_data = {
         "from_id": state["userid"],
         "to_id": question_item["from_id"],
-        "k": 1
+        "k": 1,
     }
-    impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
-    logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {impression_response['data'][0]}")
+    impression_response = make_api_request_sync(
+        "POST", "/impressions/get", data=impression_query_data
+    )
+    logger.info(
+        f"The current impression from User {state['userid']} to User {question_item['from_id']} is {impression_response['data'][0]}"
+    )
 
     conversation_response = conversation_responser.invoke(
         {
             "profile": state["character_stats"],
-            "impression": impression_response['data'][0],
+            "impression": impression_response["data"][0],
             "question": question,
-            "history": history
+            "history": history,
         }
     )
     # conversation_response = {"response": "", "Finish": [False, False]}
@@ -300,15 +347,19 @@ async def generate_response(state: ConversationState):
         before_finish[finish_index] = True
 
     # 重组格式
-    latest_message = {state["character_stats"]["characterName"]: conversation_response["response"]}
+    latest_message = {
+        state["character_stats"]["characterName"]: conversation_response["response"]
+    }
     dialogue["dialogue"].append(latest_message)
     response_message = RunningConversation(
         from_id=question_item["to_id"],
         to_id=question_item["from_id"],
         start_time=question_item["start_time"],
-        latest_message={state["character_stats"]["characterName"]: conversation_response["response"]},
+        latest_message={
+            state["character_stats"]["characterName"]: conversation_response["response"]
+        },
         dialogue=dialogue["dialogue"],
-        Finish=before_finish
+        Finish=before_finish,
     )
     logger.info(f"A new response message has been generated {response_message}")
 
@@ -319,7 +370,9 @@ async def generate_response(state: ConversationState):
 
 
 # 判断是否所有任务都已经完成，如果有未开始的对话，连接到starter模块，如果所有对话都已发出，连接到end，发起对话流程结束
-def all_conversation_started(state: ConversationState) -> Literal["Conversation_starter", "__end__"]:
+def all_conversation_started(
+    state: ConversationState,
+) -> Literal["Conversation_starter", "__end__"]:
     if len(state["daily_task"]) == 0:
         logger.info(f"🧠 ALL CONVERSATIONS HAVE BEEN LAUNCHED.")
 
@@ -333,7 +386,9 @@ def all_conversation_started(state: ConversationState) -> Literal["Conversation_
 
 
 # 判断收到的消息对话状态，如果需要回复(Finish中存在True)则排队到waiting response，如果已经结束(False),则转到handle函数
-async def check_conversation_state(state: ConversationState, message: RunningConversation):
+async def check_conversation_state(
+    state: ConversationState, message: RunningConversation
+):
     if False in message["Finish"]:
         await state["waiting_response"].put(message)
         logger.info(f"🧠 RECEIVE MESSAGE. WAITING FOR RESPONSE...")
@@ -344,29 +399,43 @@ async def check_conversation_state(state: ConversationState, message: RunningCon
             "characterIds": [message["from_id"], message["to_id"]],
             "dialogue": message["dialogue"],
             "start_time": message["start_time"],
-            "start_day": game_time[0]
+            "start_day": game_time[0],
         }
         await handling_finished_conversation(conversation)
 
 
 # 处理已经结束的对话，包括生成印象，储存到数据库
-async def handling_finished_conversation(conversation):  # conversation = character_ids[], dialogue, start_time
+async def handling_finished_conversation(
+    conversation,
+):  # conversation = character_ids[], dialogue, start_time
     # 储存对话到数据库
     # To do
     # 检查数据库是否有相同的对话
 
-    stored_conversation_response = make_api_request_sync("POST", "/conversations/store", data=conversation)
-    logger.info(f"Conversation between Users {conversation['characterIds']} started at {conversation['start_time']} is finished.")
+    stored_conversation_response = make_api_request_sync(
+        "POST", "/conversations/store", data=conversation
+    )
+    logger.info(
+        f"Conversation between Users {conversation['characterIds']} started at {conversation['start_time']} is finished."
+    )
     logger.info(conversation["dialogue"])
     logger.info(stored_conversation_response["message"])
 
-    stored_impression = await update_impression(conversation["characterIds"][0], conversation["characterIds"][1], conversation["dialogue"])
-    updated_intimacy = await update_intimacy(conversation["characterIds"][0], conversation["characterIds"][1], conversation["dialogue"])
+    stored_impression = await update_impression(
+        conversation["characterIds"][0],
+        conversation["characterIds"][1],
+        conversation["dialogue"],
+    )
+    updated_intimacy = await update_intimacy(
+        conversation["characterIds"][0],
+        conversation["characterIds"][1],
+        conversation["dialogue"],
+    )
     return stored_impression, updated_intimacy
 
 
 async def update_impression(id1: int, id2: int, conversation):
-    relation_list = '''
+    relation_list = """
         1.Have a crush,
         2.Secret crush,
         3.Simp,
@@ -380,13 +449,10 @@ async def update_impression(id1: int, id2: int, conversation):
         11.Idol,
         12.Mentor and apprentice,
         13.Relative, including Father, Mother, Son, Daughter, Grandfather, Grandmother, Grandson, Granddaughter
-    '''
+    """
 
     impression = impression_update.invoke(
-        {
-            "conversation": conversation,
-            "relation_list": relation_list
-         }
+        {"conversation": conversation, "relation_list": relation_list}
     )
 
     # logger
@@ -396,21 +462,21 @@ async def update_impression(id1: int, id2: int, conversation):
     logger.info(impression.impression2)
 
     # Insert impressions:
-    document1 = {
-        "from_id": id1,
-        "to_id": id2,
-        "impression": impression.impression1
-    }
-    store_impression1_response = make_api_request_sync("POST", "/impressions/store", data=document1)
-    logger.info(f"From User {id1} to User {id2}: {store_impression1_response['message']}.")
+    document1 = {"from_id": id1, "to_id": id2, "impression": impression.impression1}
+    store_impression1_response = make_api_request_sync(
+        "POST", "/impressions/store", data=document1
+    )
+    logger.info(
+        f"From User {id1} to User {id2}: {store_impression1_response['message']}."
+    )
 
-    document2 = {
-        "from_id": id2,
-        "to_id": id1,
-        "impression": impression.impression2
-    }
-    store_impression2_response = make_api_request_sync("POST", "/impressions/store", data=document2)
-    logger.info(f"From User {id2} to User {id1}: {store_impression2_response['message']}.")
+    document2 = {"from_id": id2, "to_id": id1, "impression": impression.impression2}
+    store_impression2_response = make_api_request_sync(
+        "POST", "/impressions/store", data=document2
+    )
+    logger.info(
+        f"From User {id2} to User {id1}: {store_impression2_response['message']}."
+    )
     return {"new impressions": [impression.impression1, impression.impression2]}
 
 
@@ -424,10 +490,7 @@ async def generate_knowledge(state: ConversationState):
     logger.info(f"🧠 REFLECTING ON TODAY'S CONVERSATIONS...")
 
     knowledge = knowledge_generator.invoke(
-        {
-            "player": profile,
-            "conversation_list": conversation_list
-        }
+        {"player": profile, "conversation_list": conversation_list}
     )
 
     # logger
@@ -436,7 +499,10 @@ async def generate_knowledge(state: ConversationState):
     logger.info(f"{state['userid']} have learned something about himself/herself.")
     logger.info(knowledge.personal_information)
 
-    return {"environment knowledge": knowledge.environment_information, "personal knowledge": knowledge.personal_information}
+    return {
+        "environment knowledge": knowledge.environment_information,
+        "personal knowledge": knowledge.personal_information,
+    }
 
 
 # 用于定时处理只读列表中的所有通话，每个一段时间认为通话已经结束，进入结束对话流程
@@ -463,7 +529,7 @@ def initialize_conversation_state(userid, websocket) -> ConversationState:
         daily_task=[],
         message_queue=asyncio.Queue(),
         waiting_response=asyncio.Queue(),
-        websocket=websocket
+        websocket=websocket,
     )
     return state
 
@@ -491,22 +557,19 @@ async def update_intimacy(id1: int, id2: int, conversation):
     profile2 = make_api_request_sync("POST", "/characters/get", data=character_data)
 
     intimacy_mark = conversation_intimacy_mark.invoke(
-        {
-            "profile1": profile1,
-            "profile2": profile2,
-            "conversation": conversation
-        }
+        {"profile1": profile1, "profile2": profile2, "conversation": conversation}
     )
 
     logger.info(f"The conversation is {conversation}.")
-    logger.info(f"User {id1}'s attitude towards the conversation is: {intimacy_mark.mark1 - 3}")
-    logger.info(f"User {id2}'s attitude towards the conversation is: {intimacy_mark.mark2 - 3}")
+    logger.info(
+        f"User {id1}'s attitude towards the conversation is: {intimacy_mark.mark1 - 3}"
+    )
+    logger.info(
+        f"User {id2}'s attitude towards the conversation is: {intimacy_mark.mark2 - 3}"
+    )
 
     # 获取旧亲密度，如果不存在表示第一次对话，默认值50
-    intimacy_query_data = {
-        "from_id": id1,
-        "to_id": id2
-    }
+    intimacy_query_data = {"from_id": id1, "to_id": id2}
 
     response = make_api_request_sync("POST", "/intimacy/get", data=intimacy_query_data)
     if response["data"] is None:
@@ -516,10 +579,7 @@ async def update_intimacy(id1: int, id2: int, conversation):
         type_1 = "update"
         current_intimacy_1 = response["data"][0]["intimacy_level"]
 
-    intimacy_query_data = {
-        "from_id": id2,
-        "to_id": id1
-    }
+    intimacy_query_data = {"from_id": id2, "to_id": id1}
 
     response = make_api_request_sync("POST", "/intimacy/get", data=intimacy_query_data)
     if response["data"] is None:
@@ -529,8 +589,12 @@ async def update_intimacy(id1: int, id2: int, conversation):
         type_2 = "update"
         current_intimacy_2 = response["data"][0]["intimacy_level"]
 
-    logger.info(f"Past intimacy mark from User {id1} to User {id2} is {current_intimacy_1}.")
-    logger.info(f"Past intimacy mark from User {id2} to User {id1} is {current_intimacy_2}.")
+    logger.info(
+        f"Past intimacy mark from User {id1} to User {id2} is {current_intimacy_1}."
+    )
+    logger.info(
+        f"Past intimacy mark from User {id2} to User {id1} is {current_intimacy_2}."
+    )
 
     # 返回1-5，修改为-2到+2，同时截断
     current_intimacy_1 += intimacy_mark.mark1 - 3
@@ -540,18 +604,18 @@ async def update_intimacy(id1: int, id2: int, conversation):
     current_intimacy_2 = min(current_intimacy_2, 100)
     current_intimacy_2 = max(current_intimacy_2, 0)
 
-    logger.info(f"New intimacy mark from User {id1} to User {id2} is {current_intimacy_1}.")
-    logger.info(f"New intimacy mark from User {id2} to User {id1} is {current_intimacy_2}.")
+    logger.info(
+        f"New intimacy mark from User {id1} to User {id2} is {current_intimacy_1}."
+    )
+    logger.info(
+        f"New intimacy mark from User {id2} to User {id1} is {current_intimacy_2}."
+    )
 
     # 更新亲密度，区分新增和更新数据库命令的不同
     name = "intimacy_level"
     if type_1 == "update":
         name = "new_" + name
-    update_intimacy_data = {
-        "from_id": id1,
-        "to_id": id2,
-        name: current_intimacy_1
-    }
+    update_intimacy_data = {"from_id": id1, "to_id": id2, name: current_intimacy_1}
     endpoint = "/intimacy/" + type_1
     response = make_api_request_sync("POST", endpoint, data=update_intimacy_data)
     logger.info(f"From User {id1} to User {id2}: {response['message']}.")
@@ -559,18 +623,16 @@ async def update_intimacy(id1: int, id2: int, conversation):
     name = "intimacy_level"
     if type_2 == "update":
         name = "new_" + name
-    update_intimacy_data = {
-        "from_id": id2,
-        "to_id": id1,
-        name: current_intimacy_2
-    }
+    update_intimacy_data = {"from_id": id2, "to_id": id1, name: current_intimacy_2}
     endpoint = "/intimacy/" + type_2
     response = make_api_request_sync("POST", endpoint, data=update_intimacy_data)
     logger.info(f"From User {id2} to User {id1}: {response['message']}.")
 
 
 # 现实时间到游戏时间转换器
-def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-01 11:30'):  # 暂时设置的day1，real_time=datetime.now()
+def calculate_game_time(
+    real_time=datetime.now(), day1_str="2024-11-01 11:30"
+):  # 暂时设置的day1，real_time=datetime.now()
     # 解析现实时间
     day1 = datetime.strptime(day1_str, "%Y-%m-%d %H:%M")
 
@@ -592,4 +654,3 @@ def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-01 11:30'): 
     game_minute = game_time.minute
 
     return [game_day, game_hour, game_minute]
-

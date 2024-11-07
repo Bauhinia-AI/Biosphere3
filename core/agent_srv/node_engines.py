@@ -12,9 +12,12 @@ import json
 import os
 import pprint
 import asyncio
+from dotenv import load_dotenv
 
-# os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
-os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+load_dotenv()
+
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)

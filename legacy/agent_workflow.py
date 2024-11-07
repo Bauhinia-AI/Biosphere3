@@ -19,10 +19,13 @@ from loguru import logger
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database_api_utils import make_api_request_async
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # 设置环境变量
-os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
-os.environ["LANGCHAIN_API_KEY"] = "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"
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "Bio3_agent"
 
@@ -143,7 +146,6 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
 )
 
 
-
 detail_planner_prompt = ChatPromptTemplate.from_template(
     """For the given daily objectives,
     \n
@@ -243,8 +245,6 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
 # reflector = reflection_prompt | ChatOpenAI(
 #     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 # ).with_structured_output(Reflection)
-
-
 
 
 async def generate_daily_objective(state: PlanExecute):
@@ -353,6 +353,7 @@ async def adjust_meta_action_sequence(state: PlanExecute):
 #     else:
 #         return "Executor"
 
+
 # agent.py
 async def process_action_result(action_result):
     # 提取必要的信息
@@ -362,26 +363,33 @@ async def process_action_result(action_result):
     msg = data.get("msg", "")
 
     # 构建描述
-    #description = f"Action '{action_name}' execution {'succeeded' if result else 'failed'}. Message: {msg}"
+    # description = f"Action '{action_name}' execution {'succeeded' if result else 'failed'}. Message: {msg}"
     # 如果需要使用 LLM 生成更丰富的描述，可以取消注释以下代码
     description = await descritor.ainvoke({"action_result": str(data)})
     response = description.content
     logger.info(response)
     return response
+
+
 import asyncio
 import websockets
 import json
 
+
 async def listen_for_action_results(state: PlanExecute):
-    uri = "ws://localhost:8765"  
+    uri = "ws://localhost:8765"
     meta_seq = state.get("meta_seq", [])
     execution_results = []
 
     async with websockets.connect(uri) as websocket:
-        await websocket.send(json.dumps({
-            "userid": state["userid"],
-            "meta_sequence": meta_seq,
-        }))
+        await websocket.send(
+            json.dumps(
+                {
+                    "userid": state["userid"],
+                    "meta_sequence": meta_seq,
+                }
+            )
+        )
 
         print("Started listening for action results...")
 
@@ -396,11 +404,13 @@ async def listen_for_action_results(state: PlanExecute):
 
                 # 处理动作结果
                 description = await process_action_result(action_result)
-                execution_results.append({
-                    "action": action_result.get("data", {}).get("actionName", ""),
-                    "result": action_result,
-                    "description": description
-                })
+                execution_results.append(
+                    {
+                        "action": action_result.get("data", {}).get("actionName", ""),
+                        "result": action_result,
+                        "description": description,
+                    }
+                )
 
                 # 存储结果
                 data = {
@@ -415,7 +425,9 @@ async def listen_for_action_results(state: PlanExecute):
                 # 检查动作是否失败
                 action_success = action_result.get("data", {}).get("result", False)
                 if not action_success:
-                    print(f"Action {data['action']} failed. No further actions will be executed.")
+                    print(
+                        f"Action {data['action']} failed. No further actions will be executed."
+                    )
                     state["need_replan"] = True
                     break
 
@@ -434,11 +446,13 @@ async def listen_for_action_results(state: PlanExecute):
     # 返回执行结果
     return {"execution_results": execution_results}
 
+
 def should_replan(state: PlanExecute):
     if state.get("need_replan", False):
         return True
     else:
         return False
+
 
 async def describe_action_results(state: PlanExecute):
     execution_results = state.get("execution_results", [])
@@ -448,7 +462,7 @@ async def describe_action_results(state: PlanExecute):
         action_result = result.get("result", {})
         description = await process_action_result(action_result)
         descriptions.append(description)
-    
+
     # 将描述存储到状态中，或者发送到需要的地方
     state["action_descriptions"] = descriptions
 
@@ -461,6 +475,7 @@ async def describe_action_results(state: PlanExecute):
     # await make_api_request_async(endpoint, data)
 
     return {"action_descriptions": descriptions}
+
 
 # # 创建工作流
 workflow = StateGraph(PlanExecute)

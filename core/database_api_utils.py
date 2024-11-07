@@ -1,6 +1,12 @@
 import httpx
+import os
+from dotenv import load_dotenv
 
-BASE_URL = "http://47.95.21.135:8085"
+load_dotenv()
+
+SERVER_IP = os.getenv("SERVER_IP")
+
+BASE_URL = f"http://{SERVER_IP}:8085"
 # BASE_URL = "http://localhost:8085"
 
 

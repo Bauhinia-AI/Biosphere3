@@ -9,6 +9,7 @@ from websocket_server.character_manager import CharacterManager
 from websocket_server.web_monitor.routes import WebMonitor
 from graph_instance import LangGraphInstance
 
+
 class ConfigLoader:
     def __init__(self, environment):
         with open("config.yaml", "r") as file:
@@ -16,6 +17,7 @@ class ConfigLoader:
 
     def get(self, key):
         return self.config.get(key)
+
 
 class AI_WS_Server:
     def __init__(self, config):
@@ -116,7 +118,9 @@ class AI_WS_Server:
         agent_instance = LangGraphInstance(character_id, websocket)
 
         self.character_manager.add_character(character_id, agent_instance)
-        self.character_manager.get_character(character_id).log_message("sent", init_message)
+        self.character_manager.get_character(character_id).log_message(
+            "sent", init_message
+        )
 
         return (
             True,
@@ -146,31 +150,33 @@ class AI_WS_Server:
         # 启动 HTTP 监控服务器
         await self.web_monitor.setup(
             host=self.config.get("http_monitor_host"),
-            port=self.config.get("http_monitor_port")
+            port=self.config.get("http_monitor_port"),
         )
-        logger.info(f"🌐 HTTP Monitor started at http://{self.config.get('http_monitor_host')}:{self.config.get('http_monitor_port')}")
+        logger.info(
+            f"🌐 HTTP Monitor started at http://{self.config.get('http_monitor_host')}:{self.config.get('http_monitor_port')}"
+        )
 
         host = self.config.get("websocket_host")
         port = self.config.get("websocket_port")
 
-        if sys.platform.startswith("linux"):  # 生产环境
-            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            ssl_context.load_cert_chain(
-                certfile=self.config.get("ssl_certfile"),
-                keyfile=self.config.get("ssl_keyfile")
-            )
-            server = await websockets.serve(self.handler, host, port, ssl=ssl_context)
-        else:  # 开发环境
-            server = await websockets.serve(self.handler, host, port)
+        # 使用SSL/TLS配置
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(
+            certfile=self.config.get("ssl_certfile"),
+            keyfile=self.config.get("ssl_keyfile"),
+        )
+        server = await websockets.serve(self.handler, host, port, ssl=ssl_context)
 
-        logger.warning(f"🔗 WebSocket server started at ws://{host}:{port}")
+        logger.warning(f"🔗 WebSocket server started at wss://{host}:{port}")
         await server.wait_closed()
+
 
 def main():
     environment = "production" if sys.platform.startswith("linux") else "development"
     config = ConfigLoader(environment)
     server = AI_WS_Server(config)
     asyncio.run(server.run())
+
 
 if __name__ == "__main__":
     main()

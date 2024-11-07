@@ -21,7 +21,6 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             ["Working: Working in the farm","Studying: Discover something about science", "Socializing: Try to make friends"]\n
             """,
         ),
-        
     ]
 )
 
@@ -71,12 +70,10 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     available locations:
     {locations}
 
-    {% if failed_action %}
     The following action has failed and needs to be replanned:
     Failed Action: {failed_action}
     Error Message: {error_message}
     Please provide an alternative approach that avoids this specific failure.
-    {% endif %}
 
     Current sequence:
     {meta_seq}
@@ -104,4 +101,3 @@ describe_action_result_prompt = ChatPromptTemplate.from_template(
     {action_result}
     """
 )
-

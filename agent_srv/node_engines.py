@@ -12,6 +12,7 @@ import json
 import os
 import pprint
 import asyncio
+from datetime import datetime
 
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
 obj_planner = obj_planner_prompt | ChatOpenAI(
@@ -208,3 +209,54 @@ async def replan_action(state: RunningState):
     #     logger.error(f"⚠️ Replanning failed: {str(e)}")
     #     # If replanning fails, try a simpler fallback plan
     #     return await fallback_plan(state)
+
+async def reflect_and_summarize(state: RunningState):
+    try:
+        # Get relevant history data
+        past_objectives = state.get("decision", {}).get("daily_objective", [])[-5:]  # Last 5 objectives
+        replan_history = state.get("decision", {}).get("replan_history", [])
+        
+        # Create reflection prompt input
+        reflection_input = {
+            "past_objectives": past_objectives,
+            "replan_history": replan_history,
+            "character_stats": state["character_stats"],
+        }
+        
+        # Generate reflection using LLM
+        reflection = await reflection_prompt.ainvoke(reflection_input)
+        
+        # Store reflection in state and database
+        timestamp = datetime.now().isoformat()
+        reflection_data = {
+            "userid": state["userid"],
+            "timestamp": timestamp,
+            "reflection": reflection.reflection,
+            "analyzed_period": {
+                "objectives": past_objectives,
+                "errors": replan_history
+            }
+        }
+        
+        # Store in database (assuming you have a database connection)
+        await state["instance"].send_message({
+            "characterId": state["userid"],
+            "messageName": "storeReflection",
+            "messageCode": 8,
+            "data": reflection_data
+        })
+        
+        logger.info(f"📝 User {state['userid']}: Generated reflection - {reflection.reflection}")
+        
+        return {
+            "decision": {
+                "reflections": state.get("decision", {}).get("reflections", []) + [{
+                    "timestamp": timestamp,
+                    "content": reflection.reflection
+                }]
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ User {state['userid']}: Error generating reflection - {str(e)}")
+        return {}

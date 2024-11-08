@@ -157,16 +157,30 @@ async def replan_action(state: RunningState):
     latest_result = state["decision"]["action_result"][-1]
     failed_action = latest_result.get("action")
     error_message = latest_result.get("error")
+    current_location = state.get("environment", {}).get("location")
     
     logger.info(f"🔄 User {state['userid']}: Replanning failed action: {failed_action}")
+    logger.info(f"❌ Error message: {error_message}")
     
-    # Generate new meta sequence excluding the failed action
+    # Analyze error type and context
+    error_context = {
+        "failed_action": failed_action,
+        "error_message": error_message,
+        "current_location": current_location,
+        "current_meta_seq": state["decision"]["meta_seq"][-1],
+        "daily_objective": state["decision"]["daily_objective"][-1]
+    }
+    
+    # try:
+        # Generate new meta sequence with error context
     meta_action_sequence = await meta_seq_adjuster.ainvoke({
         "meta_seq": state["decision"]["meta_seq"][-1],
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
         "failed_action": failed_action,
-        "error_message": error_message
+        "error_message": error_message,
+        "current_location": current_location,
+        "error_context": error_context
     })
     
     logger.info(f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}")
@@ -179,4 +193,18 @@ async def replan_action(state: RunningState):
         "data": {"command": meta_action_sequence.meta_action_sequence},
     })
     
-    return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
+    return {
+        "decision": {
+            "meta_seq": meta_action_sequence.meta_action_sequence,
+            "replan_history": state.get("decision", {}).get("replan_history", []) + [{
+                "failed_action": failed_action,
+                "error": error_message,
+                "new_plan": meta_action_sequence.meta_action_sequence
+            }]
+        }
+    }
+        
+    # except Exception as e:
+    #     logger.error(f"⚠️ Replanning failed: {str(e)}")
+    #     # If replanning fails, try a simpler fallback plan
+    #     return await fallback_plan(state)

@@ -12,6 +12,7 @@ import json
 import os
 import pprint
 import asyncio
+from datetime import datetime
 
 # os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
 os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
@@ -182,45 +183,108 @@ async def sensing_environment(state: RunningState):
 
 
 async def replan_action(state: RunningState):
-    if state.get("decision", {}).get("action_result"):
-        latest_result = state["decision"]["action_result"][-1]
-        failed_action = latest_result.get("action", "")
-        error_message = latest_result.get("error", "")
-    else:
-        logger.error("No action results available.")
-        return {"decision": {"meta_seq": []}}
-
-    if state["decision"]["meta_seq"]:
-        meta_seq = state["decision"]["meta_seq"][-1]
-    else:
-        logger.error("No meta sequence available.")
-        return {"decision": {"meta_seq": []}}
-
+    latest_result = state["decision"]["action_result"][-1]
+    failed_action = latest_result.get("action")
+    error_message = latest_result.get("error")
+    current_location = state.get("environment", {}).get("location")
+    
     logger.info(f"🔄 User {state['userid']}: Replanning failed action: {failed_action}")
-
-    # Generate new meta sequence excluding the failed action
-    meta_action_sequence = await meta_seq_adjuster.ainvoke(
-        {
-            "meta_seq": meta_seq,
-            "tool_functions": state["meta"]["tool_functions"],
-            "locations": state["meta"]["available_locations"],
-            "failed_action": failed_action,
-            "error_message": error_message,
-        }
-    )
-
-    logger.info(
-        f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}"
-    )
-
+    logger.info(f"❌ Error message: {error_message}")
+    
+    # Analyze error type and context
+    error_context = {
+        "failed_action": failed_action,
+        "error_message": error_message,
+        "current_location": current_location,
+        "current_meta_seq": state["decision"]["meta_seq"][-1],
+        "daily_objective": state["decision"]["daily_objective"][-1]
+    }
+    
+    # try:
+        # Generate new meta sequence with error context
+    meta_action_sequence = await meta_seq_adjuster.ainvoke({
+        "meta_seq": state["decision"]["meta_seq"][-1],
+        "tool_functions": state["meta"]["tool_functions"],
+        "locations": state["meta"]["available_locations"],
+        "failed_action": failed_action,
+        "error_message": error_message,
+        "current_location": current_location,
+        "error_context": error_context
+    })
+    
+    logger.info(f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}")
+    
     # Send new action sequence to client
-    await state["instance"].send_message(
-        {
-            "characterId": state["userid"],
-            "messageName": "actionList",
-            "messageCode": 6,
-            "data": {"command": meta_action_sequence.meta_action_sequence},
+    await state["instance"].send_message({
+        "characterId": state["userid"],
+        "messageName": "actionList",
+        "messageCode": 6,
+        "data": {"command": meta_action_sequence.meta_action_sequence},
+    })
+    
+    return {
+        "decision": {
+            "meta_seq": meta_action_sequence.meta_action_sequence,
+            "replan_history": state.get("decision", {}).get("replan_history", []) + [{
+                "failed_action": failed_action,
+                "error": error_message,
+                "new_plan": meta_action_sequence.meta_action_sequence
+            }]
         }
-    )
+    }
+        
+    # except Exception as e:
+    #     logger.error(f"⚠️ Replanning failed: {str(e)}")
+    #     # If replanning fails, try a simpler fallback plan
+    #     return await fallback_plan(state)
 
-    return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
+async def reflect_and_summarize(state: RunningState):
+    try:
+        # Get relevant history data
+        past_objectives = state.get("decision", {}).get("daily_objective", [])[-5:]  # Last 5 objectives
+        replan_history = state.get("decision", {}).get("replan_history", [])
+        
+        # Create reflection prompt input
+        reflection_input = {
+            "past_objectives": past_objectives,
+            "replan_history": replan_history,
+            "character_stats": state["character_stats"],
+        }
+        
+        # Generate reflection using LLM
+        reflection = await reflection_prompt.ainvoke(reflection_input)
+        
+        # Store reflection in state and database
+        timestamp = datetime.now().isoformat()
+        reflection_data = {
+            "userid": state["userid"],
+            "timestamp": timestamp,
+            "reflection": reflection.reflection,
+            "analyzed_period": {
+                "objectives": past_objectives,
+                "errors": replan_history
+            }
+        }
+        
+        # Store in database (assuming you have a database connection)
+        await state["instance"].send_message({
+            "characterId": state["userid"],
+            "messageName": "storeReflection",
+            "messageCode": 8,
+            "data": reflection_data
+        })
+        
+        logger.info(f"📝 User {state['userid']}: Generated reflection - {reflection.reflection}")
+        
+        return {
+            "decision": {
+                "reflections": state.get("decision", {}).get("reflections", []) + [{
+                    "timestamp": timestamp,
+                    "content": reflection.reflection
+                }]
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ User {state['userid']}: Error generating reflection - {str(e)}")
+        return {}

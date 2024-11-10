@@ -7,6 +7,7 @@ import os
 import asyncio
 from pprint import pprint
 from agent_srv.utils import generate_initial_state, check_termination
+from datetime import datetime
 
 
 class LangGraphInstance:
@@ -139,6 +140,7 @@ class LangGraphInstance:
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
         workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
         workflow.add_node("Replan_Action", replan_action)
+        workflow.add_node("Reflect_And_Summarize", reflect_and_summarize)
         
         workflow.set_entry_point("Sensing_Route")
         workflow.add_conditional_edges("Sensing_Route", self.event_router)
@@ -150,7 +152,24 @@ class LangGraphInstance:
         workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
         # 循环回消息处理
         workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
-
+        
+        # 每隔五次目标或3分钟反思一次
+        def should_reflect(state: RunningState) -> bool:
+            objectives_count = len(state.get("decision", {}).get("daily_objective", []))
+            last_reflection_time = state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
+            
+            if last_reflection_time:
+                time_since_last = datetime.now() - datetime.fromisoformat(last_reflection_time)
+                return time_since_last.total_seconds() > 180  # 3分钟
+            
+            return objectives_count > 0 and objectives_count % 5 == 0
+        
+        workflow.add_conditional_edges(
+            "Process_Messages",
+            lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route"
+        )
+        workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
+        
         return workflow.compile()
 
     async def a_run(self):

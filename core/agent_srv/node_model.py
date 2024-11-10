@@ -78,7 +78,9 @@ class MetaActionSequence(BaseModel):
     meta_action_sequence: List[str] = Field(description="meta action sequence")
 
 class Reflection(BaseModel):
-    reflection: str
+    reflection: str = Field(description="A comprehensive reflection of the agent's recent activities")
+    key_learnings: List[str] = Field(description="Key lessons learned from past mistakes and successes")
+    improvement_suggestions: List[str] = Field(description="Specific suggestions for future improvement")
 
 class Response(BaseModel):
     """Response to user."""

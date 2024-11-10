@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph, START, END
 import os
 import asyncio
 from pprint import pprint
-from agent_srv.utils import generate_initial_state, check_termination
+from agent_srv.utils import generate_initial_state, generate_initial_state_hardcoded
 from datetime import datetime
 
 
@@ -18,7 +18,7 @@ class LangGraphInstance:
         # 初始化 langgraph 实例
         #  TODO We should 根据user_id 检索数据库中的信息，更新stat
         self.state = RunningState(
-            **generate_initial_state(self.user_id, self.websocket)
+            **generate_initial_state_hardcoded(self.user_id, self.websocket)
         )
         self.state["instance"] = self
         self.connection_stats = {}
@@ -26,7 +26,7 @@ class LangGraphInstance:
         self.state_lock = asyncio.Lock()
         self.websocket_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
-        self.graph_config = {"recursion_limit": 1000}
+        self.graph_config = {"recursion_limit": 1e10}
         # 三个协程
         # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
@@ -37,28 +37,28 @@ class LangGraphInstance:
         logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
-    # # 生产者listener，独立于graph运行
-    # async def listener(self):
-    #     websocket = self.state["websocket"]
-    #     message_queue = self.state["message_queue"]
-    #     # logger.info(f"👂 User {self.user_id}: LISTENER started...")
+    # 生产者listener，独立于graph运行
+    async def listener(self):
+        websocket = self.state["websocket"]
+        message_queue = self.state["message_queue"]
+        # logger.info(f"👂 User {self.user_id}: LISTENER started...")
 
-    #     try:
-    #         async for message in websocket:
-    #             data = json.loads(message)
-    #             async with self.state_lock:
-    #                 await message_queue.put(data)
-    #             # logger.info(
-    #             #     f"👂 User {self.user_id}: Received message: {data} and put into queue"
-    #             # )
-    #             logger.info(
-    #                 f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
-    #             )
-    #     except websockets.ConnectionClosed:
-    #         logger.error(f"User {self.user_id}: WebSocket connection closed.")
+        try:
+            async for message in websocket:
+                data = json.loads(message)
+                async with self.state_lock:
+                    await message_queue.put(data)
+                # logger.info(
+                #     f"👂 User {self.user_id}: Received message: {data} and put into queue"
+                # )
+                logger.info(
+                    f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
+                )
+        except websockets.ConnectionClosed:
+            logger.error(f"User {self.user_id}: WebSocket connection closed.")
 
-    #     except Exception as e:
-    #         logger.error(f"User {self.user_id}: Error in listener: {e}")
+        except Exception as e:
+            logger.error(f"User {self.user_id}: Error in listener: {e}")
 
     async def msg_processor(self):
         while True:
@@ -141,35 +141,39 @@ class LangGraphInstance:
         workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
         workflow.add_node("Replan_Action", replan_action)
         workflow.add_node("Reflect_And_Summarize", reflect_and_summarize)
-        
+
         workflow.set_entry_point("Sensing_Route")
         workflow.add_conditional_edges("Sensing_Route", self.event_router)
-        
+
         workflow.add_edge("Replan_Action", "Sensing_Route")
-        
+
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
         # 循环回消息处理
         workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
-        
+
         # 每隔五次目标或3分钟反思一次
         def should_reflect(state: RunningState) -> bool:
             objectives_count = len(state.get("decision", {}).get("daily_objective", []))
-            last_reflection_time = state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
-            
+            last_reflection_time = (
+                state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
+            )
+
             if last_reflection_time:
-                time_since_last = datetime.now() - datetime.fromisoformat(last_reflection_time)
+                time_since_last = datetime.now() - datetime.fromisoformat(
+                    last_reflection_time
+                )
                 return time_since_last.total_seconds() > 180  # 3分钟
-            
+
             return objectives_count > 0 and objectives_count % 5 == 0
-        
+
         workflow.add_conditional_edges(
             "Process_Messages",
-            lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route"
+            lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
         )
         workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
-        
+
         return workflow.compile()
 
     async def a_run(self):

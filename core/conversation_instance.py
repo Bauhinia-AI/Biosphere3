@@ -41,8 +41,12 @@ class ConversationInstance:
         try:
             data = json.loads(message)
             await message_queue.put(data)
-            logger.info(f"👂 User {self.user_id}: Received conversation message: {data} and put into queue")
-            logger.info(f"🧾 User {self.user_id} conversation message queue: {self.state['message_queue']}")
+            logger.info(
+                f"👂 User {self.user_id}: Received conversation message: {data} and put into queue"
+            )
+            logger.info(
+                f"🧾 User {self.user_id} conversation message queue: {self.state['message_queue']}"
+            )
         except websockets.ConnectionClosed:
             logger.error(f"User {self.user_id}: WebSocket connection closed.")
 
@@ -56,7 +60,9 @@ class ConversationInstance:
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
 
-            if message_name == "gameTime":  # 游戏端给到前一天经常遇到的人，收到这条消息时触发当天的对话规划流程
+            if (
+                message_name == "gameTime"
+            ):  # 游戏端给到前一天经常遇到的人，收到这条消息时触发当天的对话规划流程
                 # logger.info(f"🏃 User {self.user_id}: IT'S A NEW DAY!")
                 # To do
                 # 批量减少亲密度
@@ -65,40 +71,59 @@ class ConversationInstance:
                 # self.plan_start_task = asyncio.create_task(self.run_workflow())
                 # await asyncio.sleep(5)  # 等待创建任务
                 # await self.plan_start_task
-            elif message_name == "read_only":  # 当前user被玩家夺舍，只需要储存获得的消息，不需要触发回复流程
-                logger.info(f"User {self.user_id} receives a read-only message: {msg['data']}.")
+            elif (
+                message_name == "read_only"
+            ):  # 当前user被玩家夺舍，只需要储存获得的消息，不需要触发回复流程
+                logger.info(
+                    f"User {self.user_id} receives a read-only message: {msg['data']}."
+                )
                 current_time = calculate_game_time()
                 # 检查列表中是否有同一个对话条目，有则更新，没有则添加
-                search_ids = [msg['data']["from_id"], msg['data']['to_id']]
-                search_ids_inverse = [msg['data']['to_id'], msg['data']["from_id"]]
-                search_start_time = msg['data']['start_time']
+                search_ids = [msg["data"]["from_id"], msg["data"]["to_id"]]
+                search_ids_inverse = [msg["data"]["to_id"], msg["data"]["from_id"]]
+                search_start_time = msg["data"]["start_time"]
                 search_result = [
-                    index for index, item in enumerate(self.state["ongoing_task"])
-                    if
-                    (item["characterIds"] == search_ids or item["characterIds"] == search_ids_inverse) and item["start_time"] == search_start_time
+                    index
+                    for index, item in enumerate(self.state["ongoing_task"])
+                    if (
+                        item["characterIds"] == search_ids
+                        or item["characterIds"] == search_ids_inverse
+                    )
+                    and item["start_time"] == search_start_time
                 ]
                 if len(search_result) == 0:
                     self.state["ongoing_task"].append(
                         {
-                            "characterIds": [msg['data']["from_id"], msg['data']['to_id']],
-                            "start_time": msg['data']['start_time'],
+                            "characterIds": [
+                                msg["data"]["from_id"],
+                                msg["data"]["to_id"],
+                            ],
+                            "start_time": msg["data"]["start_time"],
                             "start_day": current_time[0],
-                            "dialogue": msg['data']['dialogue']
+                            "dialogue": msg["data"]["dialogue"],
                         }
                     )
-                    logger.info(f"User {self.user_id}: A new conversation event just happened.")
+                    logger.info(
+                        f"User {self.user_id}: A new conversation event just happened."
+                    )
                 else:
                     self.state["ongoing_task"][search_result[0]] = {
-                        "characterIds": [msg['data']["from_id"], msg['data']['to_id']],
-                        "start_time": msg['data']['start_time'],
+                        "characterIds": [msg["data"]["from_id"], msg["data"]["to_id"]],
+                        "start_time": msg["data"]["start_time"],
                         "start_day": current_time[0],
-                        "dialogue": msg['data']['dialogue']
+                        "dialogue": msg["data"]["dialogue"],
                     }
-                    logger.info(f"User {self.user_id}: An existing conversation event continues.")
+                    logger.info(
+                        f"User {self.user_id}: An existing conversation event continues."
+                    )
                 logger.info(f"User {self.user_id}: conversation recorded.")
             elif message_name == "to_agent":  # 当前玩家由agent接管，需要回复的消息
-                logger.info(f"User {self.user_id} receives a message and is waiting for agent response: {msg['data']}.")
-                await check_conversation_state(self.state, msg['data'])  # 判断对话是否结束，分别处理
+                logger.info(
+                    f"User {self.user_id} receives a message and is waiting for agent response: {msg['data']}."
+                )
+                await check_conversation_state(
+                    self.state, msg["data"]
+                )  # 判断对话是否结束，分别处理
             else:
                 logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
@@ -106,7 +131,9 @@ class ConversationInstance:
     async def reply_message(self):
         while True:
             if self.state["waiting_response"].qsize() == 0:
-                await asyncio.sleep(10)   # 如果当前没有等待回复的消息，10秒后重新检查队列
+                await asyncio.sleep(
+                    10
+                )  # 如果当前没有等待回复的消息，10秒后重新检查队列
                 continue
             await generate_response(self.state)
 
@@ -116,13 +143,15 @@ class ConversationInstance:
             if len(self.state["ongoing_task"]) != 0:
                 logger.info(f"🏃 User {self.user_id}: handling read-only messages...")
                 await handling_readonly_conversation(self.state)
-            await asyncio.sleep(120)      # 每隔2分钟处理一次
+            await asyncio.sleep(120)  # 每隔2分钟处理一次
 
     # 唤醒规划和主动对话模块
     async def run_workflow(self):
         while True:
             try:
-                logger.info(f"🏃 User {self.user_id}: Begin planning for today's conversations...")
+                logger.info(
+                    f"🏃 User {self.user_id}: Begin planning for today's conversations..."
+                )
                 await self.graph.ainvoke(self.state, config=self.graph_config)
                 # self.plan_start_task.cancel()
                 # try:
@@ -130,19 +159,26 @@ class ConversationInstance:
                 # except asyncio.CancelledError:
                 #     logger.info(f"User {self.user_id}: today's plan-and-start task is finished.")
             except Exception as e:
-                logger.error(f"User {self.user_id} Error in conversation planning and starting workflow: {e}")
+                logger.error(
+                    f"User {self.user_id} Error in conversation planning and starting workflow: {e}"
+                )
             current_time = calculate_game_time()
-            time_sleep = ((24-current_time[1])*60*60+(0-current_time[2])*60)//7+100
-            hour = time_sleep//3600
-            minute = (time_sleep-hour*3600)//60
-            second = time_sleep-hour*3600-minute*60
-            logger.info(f"User {self.user_id}: time before next plan task is {hour} hours {minute} minutes and {second} seconds.")
+            time_sleep = (
+                (24 - current_time[1]) * 60 * 60 + (0 - current_time[2]) * 60
+            ) // 7 + 100
+            hour = time_sleep // 3600
+            minute = (time_sleep - hour * 3600) // 60
+            second = time_sleep - hour * 3600 - minute * 60
+            logger.info(
+                f"User {self.user_id}: time before next plan task is {hour} hours {minute} minutes and {second} seconds."
+            )
             await asyncio.sleep(time_sleep)  # 设置规划间隔时长
 
-'''
+
+"""
 async def main():
     a_instance = ConversationInstance(user_id=1, websocket=None)
 
 if __name__ == "__main__":
     asyncio.run(main())
-'''
+"""

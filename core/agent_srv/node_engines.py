@@ -5,6 +5,7 @@ from agent_srv.node_model import (
     RunningState,
 )
 from agent_srv.prompts import *
+from core.db.database_api_utils import make_api_request_async
 from langchain_openai import ChatOpenAI
 from loguru import logger
 import websockets
@@ -67,20 +68,29 @@ async def generate_daily_objective(state: RunningState):
             )
             retry_count += 1
             continue
-    # Prepare data for API request
-    # data = {
-    #     "userid": state["userid"],
-    #     "objectives": daily_objective.objectives,
-    # }
-    # Make API request to store_daily_objective
-    # endpoint = "/store_daily_objective"
-    # await make_api_request_async(endpoint, data)
+
+    # Store daily objectives in database
+    daily_objective_data = {
+        "characterId": state["userid"],
+        "objectives": planner_response.objectives,
+    }
+    await make_api_request_async(
+        "POST", "/daily_objectives/store", data=daily_objective_data
+    )
+    
     logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
     return {"decision": {"daily_objective": planner_response.objectives}}
 
 
 async def generate_detailed_plan(state: RunningState):
     detailed_plan = await detail_planner.ainvoke(state)
+    # Store detailed plan in database
+    plan_data = {
+        "characterId": state["userid"],
+        "detailed_plan": detailed_plan.detailed_plan,
+    }
+    await make_api_request_async("POST", "/plans/store", data=plan_data)
+
     logger.info(f"🌞 DETAIL_PLANNER INVOKED with {detailed_plan.detailed_plan}")
     return {"plan": detailed_plan.detailed_plan}
 
@@ -97,9 +107,7 @@ async def generate_meta_action_sequence(state: RunningState):
             "locations": state["meta"]["available_locations"],
         }
     )
-    logger.info(
-        f"🧠 META_ACTION_SEQUENCE INVOKED with {meta_action_sequence.meta_action_sequence}"
-    )
+    
 
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
@@ -139,9 +147,14 @@ async def adjust_meta_action_sequence(state: RunningState):
             "data": {"command": meta_action_sequence.meta_action_sequence},
         }
     )
-    # Make API request to update_meta_seq
-    # endpoint = "/update_meta_seq"
-    # await make_api_request_async("POST", endpoint, data=data)
+    update_meta_seq_data = {
+        "characterId": state["userid"],
+        "meta_sequence": meta_action_sequence.meta_action_sequence,
+    }
+    await make_api_request_async(
+        "POST", "/meta_sequences/update", data=update_meta_seq_data
+    )
+    
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 

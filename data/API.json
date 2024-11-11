@@ -1,0 +1,122 @@
+[
+    {
+        "API": "work-change",
+        "text": "工作变更：将角色工作变更为非公共类的目标工作",
+        "code": "requests.post('http://localhost:/work-change', json={'jobid': jobid})"
+    },
+    {
+        "API": "resume-submission",
+        "text": "简历提交：将角色为公共类工作准备的简历进行提交",
+        "code": "requests.post('http://localhost:8085/resume-submission', json={'jobid': jobid, 'cvurl': cvurl})"
+    },
+    {
+        "API": "vote",
+        "text": "选举投票：为某候选人投赞同票",
+        "code": "requests.post('http://localhost:8085/vote', json={'characterId': characterId})"
+    },
+    {
+        "API": "public-job",
+        "text": "进行公共类职业工作：进行一定时间的某项公共类工作",
+        "code": "requests.post('http://localhost:8085/public-job', json={'jobid': jobid, 'timelength': timelength})"
+    },
+    {
+        "API": "freelance-job",
+        "text": "进行自由类职业工作：进行一定时间的某项自由类工作",
+        "code": "requests.post('http://localhost:8085/freelance-job', json={'timelength': timelength})"
+    },
+    {
+        "API": "trade",
+        "text": "购买/出售：与市场进行购买/出售某商品某数量",
+        "code": "requests.post('http://localhost:8085/trade', json={'merchantid': merchantid, 'merchantnum': merchantnum, 'transactiontype': transactiontype})"
+    },
+    {
+        "API": "use",
+        "text": "商品使用：使用背包中某商品某数量",
+        "code": "requests.post('http://localhost:8085/use', json={'merchantid': merchantid, 'merchantnum': merchantnum})"
+    },
+    {
+        "API": "see-doctor",
+        "text": "看病：可用于提高健康度",
+        "code": "requests.post('http://localhost:8085/see-doctor', json={})"
+    },
+    {
+        "API": "sleep",
+        "text": "睡眠：进行一定时间的睡眠，可用于提高精力值",
+        "code": "requests.post('http://localhost:8085/sleep', json={'timelength': timelength})"
+    },
+    {
+        "API": "study",
+        "text": "上学：可用于提高学历值",
+        "code": "requests.post('http://localhost:8085/study', json={'timelength': timelength})"
+    },
+    {
+        "API": "talk",
+        "text": "与某人谈话：对某人说话的动作，单方面",
+        "code": "requests.post('http://localhost:8085/talk', json={'characterId': characterId, 'talkcontent': talkcontent})"
+    },
+    {
+        "API": "end-talk",
+        "text": "结束与某人谈话：结束与某人的谈话，单方面",
+        "code": "requests.post('http://localhost:8085/end-talk', json={'characterId': characterId, 'talkid': talkid})"
+    },
+    {
+        "API": "go-to",
+        "text": "前往某坐标：前往某坐标，配合位置表使用",
+        "code": "requests.post('http://localhost:8085/go-to', json={'to': to})"
+    },
+    {
+        "API": "distance",
+        "text": "坐标距离计算：计算两坐标之间的距离",
+        "code": "requests.post('http://localhost:8085/distance', json={'to': to})"
+    },
+    {
+        "API": "freelance-jobs",
+        "text": "自由类职业工作表查询：自由类工作表查询",
+        "code": "requests.get('http://localhost:8085/freelance-jobs')"
+    },
+    {
+        "API": "public-jobs",
+        "text": "公共类职业工作表查询：公共类工作表查询",
+        "code": "requests.get('http://localhost:8085/public-jobs')"
+    },
+    {
+        "API": "candidates",
+        "text": "本周已投简历角色查询：用于周日决策投票用",
+        "code": "requests.get('http://localhost:8085/candidates')"
+    },
+    {
+        "API": "activity",
+        "text": "可选项目表查询：查询游戏中工作外可进行项目，如睡眠、自习、看病、社交，具备拓展性",
+        "code": "requests.get('http://localhost:8085/activity', params={'subjectid': subjectid})"
+    },
+    {
+        "API": "talk_data",
+        "text": "历史对话查询：查询该角色过去的对话",
+        "code": "requests.get('http://localhost:8085/talk_data', params={'talkid': talkid})"
+    },
+    {
+        "API": "position",
+        "text": "地点坐标查询：查询地点坐标",
+        "code": "requests.get('http://localhost:8085/position')"
+    },
+    {
+        "API": "character/data",
+        "text": "角色数值查询：查询角色各基础数值",
+        "code": "requests.get('http://localhost:8085/character/data')"
+    },
+    {
+        "API": "character/status",
+        "text": "角色状态查询：查询角色当前状态",
+        "code": "requests.get('/character/status')"
+    },
+    {
+        "API": "character/bsinfo",
+        "text": "角色基础信息查询：查询角色基础信息",
+        "code": "requests.get('http://localhost:8085/character/bsinfo')"
+    },
+    {
+        "API": "character/inventory",
+        "text": "角色背包查询：查询已有商品信息",
+        "code": "requests.get('http://localhost:8085/character/inventory')"
+    }
+]

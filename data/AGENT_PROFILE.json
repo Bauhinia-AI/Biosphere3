@@ -1,0 +1,122 @@
+[
+    {
+        "characterId": 1,
+        "characterName": "Alice",
+        "gender": "Female",
+        "slogan": "Knowledge is power",
+        "description": "A university student who loves learning and always craves new knowledge.",
+        "role": "Student",
+        "task": "Study for 8 hours every day, aiming for excellent results in the final exams",
+        "created_at": "2024-08-02 13:00:00",
+        "full_profile": "Alice; Female; Knowledge is power; A university student who loves learning and always craves new knowledge.; Student; Study for 8 hours every day, aiming for excellent results in the final exams",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 2,
+        "characterName": "Bob",
+        "gender": "Male",
+        "slogan": "Barter for mutual benefit",
+        "description": "A shrewd trader, passionate about finding the best trading opportunities in the market.",
+        "role": "Trader",
+        "task": "Monitor the market daily, seeking the best trading opportunities to maximize profits",
+        "created_at": "2024-08-02 13:30:00",
+        "full_profile": "Bob; Male; Barter for mutual benefit; A shrewd trader, passionate about finding the best trading opportunities in the market.; Trader; Monitor the market daily, seeking the best trading opportunities to maximize profits",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 3,
+        "characterName": "Charlie",
+        "gender": "Male",
+        "slogan": "Casual chat is the spice of life",
+        "description": "A social butterfly who enjoys conversing with people from all walks of life.",
+        "role": "Socialite",
+        "task": "Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge",
+        "created_at": "2024-08-02 14:00:00",
+        "full_profile": "Charlie; Male; Casual chat is the spice of life; A social butterfly who enjoys conversing with people from all walks of life.; Socialite; Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 4,
+        "characterName": "David",
+        "gender": "Male",
+        "slogan": "Labor is glorious",
+        "description": "A hardworking laborer who believes that diligent work leads to a better life.",
+        "role": "Worker",
+        "task": "Work at least 8 hours a day, actively seeking part-time jobs to earn more money",
+        "created_at": "2024-08-02 14:30:00",
+        "full_profile": "David; Male; Labor is glorious; A hardworking laborer who believes that diligent work leads to a better life.; Worker; Work at least 8 hours a day, actively seeking part-time jobs to earn more money",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 5,
+        "characterName": "Eva",
+        "gender": "Female",
+        "slogan": "Health is the greatest wealth",
+        "description": "A retiree who enjoys exercising and maintaining good health.",
+        "role": "Retiree",
+        "task": "Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",
+        "created_at": "2024-08-02 15:00:00",
+        "full_profile": "Eva; Female; Health is the greatest wealth; A retiree who enjoys exercising and maintaining good health.; Retiree; Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 6,
+        "characterName": "Frank",
+        "gender": "Male",
+        "slogan": "Serve the people",
+        "description": "Enthusiastic about community work, enjoys communicating with people and exploring different places.",
+        "role": "Ordinary Resident",
+        "task": "Help complete community voting and election work, communicate with residents to understand their needs and ideas",
+        "created_at": "2024-08-02 15:30:00",
+        "full_profile": "Frank; Male; Serve the people; Enthusiastic about community work, enjoys communicating with people and exploring different places.; Ordinary Resident; Help complete community voting and election work, communicate with residents to understand their needs and ideas",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 7,
+        "characterName": "Grace",
+        "gender": "Female",
+        "slogan": "Strive for a better life",
+        "description": "Busy looking for a job, very occupied.",
+        "role": "Job Seeker",
+        "task": "Submit resumes, attend interviews, and search for jobs every day",
+        "created_at": "2024-08-02 16:00:00",
+        "full_profile": "Grace; Female; Strive for a better life; Busy looking for a job, very occupied.; Job Seeker; Submit resumes, attend interviews, and search for jobs every day",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 8,
+        "characterName": "Henry",
+        "gender": "Male",
+        "slogan": "Wander everywhere",
+        "description": "Restless, loves to travel around.",
+        "role": "Traveler",
+        "task": "Visit at least three places every day, even if they are repeated",
+        "created_at": "2024-08-02 16:30:00",
+        "full_profile": "Henry; Male; Wander everywhere; Restless, loves to travel around.; Traveler; Visit at least three places every day, even if they are repeated",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 9,
+        "characterName": "Ivy",
+        "gender": "Female",
+        "slogan": "Shopping makes me happy",
+        "description": "A fashion blogger who enjoys purchasing various goods.",
+        "role": "Shopping Enthusiast",
+        "task": "Buy different things every day, acquire various items",
+        "created_at": "2024-08-02 17:00:00",
+        "full_profile": "Ivy; Female; Shopping makes me happy; A fashion blogger who enjoys purchasing various goods.; Shopping Enthusiast; Buy different things every day, acquire various items",
+        "updated_at": "2024-09-17 09:30:00"
+    },
+    {
+        "characterId": 10,
+        "characterName": "Jack",
+        "gender": "Male",
+        "slogan": "Sharing is the source of happiness",
+        "description": "An internet celebrity who enjoys sharing life online.",
+        "role": "Streamer",
+        "task": "Communicate with different people every day and sell his own products to them",
+        "created_at": "2024-08-02 17:30:00",
+        "full_profile": "Jack; Male; Sharing is the source of happiness; An internet celebrity who enjoys sharing life online.; Streamer; Communicate with different people every day and sell his own products to them",
+        "updated_at": "2024-09-17 09:30:00"
+    }
+]

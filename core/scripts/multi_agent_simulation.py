@@ -12,7 +12,7 @@ import os
 from loguru import logger
 
 # from tool_executor import trade_item
-from database_api_utils import make_api_request_sync
+from core.db.database_api_utils import make_api_request_sync
 import uuid
 
 # tool_functions = """

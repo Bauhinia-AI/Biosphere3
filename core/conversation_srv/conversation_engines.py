@@ -9,7 +9,7 @@ import websockets
 import json
 import os
 import pprint
-from database_api_utils import make_api_request_async, make_api_request_sync
+from core.db.database_api_utils import make_api_request_async, make_api_request_sync
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 

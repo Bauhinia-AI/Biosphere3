@@ -73,25 +73,52 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     The following action has failed and needs to be replanned:
     Failed Action: {failed_action}
     Error Message: {error_message}
-    Please provide an alternative approach that avoids this specific failure.
+    Current Location: {current_location}
+
+    Please analyze the error and provide an alternative approach considering:
+    1. If the error is location-related, ensure proper navigation
+    2. If the error is timing-related, adjust the sequence timing
+    3. If the error is resource-related, add necessary resource gathering steps
+    4. If the error is prerequisite-related, add missing prerequisite actions
+    {% endif %}
 
     Current sequence:
     {meta_seq}
+
+    Please provide a revised action sequence that:
+    1. Avoids the failed action or its problematic conditions
+    2. Still achieves the original objectives where possible
+    3. Includes any necessary preparatory steps
+    4. Takes into account the current location and context
     """
 )
 
 reflection_prompt = ChatPromptTemplate.from_template(
-    """Based on the following meta action sequence and their execution results,
-    provide a brief reflection on the success of the plan, any unexpected outcomes,
-    and potential improvements for future planning:
+    """As an AI agent, please analyze your recent activities and generate a thoughtful reflection.
 
-    Meta Action Sequence:
-    {meta_seq}
+    Recent Objectives:
+    {past_objectives}
 
-    Execution Results:
-    {execution_results}
+    Errors and Replanning History:
+    {replan_history}
 
-    Reflection:
+    Character Current State:
+    {character_stats}
+
+    Please provide:
+    1. A comprehensive reflection on your activities
+    2. Analysis of patterns in errors and mistakes
+    3. What worked well and what didn't
+    4. Specific lessons learned
+    5. Suggestions for future improvement
+
+    Focus on:
+    - Patterns in failed actions and their root causes
+    - Effectiveness of replanning strategies
+    - Progress towards objectives
+    - Resource management and timing
+    - Location-based challenges
+    - Interaction patterns with the environment
     """
 )
 

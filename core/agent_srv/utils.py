@@ -1,6 +1,7 @@
 import functools
 import asyncio
-
+from core.db.database_api_utils import make_api_request_sync
+import requests
 
 # BETTER WAY？
 def check_termination(coro):
@@ -17,9 +18,34 @@ def check_termination(coro):
         return await coro(self, *args, **kwargs)
 
     return wrapper
+def generate_initial_state(userid, initial_state):
+    character_data = {"characterId": userid}
+    response_txt = make_api_request_sync("POST", "/characters/get", data=character_data)
+    response_num = requests.get(
+        "http://47.95.21.135:8082/characters/getById/", params={"id": userid}
+    )
+    if response_txt["code"]:
+        data_text = response_txt["data"][0]  # Assuming first NPC entry is used
+        initial_state["character_stats"].update(
+            {
+                "name": data_text.get("characterName"),
+                "gender": data_text.get("gender"),
+                "slogan": data_text.get("slogan"),
+                "description": data_text.get("description"),
+                "role": data_text.get("role"),
+                "task": data_text.get("task"),
+            }
+        )
+    if response_num["code"]:
+        data_num = response_num["data"]  # Assuming first NPC entry is used
+        initial_state["character_stats"].update(
+            {
+                "health": data_num.get("health"),
+                "energy": data_num.get("energy"),
+            }
+        )
 
-
-def generate_initial_state(userid, websocket):
+def generate_initial_state_hardcoded(userid, websocket):
     initial_state = {
         "userid": userid,
         "character_stats": {

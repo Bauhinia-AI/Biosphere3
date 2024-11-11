@@ -1,9 +1,13 @@
+import sys
+
+sys.path.append(".")
+
 import yaml
 import asyncio
 import websockets
 import ssl
 import json
-import sys
+import os
 from loguru import logger
 from websocket_server.character_manager import CharacterManager
 from websocket_server.web_monitor.routes import WebMonitor
@@ -12,7 +16,8 @@ from graph_instance import LangGraphInstance
 
 class ConfigLoader:
     def __init__(self, environment):
-        with open("config.yaml", "r") as file:
+        config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+        with open(config_path, "r") as file:
             self.config = yaml.safe_load(file)[environment]
 
     def get(self, key):
@@ -145,29 +150,34 @@ class AI_WS_Server:
 
     async def run(self):
         # 启动心跳监控
-        await self.character_manager.start_monitoring()
+        if self.config.get("monitor_trigger"):
+            await self.character_manager.start_monitoring()
 
         # 启动 HTTP 监控服务器
-        await self.web_monitor.setup(
-            host=self.config.get("http_monitor_host"),
-            port=self.config.get("http_monitor_port"),
-        )
-        logger.info(
-            f"🌐 HTTP Monitor started at http://{self.config.get('http_monitor_host')}:{self.config.get('http_monitor_port')}"
-        )
+        if self.config.get("dashboard_trigger"):
+            http_host = self.config.get("http_monitor_host")
+            http_port = self.config.get("http_monitor_port")
+            await self.web_monitor.setup(host=http_host, port=http_port)
+            logger.info(f"🌐 HTTP Monitor started at http://{http_host}:{http_port}")
 
-        host = self.config.get("websocket_host")
-        port = self.config.get("websocket_port")
+        ws_host = self.config.get("websocket_host")
+        ws_port = self.config.get("websocket_port")
 
-        # 使用SSL/TLS配置
-        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        ssl_context.load_cert_chain(
-            certfile=self.config.get("ssl_certfile"),
-            keyfile=self.config.get("ssl_keyfile"),
-        )
-        server = await websockets.serve(self.handler, host, port, ssl=ssl_context)
+        # 根据开关确定是否用SSL/TLS
+        if self.config.get("ssl_trigger"):
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_cert_chain(
+                certfile=self.config.get("ssl_certfile"),
+                keyfile=self.config.get("ssl_keyfile"),
+            )
+            server = await websockets.serve(
+                self.handler, ws_host, ws_port, ssl=ssl_context
+            )
+            logger.warning(f"🔗 WebSocket server started at wss://{ws_host}:{ws_port}")
+        else:
+            server = await websockets.serve(self.handler, ws_host, ws_port)
+            logger.warning(f"🔗 WebSocket server started at ws://{ws_host}:{ws_port}")
 
-        logger.warning(f"🔗 WebSocket server started at wss://{host}:{port}")
         await server.wait_closed()
 
 

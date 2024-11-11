@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 from agent_srv.node_model import (
     DailyObjective,
     DetailedPlan,
@@ -5,7 +8,7 @@ from agent_srv.node_model import (
     RunningState,
 )
 from agent_srv.prompts import *
-from core.db.database_api_utils import make_api_request_async
+from db.database_api_utils import make_api_request_async
 from langchain_openai import ChatOpenAI
 from loguru import logger
 import websockets
@@ -14,6 +17,7 @@ import os
 import pprint
 import asyncio
 from dotenv import load_dotenv
+from datetime import datetime
 
 load_dotenv()
 

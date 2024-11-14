@@ -855,15 +855,15 @@ if __name__ == "__main__":
     print("\n测试 get_cv 方法:")
 
     # 查询所有最新周的数据
-    print("\n查询所有最新周的数据:")
+    print("\n查询所有的数据:")
     print(client.get_cv())
 
     # 查询特定 jobid 的所有最新周的数据
-    print("\n查询 jobid=3 的所有最新周的数据:")
+    print("\n查询 jobid=3 的所有的数据:")
     print(client.get_cv(jobid=3))
 
     # 查询特定 characterId 的所有最新周的数据
-    print("\n查询 characterId=201 的所有最新周的数据:")
+    print("\n查询 characterId=201 的所有的数据:")
     print(client.get_cv(characterId=201))
 
     # 查询特定 week 的数据

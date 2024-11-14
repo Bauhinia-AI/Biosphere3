@@ -304,20 +304,6 @@ class DomainSpecificQueries:
         if election_result is not None:
             query["election_result"] = election_result
 
-        # 如果没有提供 week，则查找整个集合中最新的周
-        if week is None:
-            # 查找整个集合中最新的周
-            latest_week_docs = self.db_utils.find_documents(
-                collection_name=config.cv_collection_name,
-                query={},  # 不带任何过滤条件
-                sort=[("week", DESCENDING)],
-                limit=1,
-                projection={"week": 1, "_id": 0},
-            )
-            if latest_week_docs:
-                latest_week = latest_week_docs[0]["week"]
-                query["week"] = latest_week
-
         # 查找符合条件的文档
         documents = self.db_utils.find_documents(
             collection_name=config.cv_collection_name,
@@ -946,36 +932,36 @@ if __name__ == "__main__":
     #     queries.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80)
     # )
 
-    # 存储一些测试数据
-    print("存储测试数据:")
-    queries.store_cv(jobid=1, characterId=101, CV_content="CV内容1", week=1)
-    queries.store_cv(jobid=1, characterId=102, CV_content="CV内容2", week=2)
-    queries.store_cv(jobid=2, characterId=101, CV_content="CV内容3", week=1)
-    queries.store_cv(jobid=2, characterId=103, CV_content="CV内容4", week=3)
+    # # 存储一些测试数据
+    # print("存储测试数据:")
+    # queries.store_cv(jobid=1, characterId=101, CV_content="CV内容1", week=1)
+    # queries.store_cv(jobid=1, characterId=102, CV_content="CV内容2", week=2)
+    # queries.store_cv(jobid=2, characterId=101, CV_content="CV内容3", week=1)
+    # queries.store_cv(jobid=2, characterId=103, CV_content="CV内容4", week=3)
 
-    # 更新选举状态
-    print("\n更新选举状态:")
-    queries.update_election_result(
-        characterId=101, election_result="succeeded", jobid=1, week=1
-    )
-    queries.update_election_result(characterId=102, election_result="failed", jobid=1)
-    queries.update_election_result(
-        characterId=103, election_result="succeeded", jobid=2
-    )
+    # # 更新选举状态
+    # print("\n更新选举状态:")
+    # queries.update_election_result(
+    #     characterId=101, election_result="succeeded", jobid=1, week=1
+    # )
+    # queries.update_election_result(characterId=102, election_result="failed", jobid=1)
+    # queries.update_election_result(
+    #     characterId=103, election_result="succeeded", jobid=2
+    # )
 
     # 测试 get_cv 方法
     print("\n测试 get_cv 方法:")
 
     # 查询所有最新周的数据
-    print("\n查询所有最新周的数据:")
+    print("\n查询所有的数据:")
     print(queries.get_cv())
 
     # 查询特定 jobid 的所有最新周的数据
-    print("\n查询 jobid=1 的所有最新周的数据:")
+    print("\n查询 jobid=1 的所有的数据:")
     print(queries.get_cv(jobid=1))
 
     # 查询特定 characterId 的所有最新周的数据
-    print("\n查询 characterId=101 的所有最新周的数据:")
+    print("\n查询 characterId=101 的所有的数据:")
     print(queries.get_cv(characterId=101))
 
     # 查询特定 week 的数据

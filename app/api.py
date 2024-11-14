@@ -269,7 +269,9 @@ class StoreCVRequest(BaseModel):
     characterId: int
     CV_content: str
     week: int  # 新增字段
-    election_result: Optional[str] = "not_yet"  # 新增字段，默认值为 "not_yet"
+    election_result: Optional[str] = (
+        "not_yet"  # 选举状态, 可以为 'not_yet'（未进行选举）、'failed'（选举失败）、'succeeded'（选举成功），默认值为 "not_yet"
+    )
 
 
 class UpdateElectionResultRequest(BaseModel):

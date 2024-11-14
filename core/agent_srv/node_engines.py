@@ -12,6 +12,7 @@ import json
 import os
 from pprint import pprint
 import asyncio
+from core.db.database_api_utils import make_api_request_async
 
 os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
 obj_planner = obj_planner_prompt | ChatOpenAI(

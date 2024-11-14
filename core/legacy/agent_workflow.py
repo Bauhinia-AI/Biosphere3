@@ -18,7 +18,7 @@ from loguru import logger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database_api_utils import make_api_request_async
+from core.db.database_api_utils import make_api_request_async
 
 # 设置环境变量
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"

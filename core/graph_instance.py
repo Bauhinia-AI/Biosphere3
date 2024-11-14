@@ -43,7 +43,7 @@ class LangGraphInstance:
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
             logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
-            if message_name == "action_result":
+            if message_name == "actionresult":
                 # 处理动作结果
                 self.state["decision"]["action_result"].append(msg["data"])
 

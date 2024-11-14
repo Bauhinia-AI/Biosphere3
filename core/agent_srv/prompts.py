@@ -75,13 +75,6 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     The following action has failed and needs to be replanned:
     Failed Action: {failed_action}
     Error Message: {error_message}
-<<<<<<< Updated upstream
-    Please provide an alternative approach that avoids this specific failure.
-    {% endif %}
-
-    Current sequence:
-    {meta_seq}
-=======
 
     Please analyze the error and provide an alternative approach considering:
     1. If the error is location-related, ensure proper navigation
@@ -102,7 +95,6 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     The final format should be a list of meta actions. for example:\n
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
     \n
->>>>>>> Stashed changes
     """
 )
 

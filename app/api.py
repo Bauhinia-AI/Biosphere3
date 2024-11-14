@@ -582,7 +582,9 @@ def find_data(request: FindRequest):
 
 
 # Vector Search Router
-vector_search_router = APIRouter(prefix="/vector_search", tags=["Vector Search"])  # 添加 tags 参数
+vector_search_router = APIRouter(
+    prefix="/vector_search", tags=["Vector Search"]
+)  # 添加 tags 参数
 
 
 @vector_search_router.post("/", response_model=StandardResponse)
@@ -607,7 +609,9 @@ def vector_search_api(request: VectorSearchRequest):
 
 
 # Impressions Router
-impressions_router = APIRouter(prefix="/impressions")
+impressions_router = APIRouter(
+    prefix="/impressions", tags=["Impressions"]
+)  # 添加 tags 参数
 
 
 @impressions_router.post("/get", response_model=StandardResponse)
@@ -742,7 +746,9 @@ def decrease_all_intimacy_levels_api():
 
 
 # Conversations Router
-conversations_router = APIRouter(prefix="/conversations", tags=["Conversations"])  # 添加 tags 参数
+conversations_router = APIRouter(
+    prefix="/conversations", tags=["Conversations"]
+)  # 添加 tags 参数
 
 
 @conversations_router.post("/get_with_characterIds", response_model=StandardResponse)
@@ -840,7 +846,9 @@ def get_conversations_by_id_and_day_api(request: GetConversationsByIdAndDayReque
 
 
 # Encounter Count Router
-encounter_count_router = APIRouter(prefix="/encounter_count", tags=["Encounter Count"])  # 添加 tags 参数
+encounter_count_router = APIRouter(
+    prefix="/encounter_count", tags=["Encounter Count"]
+)  # 添加 tags 参数
 
 
 # 修改 `get_encounter_count_api` 方法的请求参数类型
@@ -1069,7 +1077,9 @@ def get_action_api(request: GetActionRequest):
 
 
 # Descriptors Router
-descriptors_router = APIRouter(prefix="/descriptors", tags=["Descriptors"])  # 添加 tags 参数
+descriptors_router = APIRouter(
+    prefix="/descriptors", tags=["Descriptors"]
+)  # 添加 tags 参数
 
 
 @descriptors_router.post("/store", response_model=StandardResponse)
@@ -1110,7 +1120,9 @@ def get_descriptor_api(request: GetDescriptorRequest):
 
 
 # Daily Objectives Router
-daily_objectives_router = APIRouter(prefix="/daily_objectives", tags=["Daily Objectives"])  # 添加 tags 参数
+daily_objectives_router = APIRouter(
+    prefix="/daily_objectives", tags=["Daily Objectives"]
+)  # 添加 tags 参数
 
 
 @daily_objectives_router.post("/store", response_model=StandardResponse)
@@ -1184,7 +1196,10 @@ def get_plans_api(request: GetPlansRequest):
 
 
 # Meta Sequences Router
-meta_sequences_router = APIRouter(prefix="/meta_sequences", tags=["Meta Sequences"])  # 添加 tags 参数
+meta_sequences_router = APIRouter(
+    prefix="/meta_sequences", tags=["Meta Sequences"]
+)  # 添加 tags 参数
+
 
 @meta_sequences_router.post("/store", response_model=StandardResponse)
 def store_meta_seq_api(request: StoreMetaSeqRequest):
@@ -1381,7 +1396,9 @@ def get_diaries_api(request: GetDiariesRequest):
 
 
 # Characters Router
-characters_router = APIRouter(prefix="/characters", tags=["Characters"])  # 添加 tags 参数
+characters_router = APIRouter(
+    prefix="/characters", tags=["Characters"]
+)  # 添加 tags 参数
 
 
 @characters_router.post("/store", response_model=StandardResponse)
@@ -1500,7 +1517,9 @@ def update_character_api(request: UpdatecharacterRequest):
         raise HTTPException(status_code=404, detail="No character was updated.")
 
 
-character_arc_router = APIRouter(prefix="/character_arc")
+character_arc_router = APIRouter(
+    prefix="/character_arc", tags=["Character Arc"]
+)  # 添加 tags 参数
 
 
 @character_arc_router.post("/store", response_model=StandardResponse)

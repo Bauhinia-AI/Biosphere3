@@ -81,7 +81,7 @@ Constraints: Must have enough energy and be in the mine.\n
 Constraints: Must have enough energy and be in the harvest area.\n
     6. buy [itemType:string] [amount:int]: Purchase items, costing money.
 Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n
-    7. sell [itemType:string] [amount:int]: Sell items for money.
+    7. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
 Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)\n
     9. seedoctor [hours:int]: Visit a doctor, costing money.
 Constraints: Must have enough money and be in the hospital.\n

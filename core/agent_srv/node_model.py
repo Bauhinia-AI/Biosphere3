@@ -52,6 +52,7 @@ class RunningState(TypedDict):
     meta: Annotated[Meta, generic_reducer]
     message_queue: asyncio.Queue
     event_queue: asyncio.Queue
+    false_action_queue: asyncio.Queue
     websocket: Any
     current_pointer: str
     instance: Any

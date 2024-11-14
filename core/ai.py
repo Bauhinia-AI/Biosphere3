@@ -3,6 +3,7 @@ import websockets
 import ssl
 import json
 import sys
+import time
 from loguru import logger
 from websocket_server.task_manager import OrphanedTaskManager
 from websocket_server.character_manager import CharacterManager
@@ -42,6 +43,11 @@ class AI_WS_Server:
                 try:
                     message = await websocket.recv()
                     data = json.loads(message)
+<<<<<<< Updated upstream
+=======
+                    logger.info(f"👂收到信息 User {character_id} message: {data}")
+                    character.log_message("sent", message)
+>>>>>>> Stashed changes
 
                     # 处理心跳消息
                     if data.get("messageName") == "heartbeat":
@@ -54,9 +60,8 @@ class AI_WS_Server:
                         continue
 
                     # 处理其他消息：放到对应agent的消息队列
-                    message_queue = agent_instance.state["message_queue"]
-                    async with agent_instance.state_lock:
-                        await message_queue.put(data)
+                    message_queue = agent_instance.state["message_queue"]                 
+                    message_queue.put_nowait(data)
                     logger.info(
                         f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
                     )
@@ -147,6 +152,7 @@ class AI_WS_Server:
         await self.web_monitor.setup(host="localhost", port=8000)
         logger.info(f"🌐 HTTP Monitor started at http://localhost:8000")
 
+<<<<<<< Updated upstream
         if sys.platform.startswith("linux"):  # 生产环境
             host = "0.0.0.0"
             port = 8080
@@ -167,6 +173,32 @@ class AI_WS_Server:
 
 def main():
     server = AI_WS_Server()
+=======
+        host = self.config.get("websocket_host")
+        port = self.config.get("websocket_port")
+        if self.config.get("ssl_certfile") and self.config.get("ssl_keyfile"):
+            # 使用SSL/TLS配置
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_cert_chain(
+                certfile=self.config.get("ssl_certfile"),
+                keyfile=self.config.get("ssl_keyfile"),
+            )
+            server = await websockets.serve(self.handler, host, port, ssl=ssl_context)
+        else:
+            server = await websockets.serve(self.handler, host, port)
+
+        logger.warning(f"🔗 WebSocket server started at wss://{host}:{port}")
+        await server.wait_closed()
+
+
+def main():
+    environment = "production" if sys.platform.startswith("linux") else "development"
+    config = ConfigLoader(environment)
+    server = AI_WS_Server(config)
+
+    logger.info(f"🚀 Starting AIWS server in {environment} mode")
+    time.sleep(0.5)
+>>>>>>> Stashed changes
     asyncio.run(server.run())
 
 

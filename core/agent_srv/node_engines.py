@@ -10,7 +10,7 @@ from loguru import logger
 import websockets
 import json
 import os
-import pprint
+from pprint import pprint
 import asyncio
 
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
@@ -62,6 +62,7 @@ async def generate_daily_objective(state: RunningState):
             )
             retry_count += 1
             continue
+<<<<<<< Updated upstream
     # Prepare data for API request
     # data = {
     #     "userid": state["userid"],
@@ -72,6 +73,20 @@ async def generate_daily_objective(state: RunningState):
     # await make_api_request_async(endpoint, data)
     logger.info(f"🌞 OBJ_PLANNER INVOKED...")
     return {"decision": {"daily_objective": planner_response.objectives}}
+=======
+
+    # Store daily objectives in database
+    daily_objective_data = {
+        "characterId": state["userid"],
+        "objectives": planner_response.objectives,
+    }
+    await make_api_request_async(
+        "POST", "/daily_objectives/store", data=daily_objective_data
+    )
+    
+    logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
+    return {"decision": {"daily_objective": [planner_response.objectives]}}
+>>>>>>> Stashed changes
 
 
 async def generate_detailed_plan(state: RunningState):
@@ -81,8 +96,22 @@ async def generate_detailed_plan(state: RunningState):
 
 
 async def generate_meta_action_sequence(state: RunningState):
-    meta_action_sequence = await meta_action_sequence_planner.ainvoke(
+    pprint(state)
+    payload = {
+        "daily_objective": (
+            state["decision"]["daily_objective"][-1]
+            if state["decision"]["daily_objective"]
+            else []
+        ),
+        "tool_functions": state["meta"]["tool_functions"],
+        "locations": state["meta"]["available_locations"],
+    }
+    pprint(payload)
+    meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
+    
+    await state["instance"].send_message(
         {
+<<<<<<< Updated upstream
             "daily_objective": state["decision"]["daily_objective"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
@@ -90,6 +119,15 @@ async def generate_meta_action_sequence(state: RunningState):
     )
     # logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED...")
 
+=======
+            "characterId": state["userid"],
+            "messageName": "actionList",
+            "messageCode": 6,
+            "data": {"command": meta_action_sequence.meta_action_sequence},
+        }
+    )
+    logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED with {meta_action_sequence.meta_action_sequence}")
+>>>>>>> Stashed changes
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
@@ -113,13 +151,25 @@ async def adjust_meta_action_sequence(state: RunningState):
             "data": {"command": meta_action_sequence.meta_action_sequence},
         }
     )
+<<<<<<< Updated upstream
     # Make API request to update_meta_seq
     # endpoint = "/update_meta_seq"
     # await make_api_request_async("POST", endpoint, data=data)
+=======
+    update_meta_seq_data = {
+        "characterId": state["userid"],
+        "meta_sequence": meta_action_sequence.meta_action_sequence,
+    }
+    await make_api_request_async(
+        "POST", "/meta_sequences/update", data=update_meta_seq_data
+    )
+
+>>>>>>> Stashed changes
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
 async def sensing_environment(state: RunningState):
+<<<<<<< Updated upstream
     logger.info(f"👀 User {state['userid']}: Sensing environment...")
     
     # Check if there was a failed action that needs replanning
@@ -151,22 +201,87 @@ async def sensing_environment(state: RunningState):
     except Exception as e:
         logger.error(f"❌ User {state['userid']}: Error sensing environment - {str(e)}")
     
+=======
+    # logger.info(f"👀 User {state['userid']}: Sensing environment...")
+
+    # # Check if there was a failed action that needs replanning
+    # if state.get("decision", {}).get("action_result"):
+    #     latest_result = state["decision"]["action_result"][-1]
+    #     if latest_result.get("status") == "failed":
+    #         logger.info(f"🔄 User {state['userid']}: Action failed, triggering replan")
+    #         return {"current_pointer": "Replan_Action"}
+
+    # try:
+    #     # Send environment query message
+    #     # await state["instance"].send_message(
+    #     #     {
+    #     #         "characterId": state["userid"],
+    #     #         "messageName": "queryEnvironment",
+    #     #         "messageCode": 7,
+    #     #         "data": {"query": ["location", "nearby_objects", "nearby_characters"]},
+    #     #     }
+    #     # )
+
+    #     await asyncio.sleep(1)
+
+    #     # Check message queue for environment data
+    #     while not state["message_queue"].empty():
+    #         message = state["message_queue"].get_nowait()
+    #         if message.get("messageName") == "environment_data":
+    #             state["environment"] = message.get("data", {})
+    #             logger.info(
+    #                 f"🌍 User {state['userid']}: Environment updated - {state['environment']}"
+    #             )
+    # except Exception as e:
+    #     logger.error(f"❌ User {state['userid']}: Error sensing environment - {str(e)}")
+
+>>>>>>> Stashed changes
     return {"current_pointer": "Process_Messages"}
 
 async def replan_action(state: RunningState):
+<<<<<<< Updated upstream
     latest_result = state["decision"]["action_result"][-1]
     failed_action = latest_result.get("action")
     error_message = latest_result.get("error")
+=======
+    # 从false_action_queue里取
+    false_action = state["false_action_queue"].get_nowait()
+    failed_action = false_action.get("actionName")
+    error_message = false_action.get("msg")
+
+
+    # latest_result = state["decision"]["action_result"][-1]
+    # failed_action = latest_result.get("action")
+    # error_message = latest_result.get("error")
+    # current_location = state.get("environment", {}).get("location")
+>>>>>>> Stashed changes
     
     logger.info(f"🔄 User {state['userid']}: Replanning failed action: {failed_action}")
     
+<<<<<<< Updated upstream
     # Generate new meta sequence excluding the failed action
+=======
+    # Analyze error type and context
+    error_context = {
+        "failed_action": failed_action,
+        "error_message": error_message,
+        "current_meta_seq": state["decision"]["meta_seq"][-1],
+        "daily_objective": state["decision"]["daily_objective"][-1]
+    }
+    
+    # try:
+        # Generate new meta sequence with error context
+>>>>>>> Stashed changes
     meta_action_sequence = await meta_seq_adjuster.ainvoke({
         "meta_seq": state["decision"]["meta_seq"][-1],
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
         "failed_action": failed_action,
+<<<<<<< Updated upstream
         "error_message": error_message
+=======
+        "error_message": error_message,
+>>>>>>> Stashed changes
     })
     
     logger.info(f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}")

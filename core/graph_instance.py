@@ -2,6 +2,7 @@ import asyncio
 from agent_srv.node_engines import *
 from agent_srv.factories import initialize_running_state
 from agent_srv.node_model import RunningState
+import time
 from langgraph.graph import StateGraph, START, END
 import os
 import asyncio
@@ -36,6 +37,7 @@ class LangGraphInstance:
         logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
+<<<<<<< Updated upstream
     # # 生产者listener，独立于graph运行
     # async def listener(self):
     #     websocket = self.state["websocket"]
@@ -59,15 +61,27 @@ class LangGraphInstance:
     #     except Exception as e:
     #         logger.error(f"User {self.user_id}: Error in listener: {e}")
 
+=======
+>>>>>>> Stashed changes
     async def msg_processor(self):
         while True:
-            with self.state_lock:
-                msg = await self.state["message_queue"].get()
+            
+            msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
-
+            logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
             if message_name == "action_result":
                 # 处理动作结果
                 self.state["decision"]["action_result"].append(msg["data"])
+
+                if msg["data"]["result"] is False:
+                    try:    
+                        # 如果失败，则往false_action_queue里放
+                        logger.info(f"❌❌❌❌❌ User {self.user_id}: Put REPLAN into event_queue")
+                        self.state["false_action_queue"].put_nowait(msg["data"])
+                        self.state["event_queue"].put_nowait("REPLAN")
+                    except Exception as e:
+                        logger.error(f"User {self.user_id}: Error putting REPLAN into event_queue: {e}")
+                        
                 logger.info(
                     f"🏃 User {self.user_id}: Received action result: {msg['data']}"
                 )
@@ -75,7 +89,7 @@ class LangGraphInstance:
                 pass
 
             elif message_name == "onestep":
-                self.state["event_queue"].put_nowait("PLAN_ONCE")
+                self.state["event_queue"].put_nowait("PLAN")
 
             elif message_name == "check":
                 pprint(self.state["decision"]["action_result"])
@@ -84,6 +98,8 @@ class LangGraphInstance:
                 logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
     async def event_scheduler(self):
+        # start timer
+        start_time = time.time()
         while True:
             if self.signal == "TERMINATE":
                 logger.error(
@@ -91,8 +107,13 @@ class LangGraphInstance:
                 )
                 break
             await asyncio.sleep(30)
-            self.state["event_queue"].put_nowait("PLAN")
-            logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
+            # 如果时间超过5分钟，则往队列里放REFLECT
+            if time.time() - start_time > 300:
+                #BUG REFLECT raise error
+                pass
+                # self.state["event_queue"].put_nowait("REFLECT")
+            # self.state["event_queue"].put_nowait("PLAN")
+            # logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
 
     async def queue_visualizer(self):
         while True:
@@ -105,25 +126,28 @@ class LangGraphInstance:
             logger.info(
                 f"🧾 User {self.user_id} event_queue: {self.state['event_queue']}"
             )
+            # logger.info(
+            #     f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
+            # )
             logger.info(
-                f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
+                f"❌ User {self.user_id} false_action_queue: {self.state['false_action_queue']}"
             )
 
     async def event_router(self, state: RunningState):
         while True:
-            async with self.state_lock:
-                event = await state["event_queue"].get()
+            event = await state["event_queue"].get()
+            logger.info(f"🚦 User {self.user_id}: Event: {event}")
 
             if event == "PLAN":
                 return "Objectives_planner"
 
-            elif event == "PLAN_ONCE":
-                return "Objectives_planner"
+            elif event == "REFLECT":
+                return "Reflect_And_Summarize"
             elif event == "gameevent":
                 pass
 
-            elif event == "onestep":
-                return "Objectives_planner"
+            elif event == "REPLAN":
+                return "Replan_Action"
 
             elif event == "check":
                 pprint(self.state["decision"]["action_result"])
@@ -137,7 +161,8 @@ class LangGraphInstance:
         workflow.add_node("Sensing_Route", sensing_environment)
         workflow.add_node("Objectives_planner", generate_daily_objective)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
-        workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
+        #workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
+
         workflow.add_node("Replan_Action", replan_action)
         
         workflow.set_entry_point("Sensing_Route")
@@ -147,10 +172,36 @@ class LangGraphInstance:
         
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
-        workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
+        workflow.add_edge("meta_action_sequence", "Sensing_Route")
+        #workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
         # 循环回消息处理
-        workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
+        #workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
+        workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
 
+<<<<<<< Updated upstream
+=======
+        # 每隔五次目标或3分钟反思一次
+        def should_reflect(state: RunningState) -> bool:
+            objectives_count = len(state.get("decision", {}).get("daily_objective", []))
+            last_reflection_time = (
+                state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
+            )
+
+            if last_reflection_time:
+                time_since_last = datetime.now() - datetime.fromisoformat(
+                    last_reflection_time
+                )
+                return time_since_last.total_seconds() > 180  # 3分钟
+
+            return objectives_count > 0 and objectives_count % 5 == 0
+
+        # workflow.add_conditional_edges(
+        #     "Process_Messages",
+        #     lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
+        # )
+        # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
+
+>>>>>>> Stashed changes
         return workflow.compile()
 
     async def a_run(self):

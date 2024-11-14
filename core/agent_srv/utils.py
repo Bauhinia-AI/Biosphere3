@@ -61,6 +61,7 @@ def generate_initial_state(userid, websocket):
         },
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
+        "false_action_queue": asyncio.Queue(),
         "websocket": websocket,
         "current_pointer": "Sensing_Route",
     }

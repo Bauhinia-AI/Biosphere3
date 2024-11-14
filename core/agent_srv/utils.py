@@ -82,8 +82,7 @@ Constraints: Must have enough energy and be in the harvest area.\n
 
     7. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
 Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)\n
-    9. seedoctor [hours:int]: Visit a doctor, costing money.
-Constraints: Must have enough money and be in the hospital.\n
+    
     10. study [hours:int]: Study to achieve a higher degree, will cost money.
 Constraints: Must be in school and have enough money.\n
     11. sleep [hours:int]: Sleep to recover energy and health only when your energy is low.
@@ -94,3 +93,6 @@ Constraints: Must be at home.\n
 
 #     10. sleep [hours:int]: Sleep to recover energy and health.
 # Constraints: Must be at home.\n
+
+# 9. seedoctor [hours:int]: Visit a doctor, costing money.
+# Constraints: Must have enough money and be in the hospital.\n

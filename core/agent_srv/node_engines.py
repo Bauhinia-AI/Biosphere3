@@ -13,7 +13,7 @@ import os
 from pprint import pprint
 import asyncio
 
-os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
+os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)
@@ -71,7 +71,7 @@ async def generate_daily_objective(state: RunningState):
     await make_api_request_async(
         "POST", "/daily_objectives/store", data=daily_objective_data
     )
-    
+
     logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
     return {"decision": {"daily_objective": [planner_response.objectives]}}
 
@@ -95,7 +95,7 @@ async def generate_meta_action_sequence(state: RunningState):
     }
     pprint(payload)
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
-    
+
     await state["instance"].send_message(
         {
             "characterId": state["userid"],
@@ -104,7 +104,9 @@ async def generate_meta_action_sequence(state: RunningState):
             "data": {"command": meta_action_sequence.meta_action_sequence},
         }
     )
-    logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED with {meta_action_sequence.meta_action_sequence}")
+    logger.info(
+        f"🧠 META_ACTION_SEQUENCE INVOKED with {meta_action_sequence.meta_action_sequence}"
+    )
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
@@ -175,46 +177,52 @@ async def sensing_environment(state: RunningState):
 
     return {"current_pointer": "Process_Messages"}
 
+
 async def replan_action(state: RunningState):
     # 从false_action_queue里取
     false_action = state["false_action_queue"].get_nowait()
     failed_action = false_action.get("actionName")
     error_message = false_action.get("msg")
 
-
     # latest_result = state["decision"]["action_result"][-1]
     # failed_action = latest_result.get("action")
     # error_message = latest_result.get("error")
     # current_location = state.get("environment", {}).get("location")
-    
+
     logger.info(f"🔄 User {state['userid']}: Replanning failed action: {failed_action}")
-    
+
     # Analyze error type and context
     error_context = {
         "failed_action": failed_action,
         "error_message": error_message,
         "current_meta_seq": state["decision"]["meta_seq"][-1],
-        "daily_objective": state["decision"]["daily_objective"][-1]
+        "daily_objective": state["decision"]["daily_objective"][-1],
     }
-    
+
     # try:
-        # Generate new meta sequence with error context
-    meta_action_sequence = await meta_seq_adjuster.ainvoke({
-        "meta_seq": state["decision"]["meta_seq"][-1],
-        "tool_functions": state["meta"]["tool_functions"],
-        "locations": state["meta"]["available_locations"],
-        "failed_action": failed_action,
-        "error_message": error_message,
-    })
-    
-    logger.info(f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}")
-    
+    # Generate new meta sequence with error context
+    meta_action_sequence = await meta_seq_adjuster.ainvoke(
+        {
+            "meta_seq": state["decision"]["meta_seq"][-1],
+            "tool_functions": state["meta"]["tool_functions"],
+            "locations": state["meta"]["available_locations"],
+            "failed_action": failed_action,
+            "error_message": error_message,
+        }
+    )
+
+    logger.info(
+        f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}"
+    )
+
     # Send new action sequence to client
-    await state["instance"].send_message({
-        "characterId": state["userid"],
-        "messageName": "actionList",
-        "messageCode": 6,
-        "data": {"command": meta_action_sequence.meta_action_sequence},
-    })
-    
+    await state["instance"].send_message(
+        {
+            "characterId": state["userid"],
+            "messageName": "actionList",
+            "messageCode": 6,
+            "data": {"command": meta_action_sequence.meta_action_sequence},
+        }
+    )
+
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}

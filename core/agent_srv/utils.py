@@ -25,9 +25,9 @@ def generate_initial_state(userid, websocket):
         "character_stats": {
             "name": "Alice",
             "gender": "Female",
-            "slogan": "Adventure awaits!",
-            "description": "A brave explorer.",
-            "role": "Explorer",
+            "slogan": "Need to be rich!",
+            "description": "A risk lover. Always looking for the next big thing.",
+            "role": "Investor",
             "inventory": {},
             "health": 100,
             "energy": 100,

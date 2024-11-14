@@ -140,7 +140,7 @@ class LangGraphInstance:
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
         workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
         workflow.add_node("Replan_Action", replan_action)
-        workflow.add_node("Reflect_And_Summarize", reflect_and_summarize)
+        # workflow.add_node("Reflect_And_Summarize", reflect_and_summarize)
 
         workflow.set_entry_point("Sensing_Route")
         workflow.add_conditional_edges("Sensing_Route", self.event_router)
@@ -168,11 +168,11 @@ class LangGraphInstance:
 
             return objectives_count > 0 and objectives_count % 5 == 0
 
-        workflow.add_conditional_edges(
-            "Process_Messages",
-            lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
-        )
-        workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
+        # workflow.add_conditional_edges(
+        #     "Process_Messages",
+        #     lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
+        # )
+        # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
 
         return workflow.compile()
 

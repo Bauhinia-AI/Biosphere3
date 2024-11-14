@@ -58,13 +58,7 @@ async def generate_daily_objective(state: RunningState):
                     "character_stats": state["character_stats"],
                     "tool_functions": state["meta"]["tool_functions"],
                     "locations": state["meta"]["available_locations"],
-                    # get the last 3 objectives
-                    "past_objectives": (
-                        state.get("decision", {}).get("daily_objective", [])[-3:]
-                        if len(state.get("decision", {}).get("daily_objective", []))
-                        >= 3
-                        else []
-                    ),
+                    "past_objectives": state.get("decision", {}).get("daily_objective", [])[-3:],
                 }
             )
             break
@@ -121,11 +115,12 @@ async def generate_meta_action_sequence(state: RunningState):
 async def adjust_meta_action_sequence(state: RunningState):
     failed_action = ""
     error_message = ""
+    current_location = ""
     if state.get("decision", {}).get("action_result"):
         latest_result = state["decision"]["action_result"][-1]
         failed_action = latest_result.get("action", "")
         error_message = latest_result.get("error", "")
-
+        current_location = state.get("environment", {}).get("location", "")
     if state["decision"]["meta_seq"]:
         meta_seq = state["decision"]["meta_seq"][-1]
     else:
@@ -139,6 +134,7 @@ async def adjust_meta_action_sequence(state: RunningState):
             "locations": state["meta"]["available_locations"],
             "failed_action": failed_action,
             "error_message": error_message,
+            "current_location": current_location,
         }
     )
 

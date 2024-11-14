@@ -80,7 +80,6 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     2. If the error is timing-related, adjust the sequence timing
     3. If the error is resource-related, add necessary resource gathering steps
     4. If the error is prerequisite-related, add missing prerequisite actions
-    {% endif %}
 
     Current sequence:
     {meta_seq}

@@ -490,7 +490,7 @@ def retry_operation(func, retries=3, delay=2, *args, **kwargs):
 # Define APIRouters for categorization
 
 # CRUD Operations Router
-crud_router = APIRouter(prefix="/crud")
+crud_router = APIRouter(prefix="/crud", tags=["CRUD Operations"])
 
 
 @crud_router.post("/insert", response_model=StandardResponse)
@@ -582,7 +582,7 @@ def find_data(request: FindRequest):
 
 
 # Vector Search Router
-vector_search_router = APIRouter(prefix="/vector_search")
+vector_search_router = APIRouter(prefix="/vector_search", tags=["Vector Search"])  # 添加 tags 参数
 
 
 @vector_search_router.post("/", response_model=StandardResponse)
@@ -647,7 +647,7 @@ def store_impression_api(request: StoreImpressionRequest):
 
 
 # Intimacy Router
-intimacy_router = APIRouter(prefix="/intimacy")
+intimacy_router = APIRouter(prefix="/intimacy", tags=["Intimacy"])  # 添加 tags 参数
 
 
 @intimacy_router.post("/get", response_model=StandardResponse)
@@ -742,7 +742,7 @@ def decrease_all_intimacy_levels_api():
 
 
 # Conversations Router
-conversations_router = APIRouter(prefix="/conversations")
+conversations_router = APIRouter(prefix="/conversations", tags=["Conversations"])  # 添加 tags 参数
 
 
 @conversations_router.post("/get_with_characterIds", response_model=StandardResponse)
@@ -840,7 +840,7 @@ def get_conversations_by_id_and_day_api(request: GetConversationsByIdAndDayReque
 
 
 # Encounter Count Router
-encounter_count_router = APIRouter(prefix="/encounter_count")
+encounter_count_router = APIRouter(prefix="/encounter_count", tags=["Encounter Count"])  # 添加 tags 参数
 
 
 # 修改 `get_encounter_count_api` 方法的请求参数类型
@@ -970,7 +970,7 @@ def update_encounter_count_api(request: UpdateEncounterCountRequest):
 
 
 # CVs Router
-cvs_router = APIRouter(prefix="/cv")
+cvs_router = APIRouter(prefix="/cv", tags=["CVs"])  # 添加 tags 参数
 
 
 @cvs_router.post("/store", response_model=StandardResponse)
@@ -1030,7 +1030,7 @@ def get_cv_api(request: GetCVRequest):
 
 
 # Actions Router
-actions_router = APIRouter(prefix="/actions")
+actions_router = APIRouter(prefix="/actions", tags=["Actions"])  # 添加 tags 参数
 
 
 @actions_router.post("/store", response_model=StandardResponse)
@@ -1069,7 +1069,7 @@ def get_action_api(request: GetActionRequest):
 
 
 # Descriptors Router
-descriptors_router = APIRouter(prefix="/descriptors")
+descriptors_router = APIRouter(prefix="/descriptors", tags=["Descriptors"])  # 添加 tags 参数
 
 
 @descriptors_router.post("/store", response_model=StandardResponse)
@@ -1110,7 +1110,7 @@ def get_descriptor_api(request: GetDescriptorRequest):
 
 
 # Daily Objectives Router
-daily_objectives_router = APIRouter(prefix="/daily_objectives")
+daily_objectives_router = APIRouter(prefix="/daily_objectives", tags=["Daily Objectives"])  # 添加 tags 参数
 
 
 @daily_objectives_router.post("/store", response_model=StandardResponse)
@@ -1148,7 +1148,7 @@ def get_daily_objectives_api(request: GetDailyObjectivesRequest):
 
 
 # Plans Router
-plans_router = APIRouter(prefix="/plans")
+plans_router = APIRouter(prefix="/plans", tags=["Plans"])  # 添加 tags 参数
 
 
 @plans_router.post("/store", response_model=StandardResponse)
@@ -1184,8 +1184,7 @@ def get_plans_api(request: GetPlansRequest):
 
 
 # Meta Sequences Router
-meta_sequences_router = APIRouter(prefix="/meta_sequences")
-
+meta_sequences_router = APIRouter(prefix="/meta_sequences", tags=["Meta Sequences"])  # 添加 tags 参数
 
 @meta_sequences_router.post("/store", response_model=StandardResponse)
 def store_meta_seq_api(request: StoreMetaSeqRequest):
@@ -1239,7 +1238,7 @@ def update_meta_seq_api(request: UpdateMetaSeqRequest):
 
 
 # Knowledge Router
-knowledge_router = APIRouter(prefix="/knowledge")
+knowledge_router = APIRouter(prefix="/knowledge", tags=["Knowledge"])  # 添加 tags 参数
 
 
 @knowledge_router.post("/store", response_model=StandardResponse)
@@ -1313,7 +1312,7 @@ def update_knowledge_api(request: UpdateKnowledgeRequest):
 
 
 # Tools Router
-tools_router = APIRouter(prefix="/tools")
+tools_router = APIRouter(prefix="/tools", tags=["Tools"])  # 添加 tags 参数
 
 
 @tools_router.post("/store", response_model=StandardResponse)
@@ -1346,7 +1345,7 @@ def get_tools_api(request: GetToolsRequest):
 
 
 # Diaries Router
-diaries_router = APIRouter(prefix="/diaries")
+diaries_router = APIRouter(prefix="/diaries", tags=["Diaries"])  # 添加 tags 参数
 
 
 @diaries_router.post("/store", response_model=StandardResponse)
@@ -1382,7 +1381,7 @@ def get_diaries_api(request: GetDiariesRequest):
 
 
 # Characters Router
-characters_router = APIRouter(prefix="/characters")
+characters_router = APIRouter(prefix="/characters", tags=["Characters"])  # 添加 tags 参数
 
 
 @characters_router.post("/store", response_model=StandardResponse)

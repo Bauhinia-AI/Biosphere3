@@ -1,7 +1,12 @@
+import sys
+
+sys.path.append(".")
+
 import functools
 import asyncio
 from core.db.database_api_utils import make_api_request_sync
 import requests
+
 
 # BETTER WAY？
 def check_termination(coro):
@@ -18,6 +23,8 @@ def check_termination(coro):
         return await coro(self, *args, **kwargs)
 
     return wrapper
+
+
 def generate_initial_state(userid, initial_state):
     character_data = {"characterId": userid}
     response_txt = make_api_request_sync("POST", "/characters/get", data=character_data)
@@ -44,6 +51,7 @@ def generate_initial_state(userid, initial_state):
                 "energy": data_num.get("energy"),
             }
         )
+
 
 def generate_initial_state_hardcoded(userid, websocket):
     initial_state = {
@@ -85,12 +93,47 @@ def generate_initial_state_hardcoded(userid, websocket):
                 "orchard",
             ],
         },
+        "prompts": {
+            "obj_planner_prompt": {
+                "daily_goal": "",
+                "refer_to_previous": False,
+                "life_style": "Casual",
+                "addtional_requirements": "",
+            },
+            "meta_action_sequence_prompt": {
+                "task_priority": {},
+                "max_actions": 10,
+                "additional_requirements": "",
+            },
+            "meta_seq_adjuster_prompt": {
+                "replan_time_limit": 3,
+                "additional_requirements": "",
+            },
+            "reflection_prompt": {
+                "focus_topic": [],
+                "depth_of_reflection": "Moderate",
+                "additional_requirements": "",
+            },
+            "describe_action_result_prompt": {
+                "level_of_detail": "Moderate",
+                "tone_and_style": "",
+            },
+        },
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
         "websocket": websocket,
         "current_pointer": "Sensing_Route",
     }
     return initial_state
+
+
+def update_nested_dict(existing_dict, new_dict):
+    for key, value in new_dict.items():
+        if key in existing_dict:
+            if isinstance(value, dict) and isinstance(existing_dict[key], dict):
+                update_nested_dict(existing_dict[key], value)
+            else:
+                existing_dict[key] = value
 
 
 tool_functions_easy = """

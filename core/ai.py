@@ -56,9 +56,7 @@ class AI_WS_Server:
                 try:
                     message = await websocket.recv()
                     data = json.loads(message)
-
                     character.log_message("sent", message)
-
                     # 处理心跳消息
                     if data.get("messageName") == "heartbeat":
                         character.update_heartbeat()
@@ -68,14 +66,12 @@ class AI_WS_Server:
                         await websocket.send(heartbeat_response)
                         character.log_message("received", heartbeat_response)
                         continue
-
-                    # 处理其他消息：放到对应agent的消息队列
-                    message_queue = agent_instance.state["message_queue"]
-                    async with agent_instance.state_lock:
+                    else:  # 处理其他消息：放到对应agent和conversation agent的消息队列
+                        message_queue = agent_instance.state["message_queue"]
                         await message_queue.put(data)
-                    logger.info(
-                        f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
-                    )
+                        logger.info(
+                            f"❕ Put message into {character_id}'s agent instance"
+                        )
                 except websockets.ConnectionClosed as e:
                     logger.warning(f"🔗 Connection closed from {character_id}")
                     break

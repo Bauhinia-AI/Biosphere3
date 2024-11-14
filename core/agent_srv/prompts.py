@@ -16,9 +16,16 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             and the available locations are:\n
             {locations}\n
 
+            Here's some specific requirements from user, ignore it if it's empty:
+            Daily Goal: {daily_goal}
+            Do you need to refer to the past daily objectives? {refer_to_previous}
+            Life Style: {life_style}
+            Additional Requirements: {additional_requirements}
 
-            The final format should be a list of daily objectives. Like this:\n
-            ["Working: Working in the farm","Studying: Discover something about science", "Socializing: Try to make friends"]\n
+            The final format should be a list of daily objectives.
+            REMIND: you SHOULD NOT output other formats or other description words. 
+            Here's an example to follow:\n
+            ["Working: Working in the farm", "Studying: Discover something about science", "Socializing: Try to make friends"]\n
             """,
         ),
     ]
@@ -56,6 +63,12 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     \n
     locations_available:\n
     {locations}
+
+    Here's some specific requirements from user, ignore it if it is empty:
+    Task Priority: {task_priority}
+    Your meta action number should not exceed {max_actions}
+    Additional Requirements: {additional_requirements}
+
     The final format should be a list of meta actions. for example:\n
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
     \n
@@ -84,6 +97,10 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     Current sequence:
     {meta_seq}
 
+    Here's some specific requirements from user, ignore it if it is empty:
+    If the replan fails, you should try to find a alternative plan but no more than {replan_time_limits} actions.
+    Additional Requirements: {additional_requirements}
+
     Please provide a revised action sequence that:
     1. Avoids the failed action or its problematic conditions
     2. Still achieves the original objectives where possible
@@ -104,6 +121,11 @@ reflection_prompt = ChatPromptTemplate.from_template(
     Character Current State:
     {character_stats}
 
+    Here's some specific requirements from user, ignore it if it is empty:
+    Focus on in a descending order: {focus_topic}
+    Depth of reflection: {depth_of_reflection}
+    Additional Requirements: {additional_requirements}
+
     Please provide:
     1. A comprehensive reflection on your activities
     2. Analysis of patterns in errors and mistakes
@@ -123,6 +145,11 @@ reflection_prompt = ChatPromptTemplate.from_template(
 
 describe_action_result_prompt = ChatPromptTemplate.from_template(
     """Based on the following action result,
+
+    Here's some specific requirements from user, ignore it if it is empty:
+    Level of detail: {level_of_detail}
+    Tone and style: {tone_and_style}
+
     provide a brief description for the action result, like: I successfully studied for 2 hours.
     {action_result}
     """

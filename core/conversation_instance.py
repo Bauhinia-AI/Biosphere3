@@ -99,6 +99,14 @@ class ConversationInstance:
             elif message_name == "to_agent":  # 当前玩家由agent接管，需要回复的消息
                 logger.info(f"User {self.user_id} receives a message and is waiting for agent response: {msg['data']}.")
                 await check_conversation_state(self.state, msg['data'])  # 判断对话是否结束，分别处理
+            elif message_name == "prompt_modification":  # 改prompt
+                new_prompt_data = msg.get("data")
+                logger.info(f"User {self.user_id}: new prompts received.")
+                new_topic_prompt = new_prompt_data["topic_planner_prompt"]
+                new_impression_prompt = new_prompt_data["responser_prompt"]
+                self.state["prompt"]["topic_requirements"] = new_topic_prompt
+                self.state["prompt"]["impression_impact"].update(new_impression_prompt)
+                logger.info(f"User {self.user_id}'s new prompts are: {self.state['prompt']}")
             elif message_code < 100:
                 pass  # 忽略agent_instance的消息
             else:

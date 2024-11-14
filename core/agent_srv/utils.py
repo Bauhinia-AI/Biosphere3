@@ -75,7 +75,7 @@ Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harve
 Constraints: Must have enough energy and be in the orchard.\n
     3. gofishing [hours:int]: Fish for resources, costing energy.
 Constraints: Must have enough energy and be in the fishing area.\n
-    4. mine [hours:int]: Mine for resources, costing energy.
+    4. gomining [hours:int]: Mine for resources, costing energy.
 Constraints: Must have enough energy and be in the mine.\n
     5. harvest [hours:int]: Harvest crops, costing energy.
 Constraints: Must have enough energy and be in the harvest area.\n

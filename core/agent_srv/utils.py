@@ -73,22 +73,22 @@ tool_functions_easy = """
 Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).\n
     2. pickapple [number:int]: Pick an apple, costing energy.
 Constraints: Must have enough energy and be in the orchard.\n
-    3. gofishing [hours:int]: Fish for resources, costing energy.
+    3. gofishing [hours:int]: Fish for fish, costing energy.
 Constraints: Must have enough energy and be in the fishing area.\n
-    4. gomining [hours:int]: Mine for resources, costing energy.
+    4. gomining [hours:int]: Mine for ore, costing energy.
 Constraints: Must have enough energy and be in the mine.\n
     5. harvest [hours:int]: Harvest crops, costing energy.
 Constraints: Must have enough energy and be in the harvest area.\n
-    6. buy [itemType:string] [amount:int]: Purchase items, costing money.
-Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n
+
     7. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
 Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)\n
     9. seedoctor [hours:int]: Visit a doctor, costing money.
 Constraints: Must have enough money and be in the hospital.\n
-    10. study [hours:int]: Study to achieve a higher degree.
+    10. study [hours:int]: Study to achieve a higher degree, will cost money.
 Constraints: Must be in school and have enough money.\n
 """
-
+   # 6. buy [itemType:string] [amount:int]: Purchase items, costing money.
+#Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n
 
 #     10. sleep [hours:int]: Sleep to recover energy and health.
 # Constraints: Must be at home.\n

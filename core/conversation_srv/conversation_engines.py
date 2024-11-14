@@ -76,7 +76,8 @@ async def generate_daily_conversation_plan(state: ConversationState):
     topic_list = conversation_topic_planner.invoke(
         {
             "character_stats": state["character_stats"],
-            "memory": memory
+            "memory": memory,
+            "requirements": state["prompt"]["topic_requirements"]
         }
     )
     logger.info(f"Today User {state['userid']} is going to talk with others about: {topic_list['topics']}")
@@ -304,7 +305,8 @@ async def generate_response(state: ConversationState):
             "profile": state["character_stats"],
             "impression": impression_response['data'][0],
             "question": question,
-            "history": history
+            "history": history,
+            "impact": state["prompt"]["impression_impact"]
         }
     )
     # conversation_response = {"response": "", "Finish": [False, False]}
@@ -471,6 +473,14 @@ def initialize_conversation_state(userid, websocket) -> ConversationState:
     logger.info(f"User {userid}: {profile['message']}")
     logger.info(f"User {userid} current state is: {character_stats}")
 
+    initial_prompt = {
+        "topic_requirements": "",
+        "impression_impact": {
+            "Relation": "Relation influences the length of conversation and how much information from player profiles should be included.",
+            "Emotion": "Emotion determines the tone of the players.",
+            "Personlality": "Personality influence the length of each player's answer and their willingness towards conversation.",
+            "Habits and preferences": "Habits and preferences are something that one player thinks the other could be interested in and can also be mentioned in the conversation."}
+    }
     state = ConversationState(
         userid=userid,
         character_stats=character_stats,
@@ -478,7 +488,8 @@ def initialize_conversation_state(userid, websocket) -> ConversationState:
         daily_task=[],
         message_queue=asyncio.Queue(),
         waiting_response=asyncio.Queue(),
-        websocket=websocket
+        websocket=websocket,
+        prompt=initial_prompt
     )
     return state
 

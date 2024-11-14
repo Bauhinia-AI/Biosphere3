@@ -67,15 +67,6 @@ class DomainSpecificQueries:
         # Return in JSON format
         return [doc[item] for doc in documents]
 
-    def get_candidates_from_mongo(self):
-        one_week_ago = datetime.now() - timedelta(days=7)
-        candidates = self.db_utils.find_documents(
-            collection_name=config.cv_collection_name,
-            query={"created_at": {"$gte": one_week_ago.strftime("%Y-%m-%d %H:%M:%S")}},
-            projection={"_id": 0, "jobid": 1, "characterName": 1, "characterId": 1},
-        )
-        return candidates
-
     def get_conversations_with_characterIds(self, characterIds_list, k):
         query = {"characterIds": {"$all": characterIds_list}}
         documents = self.db_utils.find_documents(
@@ -256,23 +247,81 @@ class DomainSpecificQueries:
         )
         return documents
 
-    def store_cv(self, jobid, characterId, characterName, CV_content):
+    def store_cv(self, jobid, characterId, CV_content, week, election_result="not_yet"):
         document = {
             "jobid": jobid,
             "characterId": characterId,
-            "characterName": characterName,
             "CV_content": CV_content,
+            "week": week,  # 新增字段
+            "election_result": election_result,  # 参数新增 election_result
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
         inserted_id = self.db_utils.insert_document(config.cv_collection_name, document)
         return inserted_id
 
-    def get_cv(self, jobid, characterId, k):
-        query = {"jobid": jobid, "characterId": characterId}
+    def update_election_result(
+        self, characterId, election_result, jobid=None, week=None
+    ):
+        # 构建查询条件
+        query = {"characterId": characterId}
+        if jobid is not None:
+            query["jobid"] = jobid
+        if week is not None:
+            query["week"] = week
+
+        # 如果没有提供 week，则查找最新的文档
+        if week is None:
+            documents = self.db_utils.find_documents(
+                collection_name=config.cv_collection_name,
+                query=query,
+                sort=[("week", DESCENDING)],
+                limit=1,
+            )
+            if documents:
+                query["week"] = documents[0]["week"]
+            else:
+                raise ValueError("No CV found for the given characterId and jobid.")
+
+        # 更新 election_result
+        update_data = {"$set": {"election_result": election_result}}
+        result = self.db_utils.update_documents(
+            collection_name=config.cv_collection_name,
+            query=query,
+            update=update_data,
+            upsert=False,
+            multi=False,
+        )
+        return result
+
+    def get_cv(self, jobid=None, characterId=None, week=None, election_result=None):
+        query = {}
+        if jobid is not None:
+            query["jobid"] = jobid
+        if characterId is not None:
+            query["characterId"] = characterId
+        if week is not None:
+            query["week"] = week
+        if election_result is not None:
+            query["election_result"] = election_result
+
+        # 如果没有提供 week，则查找整个集合中最新的周
+        if week is None:
+            # 查找整个集合中最新的周
+            latest_week_docs = self.db_utils.find_documents(
+                collection_name=config.cv_collection_name,
+                query={},  # 不带任何过滤条件
+                sort=[("week", DESCENDING)],
+                limit=1,
+                projection={"week": 1, "_id": 0},
+            )
+            if latest_week_docs:
+                latest_week = latest_week_docs[0]["week"]
+                query["week"] = latest_week
+
+        # 查找符合条件的文档
         documents = self.db_utils.find_documents(
             collection_name=config.cv_collection_name,
             query=query,
-            limit=k,
         )
         return documents
 
@@ -896,3 +945,51 @@ if __name__ == "__main__":
     # print(
     #     queries.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80)
     # )
+
+    # 存储一些测试数据
+    print("存储测试数据:")
+    queries.store_cv(jobid=1, characterId=101, CV_content="CV内容1", week=1)
+    queries.store_cv(jobid=1, characterId=102, CV_content="CV内容2", week=2)
+    queries.store_cv(jobid=2, characterId=101, CV_content="CV内容3", week=1)
+    queries.store_cv(jobid=2, characterId=103, CV_content="CV内容4", week=3)
+
+    # 更新选举状态
+    print("\n更新选举状态:")
+    queries.update_election_result(
+        characterId=101, election_result="succeeded", jobid=1, week=1
+    )
+    queries.update_election_result(characterId=102, election_result="failed", jobid=1)
+    queries.update_election_result(
+        characterId=103, election_result="succeeded", jobid=2
+    )
+
+    # 测试 get_cv 方法
+    print("\n测试 get_cv 方法:")
+
+    # 查询所有最新周的数据
+    print("\n查询所有最新周的数据:")
+    print(queries.get_cv())
+
+    # 查询特定 jobid 的所有最新周的数据
+    print("\n查询 jobid=1 的所有最新周的数据:")
+    print(queries.get_cv(jobid=1))
+
+    # 查询特定 characterId 的所有最新周的数据
+    print("\n查询 characterId=101 的所有最新周的数据:")
+    print(queries.get_cv(characterId=101))
+
+    # 查询特定 week 的数据
+    print("\n查询 week=1 的数据:")
+    print(queries.get_cv(week=1))
+
+    # 查询特定选举状态的数据
+    print("\n查询选举状态为 'succeeded' 的数据:")
+    print(queries.get_cv(election_result="succeeded"))
+
+    # 查询特定 jobid 和选举状态的数据
+    print("\n查询 jobid=1 且选举状态为 'failed' 的数据:")
+    print(queries.get_cv(jobid=1, election_result="failed"))
+
+    # 查询特定 characterId 和 week 的数据
+    print("\n查询 characterId=101 且 week=1 的数据:")
+    print(queries.get_cv(characterId=101, week=1))

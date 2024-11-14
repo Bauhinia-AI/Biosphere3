@@ -267,14 +267,23 @@ class StoreImpressionRequest(BaseModel):
 class StoreCVRequest(BaseModel):
     jobid: int
     characterId: int
-    characterName: str
     CV_content: str
+    week: int  # 新增字段
+    election_result: Optional[str] = "not_yet"  # 新增字段，默认值为 "not_yet"
+
+
+class UpdateElectionResultRequest(BaseModel):
+    characterId: int
+    election_result: str
+    jobid: Optional[int] = None
+    week: Optional[int] = None
 
 
 class GetCVRequest(BaseModel):
-    jobid: int
-    characterId: int
-    k: Optional[int] = 1
+    jobid: Optional[int] = None
+    characterId: Optional[int] = None
+    week: Optional[int] = None  # 新增字段，设置为可选
+    election_result: Optional[str] = None  # 新增字段，设置为可选
 
 
 class StoreActionRequest(BaseModel):
@@ -732,23 +741,6 @@ def decrease_all_intimacy_levels_api():
         )
 
 
-# Candidates Router
-candidates_router = APIRouter(prefix="/candidates")
-
-
-@candidates_router.get("/get", response_model=StandardResponse)
-def get_candidates_api():
-    candidates = retry_operation(
-        domain_queries.get_candidates_from_mongo, retries=3, delay=2
-    )
-    if candidates:
-        return success_response(
-            data=candidates, message="Candidates retrieved successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No candidates found.")
-
-
 # Conversations Router
 conversations_router = APIRouter(prefix="/conversations")
 
@@ -978,7 +970,7 @@ def update_encounter_count_api(request: UpdateEncounterCountRequest):
 
 
 # CVs Router
-cvs_router = APIRouter(prefix="/cvs")
+cvs_router = APIRouter(prefix="/cv")
 
 
 @cvs_router.post("/store", response_model=StandardResponse)
@@ -989,8 +981,9 @@ def store_cv_api(request: StoreCVRequest):
         delay=2,
         jobid=request.jobid,
         characterId=request.characterId,
-        characterName=request.characterName,
         CV_content=request.CV_content,
+        week=request.week,  # 传递 week 参数
+        election_result=request.election_result,  # 传递 election_result 参数
     )
     if inserted_id:
         return success_response(
@@ -998,6 +991,25 @@ def store_cv_api(request: StoreCVRequest):
         )
     else:
         raise HTTPException(status_code=500, detail="Failed to store CV.")
+
+
+@cvs_router.post("/update_election_result", response_model=StandardResponse)
+def update_election_result_api(request: UpdateElectionResultRequest):
+    result = retry_operation(
+        domain_queries.update_election_result,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        election_result=request.election_result,
+        jobid=request.jobid,
+        week=request.week,
+    )
+    if result:
+        return success_response(
+            data=result, message="Election result updated successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No CV found to update.")
 
 
 @cvs_router.post("/get", response_model=StandardResponse)
@@ -1008,7 +1020,8 @@ def get_cv_api(request: GetCVRequest):
         delay=2,
         jobid=request.jobid,
         characterId=request.characterId,
-        k=request.k,
+        week=request.week,  # 传递 week 参数
+        election_result=request.election_result,  # 传递 election_result 参数
     )
     if cvs:
         return success_response(data=cvs, message="CVs retrieved successfully.")
@@ -1605,7 +1618,6 @@ def get_character_arc_changes_api(request: GetCharacterArcChangesRequest):
 app.include_router(crud_router)
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
-app.include_router(candidates_router)
 app.include_router(conversations_router)
 app.include_router(cvs_router)
 app.include_router(actions_router)

@@ -188,9 +188,9 @@ validators = {
             "required": [
                 "jobid",
                 "characterId",
-                "characterName",
                 "CV_content",
                 "created_at",
+                "week",  # 新增字段
             ],
             "properties": {
                 "jobid": {
@@ -201,10 +201,6 @@ validators = {
                     "bsonType": "int",
                     "description": "用户ID, 必须为整数且为必填项",
                 },
-                "characterName": {
-                    "bsonType": "string",
-                    "description": "用户名, 必须为字符串且为必填项",
-                },
                 "CV_content": {
                     "bsonType": "string",
                     "description": "简历内容, 必须为字符串且为必填项",
@@ -212,6 +208,15 @@ validators = {
                 "created_at": {
                     "bsonType": "string",
                     "description": "创建时间, 必须为字符串且为必填项",
+                },
+                "week": {  # 新增字段
+                    "bsonType": "int",
+                    "description": "周数, 必须为整数且为必填项",
+                },
+                "election_status": {  # 修改字段名称和类型
+                    "bsonType": "string",
+                    "enum": ["not_yet", "failed", "succeeded"],
+                    "description": "选举状态, 可以为 'not_yet'（未进行选举）、'failed'（选举失败）、'succeeded'（选举成功）",
                 },
             },
         }

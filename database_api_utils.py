@@ -529,23 +529,101 @@ async def main():
         ),
     )
 
-    # Test retrieving candidates
+    # Test storing and retrieving CV
+    cv_data_1 = {
+        "jobid": 3,
+        "characterId": 201,
+        "CV_content": "CV内容5",
+        "week": 1,
+        "election_result": "not_yet",
+    }
+    cv_data_2 = {
+        "jobid": 3,
+        "characterId": 202,
+        "CV_content": "CV内容6",
+        "week": 2,
+        "election_result": "not_yet",
+    }
+    cv_data_3 = {
+        "jobid": 4,
+        "characterId": 201,
+        "CV_content": "CV内容7",
+        "week": 1,
+        "election_result": "not_yet",
+    }
+    cv_data_4 = {
+        "jobid": 4,
+        "characterId": 203,
+        "CV_content": "CV内容8",
+        "week": 3,
+        "election_result": "not_yet",
+    }
+
+    print("Storing CV 1:", await make_api_request_async("POST", "/cv/store", cv_data_1))
+    print("Storing CV 2:", await make_api_request_async("POST", "/cv/store", cv_data_2))
+    print("Storing CV 3:", await make_api_request_async("POST", "/cv/store", cv_data_3))
+    print("Storing CV 4:", await make_api_request_async("POST", "/cv/store", cv_data_4))
+
+    # Test updating election result
+    update_election_result_data_1 = {
+        "characterId": 201,
+        "election_result": "succeeded",
+        "jobid": 3,
+        "week": 1,
+    }
+    update_election_result_data_2 = {
+        "characterId": 202,
+        "election_result": "failed",
+        "jobid": 3,
+    }
+    update_election_result_data_3 = {
+        "characterId": 203,
+        "election_result": "succeeded",
+        "jobid": 4,
+    }
+
     print(
-        "Retrieving Candidates:", await make_api_request_async("GET", "/candidates/get")
+        "Updating Election Result 1:",
+        await make_api_request_async(
+            "POST", "/cv/update_election_result", update_election_result_data_1
+        ),
+    )
+    print(
+        "Updating Election Result 2:",
+        await make_api_request_async(
+            "POST", "/cv/update_election_result", update_election_result_data_2
+        ),
+    )
+    print(
+        "Updating Election Result 3:",
+        await make_api_request_async(
+            "POST", "/cv/update_election_result", update_election_result_data_3
+        ),
     )
 
-    # Test storing and retrieving CV
-    cv_data = {
-        "jobid": 5001,
-        "characterId": 103,
-        "characterName": "Test Candidate",
-        "CV_content": "This is a test CV content.",
-    }
-    print("Storing CV:", await make_api_request_async("POST", "/cvs/store", cv_data))
+    # Test retrieving CVs
     print(
-        "Retrieving CV:",
+        "Retrieving CV for jobid=3, characterId=201, week=1:",
         await make_api_request_async(
-            "POST", "/cvs/get", {"jobid": 5001, "characterId": 103, "k": 1}
+            "POST", "/cv/get", {"jobid": 3, "characterId": 201, "week": 1}
+        ),
+    )
+    print(
+        "Retrieving CV for jobid=3, characterId=202, week=2:",
+        await make_api_request_async(
+            "POST", "/cv/get", {"jobid": 3, "characterId": 202, "week": 2}
+        ),
+    )
+    print(
+        "Retrieving CV for jobid=4, characterId=201, week=1:",
+        await make_api_request_async(
+            "POST", "/cv/get", {"jobid": 4, "characterId": 201, "week": 1}
+        ),
+    )
+    print(
+        "Retrieving CV for jobid=4, characterId=203, week=3:",
+        await make_api_request_async(
+            "POST", "/cv/get", {"jobid": 4, "characterId": 203, "week": 3}
         ),
     )
 
@@ -596,6 +674,30 @@ async def main():
         "Retrieving Intimacy:",
         await make_api_request_async(
             "POST", "/intimacy/get", {"from_id": 1, "to_id": 3}
+        ),
+    )
+    print(
+        "Retrieving Intimacy by from_id:",
+        await make_api_request_async("POST", "/intimacy/get", {"from_id": 1}),
+    )
+    print(
+        "Retrieving Intimacy by to_id:",
+        await make_api_request_async("POST", "/intimacy/get", {"to_id": 3}),
+    )
+    print(
+        "Retrieving Intimacy by level range:",
+        await make_api_request_async(
+            "POST",
+            "/intimacy/get",
+            {"intimacy_level_min": 50, "intimacy_level_max": 60},
+        ),
+    )
+    print(
+        "Retrieving Intimacy by from_id and level range:",
+        await make_api_request_async(
+            "POST",
+            "/intimacy/get",
+            {"from_id": 1, "intimacy_level_min": 50, "intimacy_level_max": 60},
         ),
     )
 

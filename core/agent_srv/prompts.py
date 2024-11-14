@@ -70,17 +70,16 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     available locations:
     {locations}
 
-    {% if failed_action %}
+    
     The following action has failed and needs to be replanned:
     Failed Action: {failed_action}
     Error Message: {error_message}
 
     Please analyze the error and provide an alternative approach considering:
     1. If the error is location-related, ensure proper navigation
-    2. If the error is timing-related, adjust the sequence timing
-    3. If the error is resource-related, add necessary resource gathering steps
-    4. If the error is prerequisite-related, add missing prerequisite actions
-    {% endif %}
+    2. If the error is resource-related, add necessary resource gathering steps
+    3. If the error is prerequisite-related, add missing prerequisite actions
+    
 
 
     Current sequence:

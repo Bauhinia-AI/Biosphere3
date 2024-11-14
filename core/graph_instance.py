@@ -31,7 +31,7 @@ class LangGraphInstance:
         # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
+        #self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")
@@ -42,7 +42,7 @@ class LangGraphInstance:
             
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
-            logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
+            #logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
             if message_name == "actionresult":
                 # 处理动作结果
                 self.state["decision"]["action_result"].append(msg["data"])

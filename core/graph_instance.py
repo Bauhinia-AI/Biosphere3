@@ -37,7 +37,6 @@ class LangGraphInstance:
         logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
-<<<<<<< Updated upstream
     # # 生产者listener，独立于graph运行
     # async def listener(self):
     #     websocket = self.state["websocket"]
@@ -61,8 +60,6 @@ class LangGraphInstance:
     #     except Exception as e:
     #         logger.error(f"User {self.user_id}: Error in listener: {e}")
 
-=======
->>>>>>> Stashed changes
     async def msg_processor(self):
         while True:
             
@@ -178,30 +175,6 @@ class LangGraphInstance:
         #workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
         workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
 
-<<<<<<< Updated upstream
-=======
-        # 每隔五次目标或3分钟反思一次
-        def should_reflect(state: RunningState) -> bool:
-            objectives_count = len(state.get("decision", {}).get("daily_objective", []))
-            last_reflection_time = (
-                state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
-            )
-
-            if last_reflection_time:
-                time_since_last = datetime.now() - datetime.fromisoformat(
-                    last_reflection_time
-                )
-                return time_since_last.total_seconds() > 180  # 3分钟
-
-            return objectives_count > 0 and objectives_count % 5 == 0
-
-        # workflow.add_conditional_edges(
-        #     "Process_Messages",
-        #     lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
-        # )
-        # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
-
->>>>>>> Stashed changes
         return workflow.compile()
 
     async def a_run(self):

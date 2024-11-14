@@ -62,18 +62,6 @@ async def generate_daily_objective(state: RunningState):
             )
             retry_count += 1
             continue
-<<<<<<< Updated upstream
-    # Prepare data for API request
-    # data = {
-    #     "userid": state["userid"],
-    #     "objectives": daily_objective.objectives,
-    # }
-    # Make API request to store_daily_objective
-    # endpoint = "/store_daily_objective"
-    # await make_api_request_async(endpoint, data)
-    logger.info(f"🌞 OBJ_PLANNER INVOKED...")
-    return {"decision": {"daily_objective": planner_response.objectives}}
-=======
 
     # Store daily objectives in database
     daily_objective_data = {
@@ -86,7 +74,6 @@ async def generate_daily_objective(state: RunningState):
     
     logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
     return {"decision": {"daily_objective": [planner_response.objectives]}}
->>>>>>> Stashed changes
 
 
 async def generate_detailed_plan(state: RunningState):
@@ -111,15 +98,6 @@ async def generate_meta_action_sequence(state: RunningState):
     
     await state["instance"].send_message(
         {
-<<<<<<< Updated upstream
-            "daily_objective": state["decision"]["daily_objective"][-1],
-            "tool_functions": state["meta"]["tool_functions"],
-            "locations": state["meta"]["available_locations"],
-        }
-    )
-    # logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED...")
-
-=======
             "characterId": state["userid"],
             "messageName": "actionList",
             "messageCode": 6,
@@ -127,7 +105,6 @@ async def generate_meta_action_sequence(state: RunningState):
         }
     )
     logger.info(f"🧠 META_ACTION_SEQUENCE INVOKED with {meta_action_sequence.meta_action_sequence}")
->>>>>>> Stashed changes
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
@@ -151,11 +128,6 @@ async def adjust_meta_action_sequence(state: RunningState):
             "data": {"command": meta_action_sequence.meta_action_sequence},
         }
     )
-<<<<<<< Updated upstream
-    # Make API request to update_meta_seq
-    # endpoint = "/update_meta_seq"
-    # await make_api_request_async("POST", endpoint, data=data)
-=======
     update_meta_seq_data = {
         "characterId": state["userid"],
         "meta_sequence": meta_action_sequence.meta_action_sequence,
@@ -164,44 +136,10 @@ async def adjust_meta_action_sequence(state: RunningState):
         "POST", "/meta_sequences/update", data=update_meta_seq_data
     )
 
->>>>>>> Stashed changes
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
 async def sensing_environment(state: RunningState):
-<<<<<<< Updated upstream
-    logger.info(f"👀 User {state['userid']}: Sensing environment...")
-    
-    # Check if there was a failed action that needs replanning
-    if state.get("decision", {}).get("action_result"):
-        latest_result = state["decision"]["action_result"][-1]
-        if latest_result.get("status") == "failed":
-            logger.info(f"🔄 User {state['userid']}: Action failed, triggering replan")
-            return {"current_pointer": "Replan_Action"}
-    
-    try:
-        # Send environment query message
-        await state["instance"].send_message({
-            "characterId": state["userid"],
-            "messageName": "queryEnvironment",
-            "messageCode": 7,
-            "data": {
-                "query": ["location", "nearby_objects", "nearby_characters"]
-            }
-        })
-        
-        await asyncio.sleep(1)
-        
-        # Check message queue for environment data
-        while not state["message_queue"].empty():
-            message = state["message_queue"].get_nowait()
-            if message.get("messageName") == "environment_data":
-                state["environment"] = message.get("data", {})
-                logger.info(f"🌍 User {state['userid']}: Environment updated - {state['environment']}")
-    except Exception as e:
-        logger.error(f"❌ User {state['userid']}: Error sensing environment - {str(e)}")
-    
-=======
     # logger.info(f"👀 User {state['userid']}: Sensing environment...")
 
     # # Check if there was a failed action that needs replanning
@@ -235,15 +173,9 @@ async def sensing_environment(state: RunningState):
     # except Exception as e:
     #     logger.error(f"❌ User {state['userid']}: Error sensing environment - {str(e)}")
 
->>>>>>> Stashed changes
     return {"current_pointer": "Process_Messages"}
 
 async def replan_action(state: RunningState):
-<<<<<<< Updated upstream
-    latest_result = state["decision"]["action_result"][-1]
-    failed_action = latest_result.get("action")
-    error_message = latest_result.get("error")
-=======
     # 从false_action_queue里取
     false_action = state["false_action_queue"].get_nowait()
     failed_action = false_action.get("actionName")
@@ -254,13 +186,9 @@ async def replan_action(state: RunningState):
     # failed_action = latest_result.get("action")
     # error_message = latest_result.get("error")
     # current_location = state.get("environment", {}).get("location")
->>>>>>> Stashed changes
     
     logger.info(f"🔄 User {state['userid']}: Replanning failed action: {failed_action}")
     
-<<<<<<< Updated upstream
-    # Generate new meta sequence excluding the failed action
-=======
     # Analyze error type and context
     error_context = {
         "failed_action": failed_action,
@@ -271,17 +199,12 @@ async def replan_action(state: RunningState):
     
     # try:
         # Generate new meta sequence with error context
->>>>>>> Stashed changes
     meta_action_sequence = await meta_seq_adjuster.ainvoke({
         "meta_seq": state["decision"]["meta_seq"][-1],
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
         "failed_action": failed_action,
-<<<<<<< Updated upstream
-        "error_message": error_message
-=======
         "error_message": error_message,
->>>>>>> Stashed changes
     })
     
     logger.info(f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}")

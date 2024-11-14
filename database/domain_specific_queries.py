@@ -162,12 +162,28 @@ class DomainSpecificQueries:
         )
         return inserted_id
 
-    def get_intimacy(self, from_id, to_id):
-        query = {"from_id": from_id, "to_id": to_id}
-        document = self.db_utils.find_documents(
+    def get_intimacy(
+        self, from_id=None, to_id=None, intimacy_level_min=None, intimacy_level_max=None
+    ):
+        # 构建查询条件
+        query = {}
+        if from_id is not None:
+            query["from_id"] = from_id
+        if to_id is not None:
+            query["to_id"] = to_id
+        if intimacy_level_min is not None:
+            query["intimacy_level"] = {"$gte": intimacy_level_min}
+        if intimacy_level_max is not None:
+            if "intimacy_level" in query:
+                query["intimacy_level"]["$lte"] = intimacy_level_max
+            else:
+                query["intimacy_level"] = {"$lte": intimacy_level_max}
+
+        # 执行查询
+        documents = self.db_utils.find_documents(
             collection_name=config.intimacy_collection_name, query=query
         )
-        return document
+        return documents
 
     def update_intimacy(self, from_id, to_id, new_intimacy_level):
         query = {"from_id": from_id, "to_id": to_id}
@@ -828,37 +844,55 @@ if __name__ == "__main__":
     # character_list = [2, 3, 4]
     # print(queries.get_character_RAG_in_list(1, character_list, "探索森林", 2))
 
-    db_utils = MongoDBUtils()
-    queries = DomainSpecificQueries(db_utils=db_utils)
+    # # 示例数据存储
+    # character_id = 1
+    # # category_data = [
+    # #     {"item": "skill", "origin_value": "beginner"},
+    # #     {"item": "emotion", "origin_value": "neutral"},
+    # # ]
 
-    # 示例数据存储
-    character_id = 1
-    # category_data = [
-    #     {"item": "skill", "origin_value": "beginner"},
-    #     {"item": "emotion", "origin_value": "neutral"},
-    # ]
+    # # # 存储角色弧光信息
+    # # queries.store_character_arc(character_id, category_data)
 
-    # # 存储角色弧光信息
-    # queries.store_character_arc(character_id, category_data)
+    # # 存储角色弧光变化信息
+    # queries.store_character_arc_change(
+    #     characterId=character_id,
+    #     item="skill",
+    #     cause="参加职业培训2",
+    #     context="在朋友的建议下参加了当地的职业技能培训班2",
+    #     change="获得新技能2",
+    # )
 
-    # 存储角色弧光变化信息
-    queries.store_character_arc_change(
-        characterId=character_id,
-        item="skill",
-        cause="参加职业培训2",
-        context="在朋友的建议下参加了当地的职业技能培训班2",
-        change="获得新技能2",
-    )
+    # queries.store_character_arc_change(
+    #     characterId=character_id,
+    #     item="emotion",
+    #     cause="收到好消息2",
+    #     context="得知自己通过了考试2",
+    #     change="略微积极2",
+    # )
 
-    queries.store_character_arc_change(
-        characterId=character_id,
-        item="emotion",
-        cause="收到好消息2",
-        context="得知自己通过了考试2",
-        change="略微积极2",
-    )
+    # # 获取角色弧光信息及其变化过程
+    # k = 2  # 选择变化过程的数量
+    # arc_with_changes = queries.get_character_arc_with_changes(character_id, k)
+    # print(arc_with_changes)
 
-    # 获取角色弧光信息及其变化过程
-    k = 2  # 选择变化过程的数量
-    arc_with_changes = queries.get_character_arc_with_changes(character_id, k)
-    print(arc_with_changes)
+    # # 存储测试数据
+    # queries.store_intimacy(from_id=10, to_id=20, intimacy_level=75)
+    # queries.store_intimacy(from_id=10, to_id=30, intimacy_level=50)
+    # queries.store_intimacy(from_id=20, to_id=10, intimacy_level=60)
+    # queries.store_intimacy(from_id=30, to_id=10, intimacy_level=80)
+
+    # # 测试 get_intimacy 函数
+    # print("查询 from_id=1 的所有记录:")
+    # print(queries.get_intimacy(from_id=10))
+
+    # print("\n查询 to_id=1 的所有记录:")
+    # print(queries.get_intimacy(to_id=10))
+
+    # print("\n查询 intimacy_level 在 60 到 80 之间的记录:")
+    # print(queries.get_intimacy(intimacy_level_min=60, intimacy_level_max=80))
+
+    # print("\n查询 from_id=1 且 intimacy_level 在 60 到 80 之间的记录:")
+    # print(
+    #     queries.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80)
+    # )

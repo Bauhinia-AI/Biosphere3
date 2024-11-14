@@ -206,8 +206,10 @@ class UpdateEncounterCountRequest(BaseModel):
 
 
 class IntimacyRequest(BaseModel):
-    from_id: int
-    to_id: int
+    from_id: Optional[int] = None  # 将 from_id 设置为可选
+    to_id: Optional[int] = None  # 将 to_id 设置为可选
+    intimacy_level_min: Optional[int] = None  # 新增字段，用于指定亲密度的最小值
+    intimacy_level_max: Optional[int] = None  # 新增字段，用于指定亲密度的最大值
 
 
 class StoreIntimacyRequest(BaseModel):
@@ -647,6 +649,8 @@ def get_intimacy_api(request: IntimacyRequest):
         delay=2,
         from_id=request.from_id,
         to_id=request.to_id,
+        intimacy_level_min=request.intimacy_level_min,  # 新增参数
+        intimacy_level_max=request.intimacy_level_max,  # 新增参数
     )
     if intimacy:
         return success_response(

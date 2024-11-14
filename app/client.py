@@ -423,11 +423,22 @@ class APIClient:
         )
 
     # Intimacy
-    def get_intimacy(self, from_id, to_id):
+    def get_intimacy(
+        self, from_id=None, to_id=None, intimacy_level_min=None, intimacy_level_max=None
+    ):
+        request_data = {
+            "from_id": from_id,
+            "to_id": to_id,
+            "intimacy_level_min": intimacy_level_min,  # 新增参数
+            "intimacy_level_max": intimacy_level_max,  # 新增参数
+        }
+        # 过滤掉值为 None 的参数
+        request_data = {k: v for k, v in request_data.items() if v is not None}
+
         return self._make_request(
             "POST",
             f"{self.base_url}/intimacy/get",
-            {"from_id": from_id, "to_id": to_id},
+            request_data,
         )
 
     def store_intimacy(self, from_id, to_id, intimacy_level):
@@ -843,8 +854,26 @@ if __name__ == "__main__":
     # print("Storing Intimacy:", client.store_intimacy(**intimacy_data))
     # # Storing Intimacy: {'code': 1, 'message': 'Intimacy level stored successfully.', 'data': 1}
 
-    # print("Retrieving Intimacy:", client.get_intimacy(1, 3))
-    # # Retrieving Intimacy: {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 1, 'to_id': 3, 'intimacy_level': 55, 'created_at': '2024-11-01 02:57:19', 'updated_at': '2024-11-01 03:09:37'}]}
+    # # 测试 get_intimacy 方法
+    # print("查询 from_id=10 和 to_id=20 的亲密度:")
+    # print(client.get_intimacy(from_id=10, to_id=20))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+
+    # print("\n查询 from_id=10 的所有记录:")
+    # print(client.get_intimacy(from_id=10))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+
+    # print("\n查询 to_id=20 的所有记录:")
+    # print(client.get_intimacy(to_id=20))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+
+    # print("\n查询 intimacy_level 在 50 到 80 之间的记录:")
+    # print(client.get_intimacy(intimacy_level_min=50, intimacy_level_max=80))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 20, 'to_id': 10, 'intimacy_level': 60, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 30, 'to_id': 10, 'intimacy_level': 80, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+
+    # print("\n查询 from_id=10 且 intimacy_level 在 60 到 80 之间的记录:")
+    # print(client.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
 
     # update_intimacy_data = {"from_id": 1, "to_id": 3, "new_intimacy_level": 77}
     # print("Updating Intimacy:", client.update_intimacy(**update_intimacy_data))
@@ -893,72 +922,72 @@ if __name__ == "__main__":
     # print("Retrieving Updated Knowledge:", client.get_knowledge(characterId=101, day=1))
     # # Retrieving Updated Knowledge: {'code': 1, 'message': 'Knowledge retrieved successfully.', 'data': [{'characterId': 101, 'day': 1, 'environment_information': 'Cloudy day in the forest.', 'personal_information': 'Practiced archery with new techniques.', 'created_at': '2024-11-07 17:19:11'}]}
 
-    # 测试存储角色弧光
-    character_id = 2
-    category_data = [
-        {"item": "skill", "origin_value": "beginner"},
-        {"item": "emotion", "origin_value": "neutral"},
-    ]
-    print(
-        "Storing Character Arc:",
-        client.store_character_arc(character_id, category_data),
-    )
-    # Storing Character Arc: {'code': 1, 'message': 'Character arc stored successfully.', 'data': '672d2c5357974f093a92fd06'}
+    # # 测试存储角色弧光
+    # character_id = 2
+    # category_data = [
+    #     {"item": "skill", "origin_value": "beginner"},
+    #     {"item": "emotion", "origin_value": "neutral"},
+    # ]
+    # print(
+    #     "Storing Character Arc:",
+    #     client.store_character_arc(character_id, category_data),
+    # )
+    # # Storing Character Arc: {'code': 1, 'message': 'Character arc stored successfully.', 'data': '672d2c5357974f093a92fd06'}
 
-    # 测试存储角色弧光变化
-    print(
-        "Storing Character Arc Change 1:",
-        client.store_character_arc_change(
-            characterId=character_id,
-            item="skill",
-            cause="参加职业培训",
-            context="在朋友的建议下参加了当地的职业技能培训班",
-            change="获得新技能",
-        ),
-    )
-    # Storing Character Arc Change 1: {'code': 1, 'message': 'Character arc change stored successfully.', 'data': '672d2c5757974f093a92fd07'}
+    # # 测试存储角色弧光变化
+    # print(
+    #     "Storing Character Arc Change 1:",
+    #     client.store_character_arc_change(
+    #         characterId=character_id,
+    #         item="skill",
+    #         cause="参加职业培训",
+    #         context="在朋友的建议下参加了当地的职业技能培训班",
+    #         change="获得新技能",
+    #     ),
+    # )
+    # # Storing Character Arc Change 1: {'code': 1, 'message': 'Character arc change stored successfully.', 'data': '672d2c5757974f093a92fd07'}
 
-    print(
-        "Storing Character Arc Change 2:",
-        client.store_character_arc_change(
-            characterId=character_id,
-            item="skill",
-            cause="完成高级课程",
-            context="通过在线学习平台完成了高级课程",
-            change="技能提升",
-        ),
-    )
+    # print(
+    #     "Storing Character Arc Change 2:",
+    #     client.store_character_arc_change(
+    #         characterId=character_id,
+    #         item="skill",
+    #         cause="完成高级课程",
+    #         context="通过在线学习平台完成了高级课程",
+    #         change="技能提升",
+    #     ),
+    # )
 
-    print(
-        "Storing Character Arc Change 3:",
-        client.store_character_arc_change(
-            characterId=character_id,
-            item="emotion",
-            cause="收到好消息",
-            context="得知自己通过了考试",
-            change="略微积极",
-        ),
-    )
+    # print(
+    #     "Storing Character Arc Change 3:",
+    #     client.store_character_arc_change(
+    #         characterId=character_id,
+    #         item="emotion",
+    #         cause="收到好消息",
+    #         context="得知自己通过了考试",
+    #         change="略微积极",
+    #     ),
+    # )
 
-    # 测试获取角色弧光
-    print("Retrieving Character Arc:", client.get_character_arc(character_id))
-    # Retrieving Character Arc: {'code': 1, 'message': 'Character arc retrieved successfully.', 'data': [{'characterId': 2, 'category': [{'item': 'skill', 'origin_value': 'beginner'}, {'item': 'emotion', 'origin_value': 'neutral'}], 'created_at': '2024-11-08 05:08:35'}]}
+    # # 测试获取角色弧光
+    # print("Retrieving Character Arc:", client.get_character_arc(character_id))
+    # # Retrieving Character Arc: {'code': 1, 'message': 'Character arc retrieved successfully.', 'data': [{'characterId': 2, 'category': [{'item': 'skill', 'origin_value': 'beginner'}, {'item': 'emotion', 'origin_value': 'neutral'}], 'created_at': '2024-11-08 05:08:35'}]}
 
-    # 测试获取角色弧光及其变化过程
-    k = 2  # 选择变化过程的数量
-    print(
-        "Retrieving Character Arc with Changes:",
-        client.get_character_arc_with_changes(character_id, k),
-    )
-    # Retrieving Character Arc with Changes: {'code': 1, 'message': 'Character arc with changes retrieved successfully.', 'data': {'characterId': 2, 'category': [{'item': 'skill', 'origin_value': 'beginner', 'change_process': [{'cause': '参加职业培训', 'context': '在朋友的建议下参加了当地的职业技能培训班', 'change': '获得新技能', 'created_at': '2024-11-08 05:08:39'}, {'cause': '完成高级课程', 'context': '通过在线学习平台完成了高级课程', 'change': '技能提升', 'created_at': '2024-11-08 05:08:41'}]}, {'item': 'emotion', 'origin_value': 'neutral', 'change_process': [{'cause': '收到好消息', 'context': '得知自己通过了考试', 'change': '略微积极', 'created_at': '2024-11-08 05:08:43'}]}]}}
+    # # 测试获取角色弧光及其变化过程
+    # k = 2  # 选择变化过程的数量
+    # print(
+    #     "Retrieving Character Arc with Changes:",
+    #     client.get_character_arc_with_changes(character_id, k),
+    # )
+    # # Retrieving Character Arc with Changes: {'code': 1, 'message': 'Character arc with changes retrieved successfully.', 'data': {'characterId': 2, 'category': [{'item': 'skill', 'origin_value': 'beginner', 'change_process': [{'cause': '参加职业培训', 'context': '在朋友的建议下参加了当地的职业技能培训班', 'change': '获得新技能', 'created_at': '2024-11-08 05:08:39'}, {'cause': '完成高级课程', 'context': '通过在线学习平台完成了高级课程', 'change': '技能提升', 'created_at': '2024-11-08 05:08:41'}]}, {'item': 'emotion', 'origin_value': 'neutral', 'change_process': [{'cause': '收到好消息', 'context': '得知自己通过了考试', 'change': '略微积极', 'created_at': '2024-11-08 05:08:43'}]}]}}
 
-    # 测试更新角色弧光
-    updated_category_data = [
-        {"item": "skill", "origin_value": "intermediate"},
-        {"item": "emotion", "origin_value": "happy"},
-    ]
-    print(
-        "Updating Character Arc:",
-        client.update_character_arc(character_id, updated_category_data),
-    )
-    # Updating Character Arc: {'code': 1, 'message': 'Character arc updated successfully.', 'data': 1}
+    # # 测试更新角色弧光
+    # updated_category_data = [
+    #     {"item": "skill", "origin_value": "intermediate"},
+    #     {"item": "emotion", "origin_value": "happy"},
+    # ]
+    # print(
+    #     "Updating Character Arc:",
+    #     client.update_character_arc(character_id, updated_category_data),
+    # )
+    # # Updating Character Arc: {'code': 1, 'message': 'Character arc updated successfully.', 'data': 1}

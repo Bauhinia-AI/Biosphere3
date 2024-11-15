@@ -7,7 +7,7 @@ from langgraph.graph import StateGraph, START, END
 import os
 import asyncio
 from pprint import pprint
-from agent_srv.utils import generate_initial_state, check_termination, update_nested_dict
+from agent_srv.utils import generate_initial_state, check_termination, update_dict
 from datetime import datetime
 
 
@@ -61,7 +61,7 @@ class LangGraphInstance:
                     f"🏃 User {self.user_id}: Received action result: {msg['data']}"
                 )
             elif message_name == "prompt_modification":
-                update_nested_dict(self.state["prompts"], msg["data"])
+                update_dict(self.state["prompts"], msg["data"])
                 logger.info(
                     f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
                 )

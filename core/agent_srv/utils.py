@@ -60,30 +60,20 @@ def generate_initial_state(userid, websocket):
             ],
         },
         "prompts": {
-            "obj_planner_prompt": {
-                "daily_goal": "",
-                "refer_to_previous": False,
-                "life_style": "Casual",
-                "addtional_requirements": "",
-            },
-            "meta_action_sequence_prompt": {
-                "task_priority": {},
-                "max_actions": 10,
-                "additional_requirements": "",
-            },
-            "meta_seq_adjuster_prompt": {
-                "replan_time_limit": 3,
-                "additional_requirements": "",
-            },
-            "reflection_prompt": {
-                "focus_topic": [],
-                "depth_of_reflection": "Moderate",
-                "additional_requirements": "",
-            },
-            "describe_action_result_prompt": {
-                "level_of_detail": "Moderate",
-                "tone_and_style": "",
-            },
+            "daily_goal": "",
+            "refer_to_previous": False,
+            "life_style": "Casual",
+            "daily_objective_ar": "",
+            "task_priority": [],
+            "max_actions": 10,
+            "meta_seq_ar": "",
+            "replan_time_limit": 3,
+            "meta_seq_adjuster_ar": "",
+            "focus_topic": [],
+            "depth_of_reflection": "Moderate",
+            "reflection_ar": "",
+            "level_of_detail": "Moderate",
+            "tone_and_style": "",
         },
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
@@ -94,13 +84,10 @@ def generate_initial_state(userid, websocket):
     return initial_state
 
 
-def update_nested_dict(existing_dict, new_dict):
+def update_dict(existing_dict, new_dict):
     for key, value in new_dict.items():
         if key in existing_dict:
-            if isinstance(value, dict) and isinstance(existing_dict[key], dict):
-                update_nested_dict(existing_dict[key], value)
-            else:
-                existing_dict[key] = value
+            existing_dict[key] = value
 
 
 tool_functions_easy = """

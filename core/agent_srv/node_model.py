@@ -45,11 +45,29 @@ class Meta(TypedDict):
     day: str
     available_locations: List[str]
 
+
+class Prompts(TypedDict):
+    daily_goal: str
+    refer_to_previous: str
+    life_style: str
+    daily_objective_ar: str
+    task_priority: List[str]
+    max_actions: int
+    meta_seq_ar: str
+    replan_time_limit: int
+    meta_seq_adjuster_ar: str
+    focus_topic: List[str]
+    depth_of_reflection: str
+    reflection_ar: str
+    level_of_detail: str
+    tone_and_style: str
+
 class RunningState(TypedDict):
     userid: int
     character_stats: Annotated[CharacterStats, generic_reducer]
     decision: Annotated[Decision, generic_reducer]
     meta: Annotated[Meta, generic_reducer]
+    prompts: Annotated[Prompts, generic_reducer]
     message_queue: asyncio.Queue
     event_queue: asyncio.Queue
     false_action_queue: asyncio.Queue

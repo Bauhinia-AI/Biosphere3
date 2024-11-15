@@ -8,6 +8,7 @@ import os
 import asyncio
 from pprint import pprint
 from agent_srv.utils import generate_initial_state, check_termination
+from datetime import datetime
 
 
 class LangGraphInstance:

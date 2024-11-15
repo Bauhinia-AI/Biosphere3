@@ -14,7 +14,11 @@ from pprint import pprint
 import asyncio
 from core.db.database_api_utils import make_api_request_async
 
-os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+from dotenv import load_dotenv
+
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)

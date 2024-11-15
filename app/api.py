@@ -411,7 +411,7 @@ class characterRAGRequest(BaseModel):
 
 
 class GetcharacterRequest(BaseModel):
-    characterId: int
+    characterId: Optional[int] = None
 
 
 class CharacterRAGInListRequest(BaseModel):
@@ -1451,11 +1451,11 @@ def get_character_api(request: GetcharacterRequest):
         domain_queries.get_character,
         retries=3,
         delay=2,
-        characterId=request.characterId,
+        characterId=request.characterId,  # characterId 可以为 None
     )
     if characters:
         return success_response(
-            data=characters, message="Character retrieved successfully."
+            data=characters, message="Characters retrieved successfully."
         )
     else:
         raise HTTPException(status_code=404, detail="No characters found.")

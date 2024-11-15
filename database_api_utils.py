@@ -19,8 +19,8 @@ logging.basicConfig(
     ],
 )
 
-# BASE_URL = "http://47.95.21.135:8085"
-BASE_URL = "http://localhost:8085"
+BASE_URL = "http://47.95.21.135:8085"
+# BASE_URL = "http://localhost:8085"
 
 
 async def make_api_request_async(
@@ -148,6 +148,74 @@ def make_api_request_sync(
                 raise Exception(
                     f"API request to {url} failed after {retries} attempts, status code: {e.response.status_code}. Response content: {e.response.text}"
                 )
+
+
+# Function to get all characters from the external API
+async def get_all_characters():
+    url = "http://47.95.21.135:8082/characters/getAll"
+    try:
+        # Using httpx.AsyncClient for asynchronous request
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.get(url)  # Make the GET request asynchronously
+            response.raise_for_status()  # Check if the request was successful
+
+            # Assuming the response contains a JSON body with a key "data" holding the character list
+            response_data = response.json()
+            return response_data.get("data", [])
+
+    except httpx.RequestError as e:
+        logging.error(f"Error fetching characters from {url}: {e}")
+        return []
+
+    except httpx.HTTPStatusError as e:
+        logging.error(f"HTTP error fetching characters: {e}")
+        return []
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return []
+
+
+# Function to store or update character data asynchronously
+async def store_or_update_character(character_data):
+    # Step 1: Transform 'isMale' to 'gender'
+    gender = "Male" if character_data["isMale"] == 1 else "Female"
+
+    # Prepare the data to store or update
+    character_data_to_store = {
+        "characterId": character_data["id"],
+        "characterName": character_data["characterName"],
+        "gender": gender,  # Transform 'isMale' to 'gender'
+    }
+
+    store_response = await make_api_request_async(
+        "POST", "/characters/store", data=character_data_to_store
+    )
+    print(store_response)
+
+    if store_response["code"] == 2:
+        # Character already exists, update it
+        update_data = {
+            "characterId": character_data["id"],
+            "update_fields": {
+                "characterName": character_data["characterName"],
+                "gender": gender,  # Only update 'characterName' and 'gender'
+            },
+        }
+        update_response = await make_api_request_async(
+            "POST", "/characters/update", data=update_data
+        )
+        print(update_response)
+
+
+# Function to process all characters asynchronously
+async def process_characters():
+    # Get all characters from the external API
+    characters = await get_all_characters()
+
+    # Store or update characters asynchronously
+    tasks = [store_or_update_character(character) for character in characters]
+    await asyncio.gather(*tasks)
 
 
 async def main():
@@ -877,4 +945,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # asyncio.run(main())
+    asyncio.run(process_characters())

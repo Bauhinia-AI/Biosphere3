@@ -371,10 +371,12 @@ class APIClient:
             },
         )
 
-    def get_character(self, characterId):
-        return self._make_request(
-            "POST", f"{self.base_url}/characters/get", {"characterId": characterId}
-        )
+    def get_character(self, characterId=None):
+        data = {}
+        if characterId is not None:
+            data["characterId"] = characterId
+
+        return self._make_request("POST", f"{self.base_url}/characters/get", data)
 
     def get_character_rag(self, characterId, topic, k):
         return self._make_request(
@@ -590,6 +592,8 @@ if __name__ == "__main__":
     # print("Storing character:", client.store_character(**character_data))
     # # 若characterId已存在
     # # Storing character: {'code': 2, 'message': 'Character with characterId 102 already exists.', 'data': None}
+
+    print("Retrieving character:", client.get_character())
 
     # print("Retrieving character:", client.get_character(102))
     # # Retrieving character: {'code': 1, 'message': 'characters retrieved successfully.', 'data': [{'characterId': 102, 'characterName': 'Diana', 'gender': 'Female', 'slogan': 'Swift and silent.', 'description': 'An agile ranger with unparalleled archery skills.', 'role': 'Ranger', 'task': 'Scout and protect the realm', 'created_at': '2024-10-30 20:23:39', 'full_profile': 'Diana; Female; Swift and silent.; An agile ranger with unparalleled archery skills.; Ranger; Scout and protect the realm'}]}
@@ -826,61 +830,61 @@ if __name__ == "__main__":
     # )
     # # Retrieving Conversations Containing character ID 1: {'code': 1, 'message': 'Conversations retrieved successfully.', 'data': [{'characterIds': [1, 5], 'dialogue': 'Alice: Hi Eva! You always seem so healthy and energetic. What’s your secret? ...', 'created_at': '2024-10-30 20:24:23'}]}
 
-    # 存储一些测试数据
-    print("存储测试数据:")
-    print(client.store_cv(jobid=3, characterId=201, CV_content="CV内容5", week=1))
-    print(client.store_cv(jobid=3, characterId=202, CV_content="CV内容6", week=2))
-    print(client.store_cv(jobid=4, characterId=201, CV_content="CV内容7", week=1))
-    print(client.store_cv(jobid=4, characterId=203, CV_content="CV内容8", week=3))
+    # # 存储一些测试数据
+    # print("存储测试数据:")
+    # print(client.store_cv(jobid=3, characterId=201, CV_content="CV内容5", week=1))
+    # print(client.store_cv(jobid=3, characterId=202, CV_content="CV内容6", week=2))
+    # print(client.store_cv(jobid=4, characterId=201, CV_content="CV内容7", week=1))
+    # print(client.store_cv(jobid=4, characterId=203, CV_content="CV内容8", week=3))
 
-    # 更新选举状态
-    print("\n更新选举状态:")
-    print(
-        client.update_election_result(
-            characterId=201, election_result="succeeded", jobid=3, week=1
-        )
-    )
-    print(
-        client.update_election_result(
-            characterId=202, election_result="failed", jobid=3
-        )
-    )
-    print(
-        client.update_election_result(
-            characterId=203, election_result="succeeded", jobid=4
-        )
-    )
+    # # 更新选举状态
+    # print("\n更新选举状态:")
+    # print(
+    #     client.update_election_result(
+    #         characterId=201, election_result="succeeded", jobid=3, week=1
+    #     )
+    # )
+    # print(
+    #     client.update_election_result(
+    #         characterId=202, election_result="failed", jobid=3
+    #     )
+    # )
+    # print(
+    #     client.update_election_result(
+    #         characterId=203, election_result="succeeded", jobid=4
+    #     )
+    # )
 
-    # 测试 get_cv 方法
-    print("\n测试 get_cv 方法:")
+    # # 测试 get_cv 方法
+    # print("\n测试 get_cv 方法:")
 
-    # 查询所有最新周的数据
-    print("\n查询所有的数据:")
-    print(client.get_cv())
+    # # 查询所有最新周的数据
+    # print("\n查询所有的数据:")
+    # print(client.get_cv())
 
-    # 查询特定 jobid 的所有最新周的数据
-    print("\n查询 jobid=3 的所有的数据:")
-    print(client.get_cv(jobid=3))
+    # # 查询特定 jobid 的所有最新周的数据
+    # print("\n查询 jobid=3 的所有的数据:")
+    # print(client.get_cv(jobid=3))
 
-    # 查询特定 characterId 的所有最新周的数据
-    print("\n查询 characterId=201 的所有的数据:")
-    print(client.get_cv(characterId=201))
+    # # 查询特定 characterId 的所有最新周的数据
+    # print("\n查询 characterId=201 的所有的数据:")
+    # print(client.get_cv(characterId=201))
 
-    # 查询特定 week 的数据
-    print("\n查询 week=1 的数据:")
-    print(client.get_cv(week=1))
+    # # 查询特定 week 的数据
+    # print("\n查询 week=1 的数据:")
+    # print(client.get_cv(week=1))
 
-    # 查询特定选举状态的数据
-    print("\n查询选举状态为 'succeeded' 的数据:")
-    print(client.get_cv(election_result="succeeded"))
+    # # 查询特定选举状态的数据
+    # print("\n查询选举状态为 'succeeded' 的数据:")
+    # print(client.get_cv(election_result="succeeded"))
 
-    # 查询特定 jobid 和选举状态的数据
-    print("\n查询 jobid=3 且选举状态为 'failed' 的数据:")
-    print(client.get_cv(jobid=3, election_result="failed"))
+    # # 查询特定 jobid 和选举状态的数据
+    # print("\n查询 jobid=3 且选举状态为 'failed' 的数据:")
+    # print(client.get_cv(jobid=3, election_result="failed"))
 
-    # 查询特定 characterId 和 week 的数据
-    print("\n查询 characterId=201 且 week=1 的数据:")
-    print(client.get_cv(characterId=201, week=1))
+    # # 查询特定 characterId 和 week 的数据
+    # print("\n查询 characterId=201 且 week=1 的数据:")
+    # print(client.get_cv(characterId=201, week=1))
 
     # # Testing storing and retrieving encounter count
     # encounter_data = {"from_id": 1, "to_id": 2, "count": 1}
@@ -904,31 +908,31 @@ if __name__ == "__main__":
     # )
     # # Retrieving Encounters by From ID: {'code': 1, 'message': 'Encounters retrieved successfully.', 'data': [{'from_id': 1, 'to_id': 5, 'count': 1, 'created_at': '2024-11-06 16:56:16', 'updated_at': '2024-11-06 16:56:16'}, {'from_id': 1, 'to_id': 2, 'count': 5, 'created_at': '2024-11-06 16:54:13', 'updated_at': '2024-11-06 16:56:27'}]}
 
-    # 测试存储和检索好感度
-    intimacy_data = {"from_id": 1, "to_id": 3, "intimacy_level": 55}
-    print("Storing Intimacy:", client.store_intimacy(**intimacy_data))
-    # Storing Intimacy: {'code': 1, 'message': 'Intimacy level stored successfully.', 'data': 1}
+    # # 测试存储和检索好感度
+    # intimacy_data = {"from_id": 1, "to_id": 3, "intimacy_level": 55}
+    # print("Storing Intimacy:", client.store_intimacy(**intimacy_data))
+    # # Storing Intimacy: {'code': 1, 'message': 'Intimacy level stored successfully.', 'data': 1}
 
-    # 测试 get_intimacy 方法
-    print("查询 from_id=10 和 to_id=20 的亲密度:")
-    print(client.get_intimacy(from_id=10, to_id=20))
-    # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+    # # 测试 get_intimacy 方法
+    # print("查询 from_id=10 和 to_id=20 的亲密度:")
+    # print(client.get_intimacy(from_id=10, to_id=20))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
 
-    print("\n查询 from_id=10 的所有记录:")
-    print(client.get_intimacy(from_id=10))
-    # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+    # print("\n查询 from_id=10 的所有记录:")
+    # print(client.get_intimacy(from_id=10))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
 
-    print("\n查询 to_id=20 的所有记录:")
-    print(client.get_intimacy(to_id=20))
-    # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+    # print("\n查询 to_id=20 的所有记录:")
+    # print(client.get_intimacy(to_id=20))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
 
-    print("\n查询 intimacy_level 在 50 到 80 之间的记录:")
-    print(client.get_intimacy(intimacy_level_min=50, intimacy_level_max=80))
-    # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 20, 'to_id': 10, 'intimacy_level': 60, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 30, 'to_id': 10, 'intimacy_level': 80, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+    # print("\n查询 intimacy_level 在 50 到 80 之间的记录:")
+    # print(client.get_intimacy(intimacy_level_min=50, intimacy_level_max=80))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 20, 'to_id': 10, 'intimacy_level': 60, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 30, 'to_id': 10, 'intimacy_level': 80, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
 
-    print("\n查询 from_id=10 且 intimacy_level 在 60 到 80 之间的记录:")
-    print(client.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80))
-    # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+    # print("\n查询 from_id=10 且 intimacy_level 在 60 到 80 之间的记录:")
+    # print(client.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
 
     # update_intimacy_data = {"from_id": 1, "to_id": 3, "new_intimacy_level": 77}
     # print("Updating Intimacy:", client.update_intimacy(**update_intimacy_data))

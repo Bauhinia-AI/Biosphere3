@@ -181,8 +181,8 @@ class DatabaseSetupApp:
 if __name__ == "__main__":
     app = DatabaseSetupApp()
 
-    # # Setup collections
-    # app.setup_database(config.cv_collection_name)
+    # Setup collections
+    app.setup_database(config.cv_collection_name)
     # app.setup_database(
     #     config.agent_profile_collection_name, unique_index_fields=["characterId"]
     # )

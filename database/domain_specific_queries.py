@@ -583,8 +583,11 @@ class DomainSpecificQueries:
         )
         return inserted_id
 
-    def get_character(self, characterId):
-        query = {"characterId": characterId}
+    def get_character(self, characterId=None):
+        query = {}
+        if characterId is not None:
+            query["characterId"] = characterId
+
         documents = self.db_utils.find_documents(
             collection_name=config.agent_profile_collection_name,
             query=query,
@@ -949,33 +952,38 @@ if __name__ == "__main__":
     #     characterId=103, election_result="succeeded", jobid=2
     # )
 
-    # 测试 get_cv 方法
-    print("\n测试 get_cv 方法:")
+    # # 测试 get_cv 方法
+    # print("\n测试 get_cv 方法:")
 
-    # 查询所有最新周的数据
-    print("\n查询所有的数据:")
-    print(queries.get_cv())
+    # # 查询所有最新周的数据
+    # print("\n查询所有的数据:")
+    # print(queries.get_cv())
 
-    # 查询特定 jobid 的所有最新周的数据
-    print("\n查询 jobid=1 的所有的数据:")
-    print(queries.get_cv(jobid=1))
+    # # 查询特定 jobid 的所有最新周的数据
+    # print("\n查询 jobid=1 的所有的数据:")
+    # print(queries.get_cv(jobid=1))
 
-    # 查询特定 characterId 的所有最新周的数据
-    print("\n查询 characterId=101 的所有的数据:")
-    print(queries.get_cv(characterId=101))
+    # # 查询特定 characterId 的所有最新周的数据
+    # print("\n查询 characterId=101 的所有的数据:")
+    # print(queries.get_cv(characterId=101))
 
-    # 查询特定 week 的数据
-    print("\n查询 week=1 的数据:")
-    print(queries.get_cv(week=1))
+    # # 查询特定 week 的数据
+    # print("\n查询 week=1 的数据:")
+    # print(queries.get_cv(week=1))
 
-    # 查询特定选举状态的数据
-    print("\n查询选举状态为 'succeeded' 的数据:")
-    print(queries.get_cv(election_result="succeeded"))
+    # # 查询特定选举状态的数据
+    # print("\n查询选举状态为 'succeeded' 的数据:")
+    # print(queries.get_cv(election_result="succeeded"))
 
-    # 查询特定 jobid 和选举状态的数据
-    print("\n查询 jobid=1 且选举状态为 'failed' 的数据:")
-    print(queries.get_cv(jobid=1, election_result="failed"))
+    # # 查询特定 jobid 和选举状态的数据
+    # print("\n查询 jobid=1 且选举状态为 'failed' 的数据:")
+    # print(queries.get_cv(jobid=1, election_result="failed"))
 
-    # 查询特定 characterId 和 week 的数据
-    print("\n查询 characterId=101 且 week=1 的数据:")
-    print(queries.get_cv(characterId=101, week=1))
+    # # 查询特定 characterId 和 week 的数据
+    # print("\n查询 characterId=101 且 week=1 的数据:")
+    # print(queries.get_cv(characterId=101, week=1))
+
+    # 测试获取所有角色
+    print("获取所有角色:")
+    all_characters = queries.get_character()
+    print(all_characters)

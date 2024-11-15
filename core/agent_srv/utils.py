@@ -59,6 +59,32 @@ def generate_initial_state(userid, websocket):
                 "orchard",
             ],
         },
+        "prompts": {
+            "obj_planner_prompt": {
+                "daily_goal": "",
+                "refer_to_previous": False,
+                "life_style": "Casual",
+                "addtional_requirements": "",
+            },
+            "meta_action_sequence_prompt": {
+                "task_priority": {},
+                "max_actions": 10,
+                "additional_requirements": "",
+            },
+            "meta_seq_adjuster_prompt": {
+                "replan_time_limit": 3,
+                "additional_requirements": "",
+            },
+            "reflection_prompt": {
+                "focus_topic": [],
+                "depth_of_reflection": "Moderate",
+                "additional_requirements": "",
+            },
+            "describe_action_result_prompt": {
+                "level_of_detail": "Moderate",
+                "tone_and_style": "",
+            },
+        },
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
         "false_action_queue": asyncio.Queue(),
@@ -66,6 +92,15 @@ def generate_initial_state(userid, websocket):
         "current_pointer": "Sensing_Route",
     }
     return initial_state
+
+
+def update_nested_dict(existing_dict, new_dict):
+    for key, value in new_dict.items():
+        if key in existing_dict:
+            if isinstance(value, dict) and isinstance(existing_dict[key], dict):
+                update_nested_dict(existing_dict[key], value)
+            else:
+                existing_dict[key] = value
 
 
 tool_functions_easy = """
@@ -88,8 +123,8 @@ Constraints: Must be in school and have enough money.\n
     11. sleep [hours:int]: Sleep to recover energy and health only when your energy is low.
 Constraints: Must be at home.\n
 """
-   # 6. buy [itemType:string] [amount:int]: Purchase items, costing money.
-#Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n
+# 6. buy [itemType:string] [amount:int]: Purchase items, costing money.
+# Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n
 
 #     10. sleep [hours:int]: Sleep to recover energy and health.
 # Constraints: Must be at home.\n

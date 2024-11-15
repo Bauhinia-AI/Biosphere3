@@ -7,7 +7,7 @@ from langgraph.graph import StateGraph, START, END
 import os
 import asyncio
 from pprint import pprint
-from agent_srv.utils import generate_initial_state, check_termination
+from agent_srv.utils import generate_initial_state, check_termination, update_nested_dict
 from datetime import datetime
 
 
@@ -60,9 +60,11 @@ class LangGraphInstance:
                 logger.info(
                     f"🏃 User {self.user_id}: Received action result: {msg['data']}"
                 )
-            elif message_name == "gameevent":
-                pass
-
+            elif message_name == "prompt_modification":
+                update_nested_dict(self.state["prompts"], msg["data"])
+                logger.info(
+                    f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
+                )
             elif message_name == "onestep":
                 self.state["event_queue"].put_nowait("PLAN")
 

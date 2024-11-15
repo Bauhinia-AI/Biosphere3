@@ -49,6 +49,7 @@ async def generate_daily_objective(state: RunningState):
     retry_count = 0
     while retry_count < 3:
         try:
+            obj_planner_prompt_data = state["prompts"]["obj_planner_prompt"]
             planner_response: RunningState = await obj_planner.ainvoke(
                 {
                     "character_stats": state["character_stats"],
@@ -58,6 +59,12 @@ async def generate_daily_objective(state: RunningState):
                     "past_objectives": state.get("decision", []).get(
                         "daily_objective", []
                     )[-3:],
+                    "daily_goal": obj_planner_prompt_data["daily_goal"],
+                    "refer_to_previous": obj_planner_prompt_data["refer_to_previous"],
+                    "life_style": obj_planner_prompt_data["life_style"],
+                    "additional_requirements": obj_planner_prompt_data[
+                        "additional_requirements"
+                    ],
                 }
             )
             break
@@ -89,6 +96,7 @@ async def generate_detailed_plan(state: RunningState):
 
 async def generate_meta_action_sequence(state: RunningState):
     pprint(state)
+    meta_action_sequence_prompt_data = state["prompts"]["meta_action_sequence_prompt"]
     payload = {
         "daily_objective": (
             state["decision"]["daily_objective"][-1]
@@ -97,6 +105,11 @@ async def generate_meta_action_sequence(state: RunningState):
         ),
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
+        "task_priority": meta_action_sequence_prompt_data["task_priority"],
+        "max_actions": meta_action_sequence_prompt_data["max_actions"],
+        "additional_requirements": meta_action_sequence_prompt_data[
+            "additional_requirements"
+        ],
     }
     pprint(payload)
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
@@ -116,11 +129,16 @@ async def generate_meta_action_sequence(state: RunningState):
 
 
 async def adjust_meta_action_sequence(state: RunningState):
+    meta_seq_adjuster_prompt_data = state["prompts"]["meta_seq_adjuster_prompt"]
     meta_action_sequence = await meta_seq_adjuster.ainvoke(
         {
             "meta_seq": state["decision"]["meta_seq"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
+            "replan_time_limit": meta_seq_adjuster_prompt_data["replan_time_limit"],
+            "additional_requirements": meta_seq_adjuster_prompt_data[
+                "additional_requirements"
+            ],
         }
     )
 
@@ -206,6 +224,7 @@ async def replan_action(state: RunningState):
 
     # try:
     # Generate new meta sequence with error context
+    meta_seq_adjuster_prompt_data = state["prompts"]["meta_seq_adjuster_prompt"]
     meta_action_sequence = await meta_seq_adjuster.ainvoke(
         {
             "meta_seq": state["decision"]["meta_seq"][-1],
@@ -213,6 +232,10 @@ async def replan_action(state: RunningState):
             "locations": state["meta"]["available_locations"],
             "failed_action": failed_action,
             "error_message": error_message,
+            "replan_time_limit": meta_seq_adjuster_prompt_data["replan_time_limit"],
+            "additional_requirements": meta_seq_adjuster_prompt_data[
+                "additional_requirements"
+            ],
         }
     )
 

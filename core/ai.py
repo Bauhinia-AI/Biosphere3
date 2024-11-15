@@ -1,23 +1,33 @@
+import sys
+
+sys.path.append(".")
+import yaml
 import asyncio
 import websockets
 import ssl
 import json
-import sys
-import time
+import os
 from loguru import logger
-from websocket_server.task_manager import OrphanedTaskManager
 from websocket_server.character_manager import CharacterManager
 from websocket_server.web_monitor.routes import WebMonitor
 from graph_instance import LangGraphInstance
 
 
+class ConfigLoader:
+    def __init__(self, environment):
+        config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+        with open(config_path, "r") as file:
+            self.config = yaml.safe_load(file)[environment]
+
+    def get(self, key):
+        return self.config.get(key)
+
+
 class AI_WS_Server:
-    def __init__(self):
+    def __init__(self, config):
         self.character_manager = CharacterManager(timeout=60)
-        self.orphaned_task_manager = OrphanedTaskManager()
-        self.web_monitor = WebMonitor(
-            self.character_manager, self.orphaned_task_manager
-        )
+        self.web_monitor = WebMonitor(self.character_manager)
+        self.config = config
 
     async def handler(self, websocket, path):
         character_id = None
@@ -38,32 +48,35 @@ class AI_WS_Server:
             character = self.character_manager.get_character(character_id)
             agent_instance = character.instance
 
+            character.log_message("received", response)
+
             # 处理消息循环
             while True:
                 try:
                     message = await websocket.recv()
                     data = json.loads(message)
 
+                    character.log_message("sent", message)
+
                     # 处理心跳消息
                     if data.get("messageName") == "heartbeat":
                         character.update_heartbeat()
-                        await websocket.send(
-                            self.create_message(
-                                character_id, "heartbeat", 0, **{"status": "ok"}
-                            )
+                        heartbeat_response = self.create_message(
+                            character_id, "heartbeat", 0, **{"status": "ok"}
                         )
+                        await websocket.send(heartbeat_response)
+                        character.log_message("received", heartbeat_response)
                         continue
 
                     # 处理其他消息：放到对应agent的消息队列
-                    message_queue = agent_instance.state["message_queue"]                 
-                    message_queue.put_nowait(data)
+                    message_queue = agent_instance.state["message_queue"]
+                    async with agent_instance.state_lock:
+                        await message_queue.put(data)
                     logger.info(
                         f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
                     )
                 except websockets.ConnectionClosed as e:
-                    logger.warning(
-                        f"🔗 Connection closed from {websocket.remote_address}"
-                    )
+                    logger.warning(f"🔗 Connection closed from {character_id}")
                     break
                 except Exception as e:
                     logger.error(f"❌ Error in message loop: {str(e)}")
@@ -99,7 +112,7 @@ class AI_WS_Server:
                     character_id,
                     message_name,
                     message_code,
-                    **{"result": False, "msg": "character ID is already in use"},
+                    **{"result": False, "msg": "character ID is active"},
                 ),
             )
 
@@ -108,14 +121,9 @@ class AI_WS_Server:
 
         agent_instance = LangGraphInstance(character_id, websocket)
 
-        async def timeout_callback():
-            if self.character_manager.has_character(character_id):
-                await self.orphaned_task_manager.add_orphaned_tasks(
-                    agent_instance.user_id, agent_instance.tasks
-                )
-
-        self.character_manager.add_character(
-            character_id, agent_instance, timeout_callback
+        self.character_manager.add_character(character_id, agent_instance)
+        self.character_manager.get_character(character_id).log_message(
+            "sent", init_message
         )
 
         return (
@@ -141,32 +149,39 @@ class AI_WS_Server:
 
     async def run(self):
         # 启动心跳监控
-        await self.character_manager.start_monitoring()
+        if self.config.get("monitor_trigger"):
+            await self.character_manager.start_monitoring()
 
         # 启动 HTTP 监控服务器
-        await self.web_monitor.setup(host="localhost", port=8000)
-        logger.info(f"🌐 HTTP Monitor started at http://localhost:8000")
-
-        if sys.platform.startswith("linux"):  # 生产环境
-            host = "0.0.0.0"
-            port = 8080
+        if self.config.get("dashboard_trigger"):
+            http_host = self.config.get("http_monitor_host")
+            http_port = self.config.get("http_monitor_port")
+            await self.web_monitor.setup(host=http_host, port=http_port)
+            logger.info(f"🌐 HTTP Monitor started at http://{http_host}:{http_port}")
+        ws_host = self.config.get("websocket_host")
+        ws_port = self.config.get("websocket_port")
+        # 根据开关确定是否用SSL/TLS
+        if self.config.get("ssl_trigger"):
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             ssl_context.load_cert_chain(
-                certfile="/etc/ssl/certs/bio3.crt", keyfile="/etc/ssl/certs/bio3.key"
+                certfile=self.config.get("ssl_certfile"),
+                keyfile=self.config.get("ssl_keyfile"),
             )
-            server = await websockets.serve(self.handler, host, port, ssl=ssl_context)
-            logger.warning(f"🔗 WebSocket server started at ws://{host}:{port}")
-            await server.wait_closed()
-        elif sys.platform.startswith("darwin"):  # 开发环境
-            host = "localhost"
-            port = 6789
-            server = await websockets.serve(self.handler, host, port)
-            logger.warning(f"🔗 WebSocket server started at ws://{host}:{port}")
-            await server.wait_closed()
+            server = await websockets.serve(
+                self.handler, ws_host, ws_port, ssl=ssl_context
+            )
+            logger.warning(f"🔗 WebSocket server started at wss://{ws_host}:{ws_port}")
+        else:
+            server = await websockets.serve(self.handler, ws_host, ws_port)
+            logger.warning(f"🔗 WebSocket server started at ws://{ws_host}:{ws_port}")
+
+        await server.wait_closed()
 
 
 def main():
-    server = AI_WS_Server()
+    environment = "production" if sys.platform.startswith("linux") else "development"
+    config = ConfigLoader(environment)
+    server = AI_WS_Server(config)
     asyncio.run(server.run())
 
 

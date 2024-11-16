@@ -93,7 +93,6 @@ async def generate_detailed_plan(state: RunningState):
 
 
 async def generate_meta_action_sequence(state: RunningState):
-    pprint(state)
     payload = {
         "daily_objective": (
             state["decision"]["daily_objective"][-1]
@@ -106,7 +105,7 @@ async def generate_meta_action_sequence(state: RunningState):
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],
     }
-    pprint(payload["decision"])
+    pprint(payload)
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
 
     await state["instance"].send_message(

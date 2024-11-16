@@ -64,7 +64,7 @@ class Prompts(TypedDict):
 
 class PublicData(TypedDict):
     market_data: Dict[str, Any] # 市场数据
-    
+
 
 class RunningState(TypedDict):
     userid: int
@@ -75,6 +75,7 @@ class RunningState(TypedDict):
     message_queue: asyncio.Queue
     event_queue: asyncio.Queue
     false_action_queue: asyncio.Queue
+    public_data: PublicData
     websocket: Any
     current_pointer: str
     instance: Any

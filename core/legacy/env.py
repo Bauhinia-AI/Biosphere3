@@ -13,7 +13,7 @@ from fake_data import *
 from loguru import logger
 from fastapi import FastAPI, HTTPException
 
-from database_api_utils import make_api_request_async
+from core.db.database_api_utils import make_api_request_async
 from model import CandidateInfo
 
 

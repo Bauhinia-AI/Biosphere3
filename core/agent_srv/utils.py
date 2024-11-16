@@ -25,9 +25,9 @@ def generate_initial_state(userid, websocket):
         "character_stats": {
             "name": "Alice",
             "gender": "Female",
-            "slogan": "Adventure awaits!",
-            "description": "A brave explorer.",
-            "role": "Explorer",
+            "slogan": "Need to be rich!",
+            "description": "A risk lover. Always looking for the next big thing.",
+            "role": "Investor",
             "inventory": {},
             "health": 100,
             "energy": 100,
@@ -59,12 +59,35 @@ def generate_initial_state(userid, websocket):
                 "orchard",
             ],
         },
+        "prompts": {
+            "daily_goal": "",
+            "refer_to_previous": False,
+            "life_style": "Casual",
+            "daily_objective_ar": "",
+            "task_priority": [],
+            "max_actions": 10,
+            "meta_seq_ar": "",
+            "replan_time_limit": 3,
+            "meta_seq_adjuster_ar": "",
+            "focus_topic": [],
+            "depth_of_reflection": "Moderate",
+            "reflection_ar": "",
+            "level_of_detail": "Moderate",
+            "tone_and_style": "",
+        },
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
+        "false_action_queue": asyncio.Queue(),
         "websocket": websocket,
         "current_pointer": "Sensing_Route",
     }
     return initial_state
+
+
+def update_dict(existing_dict, new_dict):
+    for key, value in new_dict.items():
+        if key in existing_dict:
+            existing_dict[key] = value
 
 
 tool_functions_easy = """
@@ -72,22 +95,26 @@ tool_functions_easy = """
 Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).\n
     2. pickapple [number:int]: Pick an apple, costing energy.
 Constraints: Must have enough energy and be in the orchard.\n
-    3. gofishing [hours:int]: Fish for resources, costing energy.
+    3. gofishing [hours:int]: Fish for fish, costing energy.
 Constraints: Must have enough energy and be in the fishing area.\n
-    4. mine [hours:int]: Mine for resources, costing energy.
+    4. gomining [hours:int]: Mine for ore, costing energy.
 Constraints: Must have enough energy and be in the mine.\n
     5. harvest [hours:int]: Harvest crops, costing energy.
 Constraints: Must have enough energy and be in the harvest area.\n
-    6. buy [itemType:string] [amount:int]: Purchase items, costing money.
-Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
-    7. sell [itemType:string] [amount:int]: Sell items for money.
-Constraints: Must have enough items in inventory.ItemType:(Ore,Bread,Apple,Wheat,Fish)\n
-    9. seedoctor [hours:int]: Visit a doctor, costing money.
-Constraints: Must have enough money and be in the hospital.\n
-    10. study [hours:int]: Study to achieve a higher degree.
-Constraints: Must be in school and have enough money.\n
-"""
 
+    7. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
+Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)\n
+    
+    10. study [hours:int]: Study to achieve a higher degree, will cost money.
+Constraints: Must be in school and have enough money.\n
+    11. sleep [hours:int]: Sleep to recover energy and health only when your energy is low.
+Constraints: Must be at home.\n
+"""
+# 6. buy [itemType:string] [amount:int]: Purchase items, costing money.
+# Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n
 
 #     10. sleep [hours:int]: Sleep to recover energy and health.
 # Constraints: Must be at home.\n
+
+# 9. seedoctor [hours:int]: Visit a doctor, costing money.
+# Constraints: Must have enough money and be in the hospital.\n

@@ -25,6 +25,16 @@ class ConfigLoader:
         return self.config.get(key)
 
 
+class ConfigLoader:
+    def __init__(self, environment):
+        config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
+        with open(config_path, "r") as file:
+            self.config = yaml.safe_load(file)[environment]
+
+    def get(self, key):
+        return self.config.get(key)
+
+
 class AI_WS_Server:
     def __init__(self, config):
         self.character_manager = CharacterManager(timeout=60)
@@ -53,6 +63,8 @@ class AI_WS_Server:
 
             character.log_message("received", response)
 
+            character.log_message("received", response)
+
             # 处理消息循环
             while True:
                 try:
@@ -71,16 +83,17 @@ class AI_WS_Server:
                         character.log_message("received", heartbeat_response)
                         continue
 
-                    # 处理其他消息：放到对应agent的消息队列
-                    message_queue = agent_instance.state["message_queue"]
-                    async with agent_instance.state_lock:
+                    else:  # 处理其他消息：放到对应agent和conversation agent的消息队列
+                        message_queue = agent_instance.state["message_queue"]
                         await message_queue.put(data)
+
                     logger.info(
                         f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
                     )
 
                     # 处理消息：对话系统
                     await conversation_instance.listener(message)
+
 
                 except websockets.ConnectionClosed as e:
                     logger.warning(f"🔗 Connection closed from {character_id}")
@@ -130,7 +143,9 @@ class AI_WS_Server:
         agent_instance = None
         conversation_instance = ConversationInstance(character_id, websocket)
 
+
         self.character_manager.add_character(character_id, agent_instance, conversation_instance)
+
         self.character_manager.get_character(character_id).log_message(
             "sent", init_message
         )
@@ -168,8 +183,10 @@ class AI_WS_Server:
             await self.web_monitor.setup(host=http_host, port=http_port)
             logger.info(f"🌐 HTTP Monitor started at http://{http_host}:{http_port}")
 
+
         ws_host = self.config.get("websocket_host")
         ws_port = self.config.get("websocket_port")
+
 
         # 根据开关确定是否用SSL/TLS
         if self.config.get("ssl_trigger"):
@@ -177,10 +194,12 @@ class AI_WS_Server:
             ssl_context.load_cert_chain(
                 certfile=self.config.get("ssl_certfile"),
                 keyfile=self.config.get("ssl_keyfile"),
+
             )
             server = await websockets.serve(
                 self.handler, ws_host, ws_port, ssl=ssl_context
             )
+
             logger.warning(f"🔗 WebSocket server started at wss://{ws_host}:{ws_port}")
         else:
             server = await websockets.serve(self.handler, ws_host, ws_port)

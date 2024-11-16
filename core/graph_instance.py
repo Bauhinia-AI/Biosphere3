@@ -7,7 +7,10 @@ from langgraph.graph import StateGraph, START, END
 import os
 import asyncio
 from pprint import pprint
-from agent_srv.utils import generate_initial_state, check_termination
+
+from agent_srv.utils import generate_initial_state, generate_initial_state_hardcoded
+
+from datetime import datetime
 
 
 class LangGraphInstance:
@@ -18,7 +21,7 @@ class LangGraphInstance:
         # 初始化 langgraph 实例
         #  TODO We should 根据user_id 检索数据库中的信息，更新stat
         self.state = RunningState(
-            **generate_initial_state(self.user_id, self.websocket)
+            **generate_initial_state_hardcoded(self.user_id, self.websocket)
         )
         self.state["instance"] = self
         self.connection_stats = {}
@@ -26,7 +29,7 @@ class LangGraphInstance:
         self.state_lock = asyncio.Lock()
         self.websocket_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
-        self.graph_config = {"recursion_limit": 1000}
+        self.graph_config = {"recursion_limit": 1e10}
         # 三个协程
         # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
@@ -37,11 +40,14 @@ class LangGraphInstance:
         logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
+
+
     async def msg_processor(self):
         while True:
             
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
+
             #logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
             if message_name == "actionresult":
                 # 处理动作结果
@@ -59,15 +65,18 @@ class LangGraphInstance:
                 logger.info(
                     f"🏃 User {self.user_id}: Received action result: {msg['data']}"
                 )
-            elif message_name == "gameevent":
-                pass
-
+            elif message_name == "prompt_modification":
+                update_dict(self.state["prompts"], msg["data"])
+                logger.info(
+                    f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
+                )
             elif message_name == "onestep":
                 self.state["event_queue"].put_nowait("PLAN")
 
             elif message_name == "check":
                 pprint(self.state["decision"]["action_result"])
-
+            elif message_code >= 100:
+                pass  # 忽略掉对话系统的消息
             else:
                 logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
@@ -138,12 +147,13 @@ class LangGraphInstance:
         #workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
 
         workflow.add_node("Replan_Action", replan_action)
-        
+        workflow.add_node("Reflect_And_Summarize", reflect_and_summarize)
+
         workflow.set_entry_point("Sensing_Route")
         workflow.add_conditional_edges("Sensing_Route", self.event_router)
-        
+
         workflow.add_edge("Replan_Action", "Sensing_Route")
-        
+
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
@@ -172,6 +182,27 @@ class LangGraphInstance:
         #     lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
         # )
         # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
+
+        # 每隔五次目标或3分钟反思一次
+        def should_reflect(state: RunningState) -> bool:
+            objectives_count = len(state.get("decision", {}).get("daily_objective", []))
+            last_reflection_time = (
+                state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
+            )
+
+            if last_reflection_time:
+                time_since_last = datetime.now() - datetime.fromisoformat(
+                    last_reflection_time
+                )
+                return time_since_last.total_seconds() > 180  # 3分钟
+
+            return objectives_count > 0 and objectives_count % 5 == 0
+
+        workflow.add_conditional_edges(
+            "Process_Messages",
+            lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
+        )
+        workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
 
         return workflow.compile()
 

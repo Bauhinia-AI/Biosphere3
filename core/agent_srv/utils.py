@@ -59,6 +59,22 @@ def generate_initial_state(userid, websocket):
                 "orchard",
             ],
         },
+        "prompts": {
+            "daily_goal": "",
+            "refer_to_previous": False,
+            "life_style": "Casual",
+            "daily_objective_ar": "",
+            "task_priority": [],
+            "max_actions": 10,
+            "meta_seq_ar": "",
+            "replan_time_limit": 3,
+            "meta_seq_adjuster_ar": "",
+            "focus_topic": [],
+            "depth_of_reflection": "Moderate",
+            "reflection_ar": "",
+            "level_of_detail": "Moderate",
+            "tone_and_style": "",
+        },
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
         "false_action_queue": asyncio.Queue(),
@@ -66,6 +82,12 @@ def generate_initial_state(userid, websocket):
         "current_pointer": "Sensing_Route",
     }
     return initial_state
+
+
+def update_dict(existing_dict, new_dict):
+    for key, value in new_dict.items():
+        if key in existing_dict:
+            existing_dict[key] = value
 
 
 tool_functions_easy = """

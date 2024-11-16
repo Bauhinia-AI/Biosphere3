@@ -15,6 +15,8 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             {tool_functions}\n
             and the available locations are:\n
             {locations}\n
+            and the market data is:\n
+            {market_data}\n
 
             Here's some specific requirements from user, ignore it if it's empty:\n
             Daily Goal: {daily_goal}\n
@@ -63,6 +65,8 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     \n
     locations_available:\n
     {locations}
+
+    
 
     Here's some specific requirements from user, ignore it if it is empty:\n
     Task Priority: {task_priority}\n

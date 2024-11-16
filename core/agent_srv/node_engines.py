@@ -54,6 +54,7 @@ async def generate_daily_objective(state: RunningState):
         "character_stats": state["character_stats"],
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
+        "market_data": state["public_data"]["market_data"],
         # get the last 3 objectives
         "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
         "daily_goal": state["prompts"]["daily_goal"],

@@ -24,6 +24,13 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             Life Style: {life_style}\n
             Additional Requirements: {additional_requirements}\n
 
+            In general, you ultimately need to make money(selling goods) and get educated. Study costs you 50 units of money.
+            \n
+            
+            The goods you can sell are:
+            {market_data}
+            \n
+
             The final format should be a list of daily objectives.
             REMIND: you SHOULD NOT output other formats or other description words. 
             Here's an example to follow:\n
@@ -66,7 +73,8 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     locations_available:\n
     {locations}
 
-    
+    market_price_data:\n
+    {market_data}
 
     Here's some specific requirements from user, ignore it if it is empty:\n
     Task Priority: {task_priority}\n

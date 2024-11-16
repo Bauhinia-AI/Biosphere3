@@ -54,11 +54,11 @@ async def generate_daily_objective(state: RunningState):
         "character_stats": state["character_stats"],
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
-        "market_data": state["public_data"]["market_data"],
         # get the last 3 objectives
         "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
         "daily_goal": state["prompts"]["daily_goal"],
         "refer_to_previous": state["prompts"]["refer_to_previous"],
+        "market_data": state["public_data"]["market_data"],
         "life_style": state["prompts"]["life_style"],
         "additional_requirements": state["prompts"]["daily_objective_ar"],
     }
@@ -102,6 +102,7 @@ async def generate_meta_action_sequence(state: RunningState):
         ),
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
+        "market_data": state["public_data"]["market_data"],
         "task_priority": state["prompts"]["task_priority"],
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],

@@ -19,7 +19,7 @@ def check_termination(coro):
     return wrapper
 
 
-def generate_initial_state(userid, websocket):
+def generate_initial_state_hardcoded(userid, websocket):
     initial_state = {
         "userid": userid,
         "character_stats": {

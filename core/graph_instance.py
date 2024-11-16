@@ -1,15 +1,11 @@
 import asyncio
 from agent_srv.node_engines import *
-from agent_srv.factories import initialize_running_state
 from agent_srv.node_model import RunningState
 import time
-from langgraph.graph import StateGraph, START, END
-import os
+from langgraph.graph import StateGraph
 import asyncio
 from pprint import pprint
-
-from agent_srv.utils import generate_initial_state, generate_initial_state_hardcoded
-
+from agent_srv.utils import generate_initial_state_hardcoded
 from datetime import datetime
 
 
@@ -34,34 +30,36 @@ class LangGraphInstance:
         # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        #self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
+        # self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
-
-
     async def msg_processor(self):
         while True:
-            
+
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
 
-            #logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
+            # logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
             if message_name == "actionresult":
                 # 处理动作结果
                 self.state["decision"]["action_result"].append(msg["data"])
 
                 if msg["data"]["result"] is False:
-                    try:    
+                    try:
                         # 如果失败，则往false_action_queue里放
-                        logger.info(f"❌❌❌❌❌ User {self.user_id}: Put REPLAN into event_queue")
+                        logger.info(
+                            f"❌❌❌❌❌ User {self.user_id}: Put REPLAN into event_queue"
+                        )
                         self.state["false_action_queue"].put_nowait(msg["data"])
                         self.state["event_queue"].put_nowait("REPLAN")
                     except Exception as e:
-                        logger.error(f"User {self.user_id}: Error putting REPLAN into event_queue: {e}")
-                        
+                        logger.error(
+                            f"User {self.user_id}: Error putting REPLAN into event_queue: {e}"
+                        )
+
                 logger.info(
                     f"🏃 User {self.user_id}: Received action result: {msg['data']}"
                 )
@@ -92,7 +90,7 @@ class LangGraphInstance:
             await asyncio.sleep(30)
             # 如果时间超过5分钟，则往队列里放REFLECT
             if time.time() - start_time > 300:
-                #BUG REFLECT raise error
+                # BUG REFLECT raise error
                 pass
                 # self.state["event_queue"].put_nowait("REFLECT")
             # self.state["event_queue"].put_nowait("PLAN")
@@ -144,7 +142,7 @@ class LangGraphInstance:
         workflow.add_node("Sensing_Route", sensing_environment)
         workflow.add_node("Objectives_planner", generate_daily_objective)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
-        #workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
+        # workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
 
         workflow.add_node("Replan_Action", replan_action)
         # workflow.add_node("Reflect_And_Summarize", reflect_and_summarize)
@@ -157,10 +155,10 @@ class LangGraphInstance:
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
-        #workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
+        # workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
         # 循环回消息处理
-        #workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
-        #workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
+        # workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
+        # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
 
         # 每隔五次目标或3分钟反思一次
         # def should_reflect(state: RunningState) -> bool:
@@ -202,7 +200,7 @@ class LangGraphInstance:
         #     "Process_Messages",
         #     lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
         # )
-        #workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
+        # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
 
         return workflow.compile()
 

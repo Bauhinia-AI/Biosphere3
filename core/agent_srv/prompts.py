@@ -78,8 +78,9 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     Please analyze the error and provide an alternative approach considering:
     1. If the error is location-related, ensure proper navigation
     2. If the error is resource-related, add necessary resource gathering steps
-    3. If the error is prerequisite-related, add missing prerequisite actions
-    4. If the error is money-related, add necessary money-related actions(sell)
+    3. If the error is money-related, add necessary money-related actions(sell)
+    4. If the error is sleep-related, add necessary sleep action(sleep)
+
 
 
     Current sequence:

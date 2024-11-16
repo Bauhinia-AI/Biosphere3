@@ -14,7 +14,7 @@ import json
 import os
 from pprint import pprint
 import asyncio
-from database_api_utils import make_api_request_async
+from db.database_api_utils import make_api_request_async
 
 from dotenv import load_dotenv
 

@@ -1,5 +1,7 @@
 import functools
 import asyncio
+import requests
+from pprint import pprint
 
 
 # BETTER WAY？
@@ -20,12 +22,23 @@ def check_termination(coro):
 
 
 def generate_initial_state_hardcoded(userid, websocket):
+    # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+    response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
+    market_data = response.json()["data"]
+    market_data_dict = dict(
+        {
+            x["name"]: x["averagePrice"]
+            for x in market_data
+            if x["name"] in ["ore", "apple", "wheat", "fish"]
+        }
+    )
+    pprint(market_data_dict)
     initial_state = {
         "userid": userid,
         "character_stats": {
             "name": "Alice",
             "gender": "Female",
-            "slogan": "Need to be rich!",
+            "slogan": "Need to be rich!Need to be educated!",
             "description": "A risk lover. Always looking for the next big thing.",
             "role": "Investor",
             "inventory": {},
@@ -75,6 +88,9 @@ def generate_initial_state_hardcoded(userid, websocket):
             "level_of_detail": "Moderate",
             "tone_and_style": "",
         },
+        "public_data": {
+            "market_data": market_data_dict,
+        },
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
         "false_action_queue": asyncio.Queue(),
@@ -101,7 +117,8 @@ Constraints: Must have enough energy and be in the fishing area.\n
 Constraints: Must have enough energy and be in the mine.\n
     5. harvest [hours:int]: Harvest crops, costing energy.
 Constraints: Must have enough energy and be in the harvest area.\n
-
+    6. sleep [hours:int]: Sleep to recover energy and health.
+Constraints: Must be at home.\n
     7. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
 Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)\n
     
@@ -116,3 +133,6 @@ Constraints: Must be in school and have enough money.\n
 
 # 9. seedoctor [hours:int]: Visit a doctor, costing money.
 # Constraints: Must have enough money and be in the hospital.\n
+
+if __name__ == "__main__":
+    generate_initial_state_hardcoded(1, None)

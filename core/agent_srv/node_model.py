@@ -62,6 +62,10 @@ class Prompts(TypedDict):
     level_of_detail: str
     tone_and_style: str
 
+class PublicData(TypedDict):
+    market_data: Dict[str, Any] # 市场数据
+    
+
 class RunningState(TypedDict):
     userid: int
     character_stats: Annotated[CharacterStats, generic_reducer]

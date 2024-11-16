@@ -1,5 +1,5 @@
-from core.conversation_srv.conversation_model import *
-from core.conversation_srv.conversation_prompts import *
+from conversation_srv.conversation_model import *
+from conversation_srv.conversation_prompts import *
 from langchain_openai import ChatOpenAI
 from loguru import logger
 from typing import Literal
@@ -9,7 +9,7 @@ import websockets
 import json
 import os
 import pprint
-from core.db.database_api_utils import make_api_request_async, make_api_request_sync
+from database_api_utils import make_api_request_async, make_api_request_sync
 from datetime import datetime, timedelta
 import random
 
@@ -82,83 +82,21 @@ async def generate_daily_conversation_plan(state: ConversationState):
     )
     logger.info(f"Today User {state['userid']} is going to talk with others about: {topic_list['topics']}")
 
-    # rag对话对象candidate
-    final_topic_list = []  # 每个条目包含topic，对话对象，impression三个字段
-    for topic in topic_list['topics']:
-        # To do
-        # 在给定范围的列表中进行rag
-        # neighbour_list加入
-        encounter_data = {
-            "from_id": 1,
-            "k": 3
-        }
-        encounter_response = make_api_request_sync("POST", "/encounter_count/get_by_from_id", data=encounter_data)
-        if encounter_response["data"] is None:
-            character_rag_data = {
-                "characterId": state["userid"],
-                "topic": topic,
-                "k": 2
-            }
-            rag_response = make_api_request_sync("POST", "/characters/get_rag", data=character_rag_data)
-        else:
-            candidate_list = []
-            for item in encounter_response["data"]:
-                candidate_list.append(item['to_id'])
-            character_rag_data = {
-                "characterId": state["userid"],
-                "characterList": candidate_list,
-                "topic": topic,
-                "k": 2
-            }
-            rag_response = make_api_request_sync("POST", "/characters/get_rag_in_list", data=character_rag_data)
-
-        # 模拟rag结果
-        # rag_response = {"data": [{"characterId": 2}, {"characterId": 1}]}
-
-        if len(rag_response['data']) == 0:
-            logger.info(f"User {state['userid']}: There is no suitable person to talk to on this topic {topic}.")
-
-        for user in rag_response["data"]:
-            if user["characterId"] != state["userid"]:  # 排除自己和自己对话
-                impression_query_data = {
-                    "from_id": state["userid"],
-                    "to_id": user["characterId"],
-                    "k": 1
-                }
-                impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
-
-                # impression为空报错机制
-                if impression_response["data"]:
-                    current_impression = impression_response["data"][0]
-                else:
-                    current_impression = []
-                current_topic_list = {
-                    "topic": topic,
-                    "userid": user["characterId"],
-                    "impression": current_impression
-                }
-                final_topic_list.append(current_topic_list)
-                break
+    final_topic_list = topic_list["topics"]
 
     conversation_plan = DailyConversationPlan(conversations=[])
     timetable = 10  # 对话开始时间的
     for talk in final_topic_list:
-        pre_single_conversation = conversation_planner.invoke(
-            {
-                "character_stats": state["character_stats"],
-                "topic_list": talk,
-            }
-        )
         start_minute = (state['userid'] % 60 + random.randint(0, 60)) % 60
         start_time = str(timetable)+":"+f"{start_minute:02}"
         timetable += 1
         # 重组格式
         single_conversation = ConversationTask(
             from_id=state["userid"],
-            to_id=talk["userid"],
+            to_id=0,  # talk["userid"],
             start_time=start_time,
-            topic=talk["topic"],
-            dialogue=[{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
+            topic=talk,
+            dialogue=[],  # [{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
             Finish=[False, False]
         )
         conversation_plan.conversations.append(single_conversation)
@@ -245,21 +183,80 @@ async def start_conversation(state: ConversationState):
     )  # 检验对话任务是否有必要
 
     if check_response["Need"]:
-        talk_message = RunningConversation(
-            from_id=current_talk["from_id"],
-            to_id=current_talk["to_id"],
-            start_time=current_talk["start_time"],
-            latest_message=current_talk["dialogue"][0],
-            dialogue=current_talk["dialogue"],
-            Finish=[False, False]
+        # rag 对话对象
+        encounter_data = {
+                    "from_id": state["userid"],
+                    "k": 3
+                }
+        encounter_response = make_api_request_sync("POST", "/encounter_count/get_by_from_id", data=encounter_data)
+        if encounter_response["data"] is None:
+            character_rag_data = {
+                "characterId": state["userid"],
+                "topic": current_talk["topic"],
+                "k": 2
+            }
+            rag_response = make_api_request_sync("POST", "/characters/get_rag", data=character_rag_data)
+        else:
+            candidate_list = []
+            for item in encounter_response["data"]:
+                candidate_list.append(item['to_id'])
+            character_rag_data = {
+                "characterId": state["userid"],
+                "characterList": candidate_list,
+                "topic": current_talk["topic"],
+                "k": 2
+            }
+            rag_response = make_api_request_sync("POST", "/characters/get_rag_in_list", data=character_rag_data)
+
+        current_topic_list = {}
+        if len(rag_response['data']) == 0:
+            logger.info(f"User {state['userid']}: There is no suitable person to talk to on this topic {current_talk['topic']}.")
+
+        for user in rag_response["data"]:
+            if user["characterId"] != state["userid"]:  # 排除自己和自己对话
+                logger.info(f"User {state['userid']} is going to talk with {user['characterId']} on this topic.")
+                impression_query_data = {
+                    "from_id": state["userid"],
+                    "to_id": user["characterId"],
+                    "k": 1
+                }
+                impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
+
+                # impression为空报错机制
+                if impression_response["data"]:
+                    current_impression = impression_response["data"][0]
+                else:
+                    current_impression = []
+                logger.info(f"The impression from User {state['userid']} to User {user['characterId']} is {current_impression}.")
+                current_topic_list = {
+                    "topic": current_talk['topic'],
+                    "userid": user["characterId"],
+                    "impression": current_impression
+                }
+                break
+
+        pre_single_conversation = conversation_planner.invoke(
+            {
+                "character_stats": state["character_stats"],
+                "topic_list": current_topic_list,
+            }
         )
 
+        talk_message = RunningConversation(
+            from_id=current_talk["from_id"],
+            to_id=current_topic_list["userid"],
+            start_time=current_talk["start_time"],
+            latest_message={state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]},
+            dialogue=[{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
+            Finish=[False, False]
+        )
+        logger.info(f"User {state['userid']}: to start a conversation {talk_message}.")
         # 发送消息
         await send_conversation_message(state, talk_message)
 
-        logger.info(f"The conversation FROM {current_talk['from_id']} TO {current_talk['to_id']} at GAME TIME {current_talk['start_time']} has started.")
+        logger.info(f"The conversation FROM {current_talk['from_id']} at GAME TIME {current_talk['start_time']} on topic {current_talk['topic']} has started.")
     else:
-        logger.info(f"The conversation FROM {current_talk['from_id']} TO {current_talk['to_id']} at GAME TIME {current_talk['start_time']} is canceled after check.")
+        logger.info(f"The conversation FROM {current_talk['from_id']} at GAME TIME {current_talk['start_time']} on topic {current_talk['topic']} is canceled after check.")
 
     # 更新daily_task队列
     if len(state["daily_task"]) > 1:

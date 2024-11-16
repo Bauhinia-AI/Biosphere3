@@ -14,10 +14,19 @@ class Character:
         self.last_heartbeat = time.time()
         self.heartbeat_count = 1
         self.callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None
+        self.message_log = []  # 新增：用于存储消息记录
 
     def update_heartbeat(self):
         self.last_heartbeat = time.time()
         self.heartbeat_count += 1
+
+    def log_message(self, direction: str, message: str):
+        """记录消息"""
+        self.message_log.append({
+            "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "direction": direction,
+            "message": message
+        })
 
 
 class CharacterManager:
@@ -104,8 +113,9 @@ class CharacterManager:
                     self.host_character(character_id)
             await asyncio.sleep(self.timeout / 2)
 
+    """获取心跳管理器的状态信息"""
+
     async def get_status(self) -> Dict[str, Any]:
-        """获取心跳管理器的状态信息"""
         active_characters = [
             {
                 "character_id": character_id,

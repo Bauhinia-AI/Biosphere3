@@ -1,3 +1,5 @@
+import sys
+sys.path.append('..')
 from agent_srv.node_model import (
     DailyObjective,
     DetailedPlan,
@@ -12,9 +14,13 @@ import json
 import os
 from pprint import pprint
 import asyncio
-from core.db.database_api_utils import make_api_request_async
+from database_api_utils import make_api_request_async
 
-os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+from dotenv import load_dotenv
+
+load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)
@@ -54,6 +60,12 @@ async def generate_daily_objective(state: RunningState):
                     "past_objectives": state.get("decision", []).get(
                         "daily_objective", []
                     )[-3:],
+                    "daily_goal": state["prompts"]["daily_goal"],
+                    "refer_to_previous": state["prompts"]["refer_to_previous"],
+                    "life_style": state["prompts"]["life_style"],
+                    "additional_requirements": state["prompts"][
+                        "daily_objective_ar"
+                    ],
                 }
             )
             break
@@ -93,6 +105,9 @@ async def generate_meta_action_sequence(state: RunningState):
         ),
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
+        "task_priority": state["prompts"]["task_priority"],
+        "max_actions": state["prompts"]["max_actions"],
+        "additional_requirements": state["prompts"]["meta_seq_ar"],
     }
     pprint(payload)
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
@@ -117,6 +132,8 @@ async def adjust_meta_action_sequence(state: RunningState):
             "meta_seq": state["decision"]["meta_seq"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
+            "replan_time_limit": state["prompts"]["replan_time_limit"],
+            "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
         }
     )
 
@@ -209,6 +226,8 @@ async def replan_action(state: RunningState):
             "locations": state["meta"]["available_locations"],
             "failed_action": failed_action,
             "error_message": error_message,
+            "replan_time_limit": state["prompts"]["replan_time_limit"],
+            "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
         }
     )
 

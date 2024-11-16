@@ -100,7 +100,7 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     {meta_seq}
 
     Here's some specific requirements from user, ignore it if it is empty:
-    If the replan fails, you should try to find a alternative plan but no more than {replan_time_limits} actions.\n
+    If the replan fails, you should try to find a alternative plan but no more than {replan_time_limit} actions.\n
     Additional Requirements: {additional_requirements}\n
 
     Please provide a revised action sequence that:

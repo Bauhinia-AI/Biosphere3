@@ -1,5 +1,6 @@
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 from agent_srv.node_model import (
     DailyObjective,
     DetailedPlan,
@@ -49,25 +50,21 @@ async def generate_daily_objective(state: RunningState):
     # BUG 这里如果检验失败会报错，需要重试
     # 重试一次
     retry_count = 0
+    payload = {
+        "character_stats": state["character_stats"],
+        "tool_functions": state["meta"]["tool_functions"],
+        "locations": state["meta"]["available_locations"],
+        # get the last 3 objectives
+        "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
+        "daily_goal": state["prompts"]["daily_goal"],
+        "refer_to_previous": state["prompts"]["refer_to_previous"],
+        "life_style": state["prompts"]["life_style"],
+        "additional_requirements": state["prompts"]["daily_objective_ar"],
+    }
+    pprint(payload)
     while retry_count < 3:
         try:
-            planner_response: RunningState = await obj_planner.ainvoke(
-                {
-                    "character_stats": state["character_stats"],
-                    "tool_functions": state["meta"]["tool_functions"],
-                    "locations": state["meta"]["available_locations"],
-                    # get the last 3 objectives
-                    "past_objectives": state.get("decision", []).get(
-                        "daily_objective", []
-                    )[-3:],
-                    "daily_goal": state["prompts"]["daily_goal"],
-                    "refer_to_previous": state["prompts"]["refer_to_previous"],
-                    "life_style": state["prompts"]["life_style"],
-                    "additional_requirements": state["prompts"][
-                        "daily_objective_ar"
-                    ],
-                }
-            )
+            planner_response: RunningState = await obj_planner.ainvoke(payload)
             break
         except Exception as e:
             logger.error(
@@ -109,7 +106,7 @@ async def generate_meta_action_sequence(state: RunningState):
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],
     }
-    pprint(payload)
+    pprint(payload["decision"])
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
 
     await state["instance"].send_message(

@@ -87,12 +87,12 @@ class AI_WS_Server:
                         message_queue = agent_instance.state["message_queue"]
                         await message_queue.put(data)
 
-                    logger.info(
-                        f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
-                    )
+                    # logger.info(
+                    #     f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
+                    # )
 
-                    # 处理消息：对话系统
-                    await conversation_instance.listener(message)
+                    # # 处理消息：对话系统
+                    # await conversation_instance.listener(message)
 
 
                 except websockets.ConnectionClosed as e:

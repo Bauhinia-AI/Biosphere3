@@ -139,8 +139,7 @@ class AI_WS_Server:
         if self.character_manager.has_hosted_character(character_id):
             self.character_manager.unhost_character(character_id)
 
-        # agent_instance = LangGraphInstance(character_id, websocket)
-        agent_instance = None
+        agent_instance = LangGraphInstance(character_id, websocket)
         conversation_instance = ConversationInstance(character_id, websocket)
 
 

@@ -21,10 +21,24 @@ def check_termination(coro):
     return wrapper
 
 
+def get_inventory(userid) -> dict:
+    # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+    response = requests.get(f"http://47.95.21.135:8082/bag/getByCharacterId/{userid}")
+    # 只保留ore, apple, wheat, fish
+    inventory_dict = {}
+    for x in response.json()["data"]:
+        if x["itemName"].lower() in ["apple", "wheat", "fish"]:
+            inventory_dict[x["itemName"]] = x["itemQuantity"]
+        if x["itemName"].lower() == "iron_ore":
+            inventory_dict["ore"] = x["itemQuantity"]
+
+    return inventory_dict
+
+
 def generate_initial_state_hardcoded(userid, websocket):
     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
-    response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
-    market_data = response.json()["data"]
+    price_response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
+    market_data = price_response.json()["data"]
     market_data_dict = dict(
         {
             x["name"]: x["averagePrice"]
@@ -32,7 +46,6 @@ def generate_initial_state_hardcoded(userid, websocket):
             if x["name"] in ["ore", "apple", "wheat", "fish"]
         }
     )
-    pprint(market_data_dict)
     initial_state = {
         "userid": userid,
         "character_stats": {
@@ -41,22 +54,22 @@ def generate_initial_state_hardcoded(userid, websocket):
             "slogan": "Need to be rich!Need to be educated!",
             "description": "A risk lover. Always looking for the next big thing.",
             "role": "Investor",
-            "inventory": {},
+            "inventory": get_inventory(userid),
             "health": 100,
             "energy": 100,
         },
         "decision": {
             "need_replan": False,
-            "action_description": ["I successfully picked a banana."],
+            "action_description": [],
             "action_result": [],
             "new_plan": [],
             "daily_objective": [],
             "meta_seq": [],
-            "reflection": ["Nice"],
+            "reflection": [],
         },
         "meta": {
             "tool_functions": tool_functions_easy,
-            "day": "Monday",
+            "day": "",
             "available_locations": [
                 "school",
                 "workshop",
@@ -117,8 +130,7 @@ Constraints: Must have enough energy and be in the fishing area.\n
 Constraints: Must have enough energy and be in the mine.\n
     5. harvest [hours:int]: Harvest crops, costing energy.
 Constraints: Must have enough energy and be in the harvest area.\n
-    6. sleep [hours:int]: Sleep to recover energy and health.
-Constraints: Must be at home.\n
+    
     7. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
 Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)\n
     
@@ -135,4 +147,4 @@ Constraints: Must be in school and have enough money.\n
 # Constraints: Must have enough money and be in the hospital.\n
 
 if __name__ == "__main__":
-    generate_initial_state_hardcoded(1, None)
+    print(get_inventory(36))

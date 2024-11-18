@@ -6,7 +6,7 @@ from langgraph.graph import StateGraph
 import asyncio
 from pprint import pprint
 from agent_srv.utils import generate_initial_state_hardcoded
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class LangGraphInstance:
@@ -34,6 +34,7 @@ class LangGraphInstance:
         # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")
+        self.action_result = []
         self.task = asyncio.create_task(self.a_run())
 
     async def msg_processor(self):
@@ -63,6 +64,10 @@ class LangGraphInstance:
                 logger.info(
                     f"🏃 User {self.user_id}: Received action result: {msg['data']}"
                 )
+                # 把action_result 和本地時間 记录下来
+                self.action_result.append(
+                    {"action_result": msg["data"], "timestamp": datetime.now()}
+                )
             elif message_name == "prompt_modification":
                 update_dict(self.state["prompts"], msg["data"])
                 logger.info(
@@ -87,8 +92,17 @@ class LangGraphInstance:
                     f"⛔ Task event_scheduler terminated due to termination signal."
                 )
                 break
-            await asyncio.sleep(30)
-            # 如果时间超过5分钟，则往队列里放REFLECT
+            await asyncio.sleep(1)
+            # 如果action_result中最後一條信息不為sleep且和现在时间相差十秒，就往event_queue里放plan
+            if self.action_result[-1]["action_result"][
+                "action_name"
+            ] != "sleep" and datetime.now() - self.action_result[-1][
+                "timestamp"
+            ] > timedelta(
+                seconds=5
+            ):
+                self.state["event_queue"].put_nowait("PLAN")
+            # 如果时间超过5分钟，则往队列里放[REFLECT
             if time.time() - start_time > 300:
                 # BUG REFLECT raise error
                 pass

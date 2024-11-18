@@ -102,6 +102,7 @@ async def generate_meta_action_sequence(state: RunningState):
         ),
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
+        "inventory": state["character_stats"]["inventory"],
         "market_data": state["public_data"]["market_data"],
         "task_priority": state["prompts"]["task_priority"],
         "max_actions": state["prompts"]["max_actions"],
@@ -214,7 +215,7 @@ async def replan_action(state: RunningState):
         "current_meta_seq": state["decision"]["meta_seq"][-1],
         "daily_objective": state["decision"]["daily_objective"][-1],
     }
-
+    logger.info(f"🔧 User {state['userid']}: Error context: {error_context}")
     # try:
     # Generate new meta sequence with error context
     meta_action_sequence = await meta_seq_adjuster.ainvoke(

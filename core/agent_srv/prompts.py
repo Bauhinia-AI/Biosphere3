@@ -73,14 +73,18 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     locations_available:\n
     {locations}
 
-    market_price_data:\n
-    {market_data}
-
     Here's some specific requirements from user, ignore it if it is empty:\n
     Task Priority: {task_priority}\n
     Your meta action number should not exceed {max_actions}\n
     Additional Requirements: {additional_requirements}\n
 
+    If the action is selling goods, you should sell all the goods you can sell.
+    Here's your inventory:
+    {inventory}
+    \n
+    And the market price data is:
+    {market_data}
+    \n
     The final format should be a list of meta actions. for example:\n
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
     \n
@@ -104,7 +108,8 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     1. If the error is location-related, ensure proper navigation
     2. If the error is resource-related, add necessary resource gathering steps
     3. If the error is money-related, add necessary money-related actions(sell)
-    4. If the error is sleep-related, add necessary sleep action(sleep)
+    4. If the error is sleep-related, add necessary sleep action(sleep [hours:int]: Sleep to recover energy and health.
+Constraints: Must be at home).\n
 
 
 

@@ -1,13 +1,13 @@
 import sys
 
 sys.path.append("..")
-from agent_srv.node_model import (
+from core.agent_srv.node_model import (
     DailyObjective,
     DetailedPlan,
     MetaActionSequence,
     RunningState,
 )
-from agent_srv.prompts import *
+from core.agent_srv.prompts import *
 from langchain_openai import ChatOpenAI
 from loguru import logger
 import websockets
@@ -15,7 +15,7 @@ import json
 import os
 from pprint import pprint
 import asyncio
-from db.database_api_utils import make_api_request_async
+from core.db.database_api_utils import make_api_request_async
 
 from dotenv import load_dotenv
 
@@ -44,6 +44,14 @@ meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
 meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
+
+cv_generator = generate_cv_prompt | ChatOpenAI(
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0.7
+)
+
+mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
+    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0.5
+)
 
 
 async def generate_daily_objective(state: RunningState):
@@ -242,3 +250,67 @@ async def replan_action(state: RunningState):
     )
 
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
+
+
+async def generate_change_job_cv(state: RunningState):
+    # 1. 获取state中的一些用于判断工作变更的信息
+    # 2. 获取可申请的工作列表
+    # 3. 根据这些信息生成cv，cv中预留一个字段保存jobId
+    # 4. cv内容存储在state中
+    payload = {
+        "character_stats": state["character_stats"],
+        "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
+        "reflection": state["decision"]["reflection"][-5:],
+        "all_public_works": [],
+    }
+    response = await make_api_request_async("GET", "/publicWork/getAll")
+    payload["all_public_works"] = response.get("data", [])
+    logger.info(f"💼 All public works: {payload['all_public_works']}")
+
+    cv = await cv_generator.ainvoke(payload)
+
+    logger.info(f"📃 User {state['userid']}: Generated change job CV: {cv}")
+    return {"decision": {"cv": cv}}
+
+
+async def generate_mayor_decision(state: RunningState):
+    # 1. 获取state中的一些用于判断工作变更的信息，如cv、个人资料、jobId
+    # 2. 获取目前职位的具体情况
+    # 3. 获取职位的限制条件
+    # 4. 设置随机数种子，增加决策的灵活性
+    # 5. 根据这些信息生成决策，包括审核结果、评语
+    # 6. 将简历、结果、评语返回发送给游戏端
+    job_id = state["decision"]["cv"]["jobId"]
+    payload = {
+        "character_stats": state["character_stats"],
+        "cv": state["decision"]["cv"],
+        "public_work_info": {},
+    }
+    response = await make_api_request_async("GET", f"/publicWork/getById/{job_id}")
+    payload["public_work_info"] = response.get("data", {})
+
+    character_info = await make_api_request_async(
+        "GET", f"/characters/getById/{state['userid']}"
+    )
+    experience = character_info.get("data", {}).get("experience", {})
+    education = character_info.get("data", {}).get("education", {})
+
+    check_result = await make_api_request_async(
+        "POST",
+        "/publicWork/checkWork",
+        data={
+            "characterId": state["userid"],
+            "newJobId": job_id,
+            "experience": experience,
+            "education": education,
+        },
+    )
+    code = check_result.get("data", {}).get("code", 0)
+    message = check_result.get("data", {}).get("message", "")
+    payload["meet_requirements"] = {"meet": code == 1, "message": message}
+
+    final_decision = await mayor_decision_generator.ainvoke(payload)
+    logger.info(
+        f"🧔 User {state['userid']}: Generated mayor decision: {final_decision}"
+    )
+    return {"decision": {"mayor_decision": final_decision}}

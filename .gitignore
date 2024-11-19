@@ -4,3 +4,4 @@ __pycache__
 agent_reflections.jsonl
 *.log
 *.log
+.env

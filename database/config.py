@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+# 加载 .env 文件中的环境变量
+load_dotenv()
+
 # MongoDB Configuration
 db_name = "bio3agent"
 # db_name = "biosphere3_test"
@@ -18,13 +24,11 @@ knowledge_collection_name = "knowledge"
 character_arc_collection_name = "character_arc"
 character_arc_change_collection_name = "character_arc_change"
 
-# mongo_uri = "mongodb+srv://bauhiniaai:nb666@biosphere3.e1px8.mongodb.net/?connectTimeoutMS=30000"
-mongo_uri = "mongodb+srv://bio3agent:J4yWQZsuKPZR2poD@bios3agentdb.8grzp2i.mongodb.net/?retryWrites=true&w=majority&appName=bios3AgentDB"
+mongo_uri = os.getenv("MONGO_URI")
 index_name = "vector_index"
 
 # Model and API Configuration
-# api_key = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"
-api_key = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+api_key = os.getenv("API_KEY")
 base_url = "https://api.aiproxy.io/v1"
 model_name = "text-embedding-3-small"  # OpenAI Model
 num_dimensions = 1536  # Dimensions for OpenAI model

@@ -155,3 +155,13 @@ describe_action_result_prompt = ChatPromptTemplate.from_template(
     This is the tone and style of your description: {tone_and_style}.
     """
 )
+
+generate_cv_prompt = ChatPromptTemplate.from_template(
+    """For the given character information,
+    """
+)
+
+mayor_decision_prompt = ChatPromptTemplate.from_template(
+    """For the given character information,
+    """
+)

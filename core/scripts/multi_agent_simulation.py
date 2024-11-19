@@ -120,10 +120,16 @@ class AgentConfig:
     userid: int
     username: str
     gender: str
-    slogan: str
-    description: str
-    role: str
-    task: str
+    relationship: str
+    personality: str
+    long_term_goal: str
+    short_term_goal: str
+    language_style: str
+    biography: str
+    health: float
+    energy: float
+    hungry: float
+    inventory: dict
 
 
 # 定义Agent类
@@ -132,17 +138,19 @@ class Agent:
         self.userid = str(uuid.uuid4())
         self.username = config.username
         self.gender = config.gender
-        self.slogan = config.slogan
-        self.description = config.description
+        self.relationship = config.relationship
+        self.personality = config.personality
+        self.long_term_goal = config.long_term_goal
+        self.short_term_goal = config.short_term_goal
+        self.language_style = config.language_style
+        self.biography = config.biography
         self.stats = {
-            "health": round(random.uniform(0, 10), 1),
-            "fullness": round(random.uniform(0, 10), 1),
-            "energy": round(random.uniform(0, 10), 1),
+            "health": round(random.uniform(0, 100), 1),
+            "energy": round(random.uniform(0, 100), 1),
+            "hungry": round(random.uniform(0, 100), 1),
             "knowledge": round(random.uniform(0, 10), 1),
             "cash": round(random.uniform(0, 10), 1),
         }
-        self.role = config.role
-        self.task = config.task
         self.created_at = datetime.now()
         self.experienced_days = 0
 
@@ -159,10 +167,12 @@ class Agent:
             "userid": self.userid,
             "username": self.username,
             "gender": self.gender,
-            "slogan": self.slogan,
-            "description": self.description,
-            "role": self.role,
-            "task": self.task,
+            "relationship": self.relationship,
+            "personality": self.personality,
+            "long_term_goal": self.long_term_goal,
+            "short_term_goal": self.short_term_goal,
+            "language_style": self.language_style,
+            "biography": self.biography,
             "created_at": self.created_at,
             "stats": self.stats,
         }
@@ -207,8 +217,6 @@ class Agent:
                 break
         # self.update_stats()
 
-    
-
     def generate_profile(self):
         data = {
             "collection_name": "daily_objective",
@@ -227,10 +235,12 @@ class Agent:
             "input": f"""userid={self.userid},
             username="{self.username}",
             gender="{self.gender}",
-            slogan="{self.slogan}",
-            description="{self.description}",
-            role="{self.role}",
-            task="{self.task}",
+            relationship="{self.relationship}",
+            personality="{self.personality}",
+            long_term_goal="{self.long_term_goal}",
+            short_term_goal="{self.short_term_goal}",
+            language_style="{self.language_style}",
+            biography="{self.biography}",
             """,
             "tool_functions": tool_functions_easy,
             "locations": locations,
@@ -253,10 +263,12 @@ class Agent:
         return f"""
 Name: {self.username}
 Gender: {self.gender}
-Slogan: {self.slogan}
-Description: {self.description}
-Role: {self.role}
-Task: {self.task}
+Relationship: {self.relationship}
+Personality: {self.personality}
+Long-term Goal: {self.long_term_goal}
+Short-term Goal: {self.short_term_goal}
+Language Style: {self.language_style}
+Biography: {self.biography}
 Status: {stats_str}
 Inventory: {inventory_str}
 """
@@ -269,10 +281,12 @@ agents = [
             userid=1,
             username="Alice",
             gender="Female",
-            slogan="Knowledge is power",
-            description="A university student who loves learning and always craves new knowledge.",
-            role="Student",
-            task="Live a successful life in the town.",
+            relationship="Friend",
+            personality="Adventurous",
+            long_term_goal="Explore the unknown",
+            short_term_goal="Find a hidden path",
+            language_style="Enthusiastic and bold",
+            biography="A brave explorer with a thirst for adventure.",
         )
     ),
     # Agent(
@@ -280,10 +294,12 @@ agents = [
     #         userid=2,
     #         username="Bob",
     #         gender="Male",
-    #         slogan="Barter for mutual benefit",
-    #         description="A shrewd trader, passionate about finding the best trading opportunities in the market.",
-    #         role="Trader",
-    #         task="Monitor the market daily, seeking the best trading opportunities to maximize profits",
+    #         relationship="Trader",
+    #         personality="Shrewd",
+    #         long_term_goal="Maximize profits",
+    #         short_term_goal="Find trading opportunities",
+    #         language_style="Persuasive and strategic",
+    #         biography="A shrewd trader, passionate about finding the best trading opportunities in the market.",
     #     )
     # ),
     # Agent(
@@ -291,10 +307,12 @@ agents = [
     #         userid=3,
     #         username="Charlie",
     #         gender="Male",
-    #         slogan="Casual chat is the spice of life",
-    #         description="A social butterfly who enjoys conversing with people from all walks of life",
-    #         role="Socialite",
-    #         task="Actively engage in conversations with 10 different people every day for entertainment and to increase knowledge",
+    #         relationship="Socialite",
+    #         personality="Outgoing",
+    #         long_term_goal="Increase knowledge",
+    #         short_term_goal="Engage in conversations",
+    #         language_style="Casual and friendly",
+    #         biography="A social butterfly who enjoys conversing with people from all walks of life.",
     #     )
     # ),
     # Agent(
@@ -302,10 +320,12 @@ agents = [
     #         userid=4,
     #         username="David",
     #         gender="Male",
-    #         slogan="Labor is glorious",
-    #         description="A hardworking laborer who believes that diligent work leads to a better life.",
-    #         role="Worker",
-    #         task="Work at least 8 hours a day, actively seeking part-time jobs to earn more money",
+    #         relationship="Worker",
+    #         personality="Diligent",
+    #         long_term_goal="Better life",
+    #         short_term_goal="Earn more money",
+    #         language_style="Hardworking and determined",
+    #         biography="A hardworking laborer who believes that diligent work leads to a better life.",
     #     )
     # ),
     # Agent(
@@ -313,10 +333,12 @@ agents = [
     #         userid=5,
     #         username="Eva",
     #         gender="Female",
-    #         slogan="Health is the greatest wealth",
-    #         description="A retiree who enjoys exercising and maintaining good health",
-    #         role="Retiree",
-    #         task="Maintain a regular sleep schedule, ensure sufficient sleep, eat well, and stay healthy",
+    #         relationship="Retiree",
+    #         personality="Health-conscious",
+    #         long_term_goal="Stay healthy",
+    #         short_term_goal="Exercise regularly",
+    #         language_style="Calm and wise",
+    #         biography="A retiree who enjoys exercising and maintaining good health.",
     #     )
     # ),
     # Agent(
@@ -324,10 +346,12 @@ agents = [
     #         userid=6,
     #         username="Frank",
     #         gender="Male",
-    #         slogan="Serve the people",
-    #         description="Enthusiastic about community work, enjoys communicating with people and exploring different places",
-    #         role="Ordinary Resident",
-    #         task="Help complete community voting and election work, communicate with residents to understand their needs and ideas",
+    #         relationship="Community Worker",
+    #         personality="Enthusiastic",
+    #         long_term_goal="Serve the community",
+    #         short_term_goal="Understand residents' needs",
+    #         language_style="Communicative and helpful",
+    #         biography="Enthusiastic about community work, enjoys communicating with people and exploring different places.",
     #     )
     # ),
     # Agent(
@@ -335,10 +359,12 @@ agents = [
     #         userid=7,
     #         username="Grace",
     #         gender="Female",
-    #         slogan="Strive for a better life",
-    #         description="Busy looking for a job, very occupied",
-    #         role="Job Seeker",
-    #         task="Submit resumes, attend interviews, and search for jobs every day",
+    #         relationship="Job Seeker",
+    #         personality="Determined",
+    #         long_term_goal="Find a job",
+    #         short_term_goal="Submit resumes",
+    #         language_style="Focused and persistent",
+    #         biography="Busy looking for a job, very occupied.",
     #     )
     # ),
     # Agent(
@@ -346,10 +372,12 @@ agents = [
     #         userid=8,
     #         username="Henry",
     #         gender="Male",
-    #         slogan="Wander everywhere",
-    #         description="Restless, loves to travel around",
-    #         role="Traveler",
-    #         task="Visit at least three places every day, even if they are repeated",
+    #         relationship="Traveler",
+    #         personality="Restless",
+    #         long_term_goal="Travel the world",
+    #         short_term_goal="Visit new places",
+    #         language_style="Adventurous and curious",
+    #         biography="Restless, loves to travel around.",
     #     )
     # ),
     # Agent(
@@ -357,10 +385,12 @@ agents = [
     #         userid=9,
     #         username="Ivy",
     #         gender="Female",
-    #         slogan="Shopping makes me happy",
-    #         description="A fashion blogger who enjoys purchasing various goods.",
-    #         role="Shopping Enthusiast",
-    #         task="Buy different things every day, acquire various items",
+    #         relationship="Shopping Enthusiast",
+    #         personality="Fashionable",
+    #         long_term_goal="Acquire various items",
+    #         short_term_goal="Buy different things",
+    #         language_style="Trendy and enthusiastic",
+    #         biography="A fashion blogger who enjoys purchasing various goods.",
     #     )
     # ),
     # Agent(
@@ -368,10 +398,12 @@ agents = [
     #         userid=10,
     #         username="Jack",
     #         gender="Male",
-    #         slogan="Sharing is the source of happiness",
-    #         description="An internet celebrity who enjoys sharing life online.",
-    #         role="Streamer",
-    #         task="Communicate with different people every day and sell his own products to them",
+    #         relationship="Streamer",
+    #         personality="Charismatic",
+    #         long_term_goal="Share life online",
+    #         short_term_goal="Sell products",
+    #         language_style="Engaging and entertaining",
+    #         biography="An internet celebrity who enjoys sharing life online.",
     #     )
     # ),
 ]

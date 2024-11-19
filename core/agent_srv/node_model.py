@@ -3,14 +3,16 @@ from typing import Union, List, Annotated, Tuple, TypedDict, Dict, Any
 import operator
 from langgraph.graph import StateGraph
 import asyncio
-#带有合并逻辑的鸡肋
+
+# 带有合并逻辑的鸡肋
+
 
 def generic_reducer(a, b):
     if isinstance(a, dict) and isinstance(b, dict):
         result = a.copy()
         for key in b:
             if key in a:
-                #递归调用
+                # 递归调用
                 result[key] = generic_reducer(a[key], b[key])
             else:
                 result[key] = b[key]
@@ -20,15 +22,21 @@ def generic_reducer(a, b):
     else:
         return b
 
+
 class CharacterStats(TypedDict):
     name: str
     gender: str
-    slogan: str
-    description: str
-    role: str
-    inventory: Dict[str, Any]
+    relationship: str
+    personality: str
+    long_term_goal: str
+    short_term_goal: str
+    language_style: str
+    biography: str
     health: int
     energy: int
+    hungry: int
+    inventory: Dict[str, Any]
+
 
 class Decision(TypedDict):
     need_replan: bool
@@ -45,6 +53,7 @@ class Meta(TypedDict):
     day: str
     available_locations: List[str]
 
+
 class RunningState(TypedDict):
     userid: int
     character_stats: Annotated[CharacterStats, generic_reducer]
@@ -55,8 +64,6 @@ class RunningState(TypedDict):
     websocket: Any
     current_pointer: str
     instance: Any
-
-
 
 
 class DailyObjective(BaseModel):
@@ -77,10 +84,18 @@ class MetaActionSequence(BaseModel):
 
     meta_action_sequence: List[str] = Field(description="meta action sequence")
 
+
 class Reflection(BaseModel):
-    reflection: str = Field(description="A comprehensive reflection of the agent's recent activities")
-    key_learnings: List[str] = Field(description="Key lessons learned from past mistakes and successes")
-    improvement_suggestions: List[str] = Field(description="Specific suggestions for future improvement")
+    reflection: str = Field(
+        description="A comprehensive reflection of the agent's recent activities"
+    )
+    key_learnings: List[str] = Field(
+        description="Key lessons learned from past mistakes and successes"
+    )
+    improvement_suggestions: List[str] = Field(
+        description="Specific suggestions for future improvement"
+    )
+
 
 class Response(BaseModel):
     """Response to user."""
@@ -95,15 +110,19 @@ if __name__ == "__main__":
     # 定义一个更新 decision 的节点函数
     def update_decision(state: RunningState, config):
         # 从状态中获取当前的 decision
-        decision = state['decision']
+        decision = state["decision"]
         # 创建新的 action_description 和 reflection
-        new_action_description = ["I successfully picked an apple.","I successfully picked a banana.","I successfully picked a pear."]
+        new_action_description = [
+            "I successfully picked an apple.",
+            "I successfully picked a banana.",
+            "I successfully picked a pear.",
+        ]
         new_reflection = ["I feel happy about finding food."]
         # 返回对 decision 的更新
         return {
-            'decision': {
-                'action_description': new_action_description,
-                'reflection': new_reflection
+            "decision": {
+                "action_description": new_action_description,
+                "reflection": new_reflection,
             }
         }
 
@@ -112,69 +131,75 @@ if __name__ == "__main__":
         fake_new_character_stats = {
             "name": "Bobo",
             "gender": "male",
-            "slogan": "Adventure awaits!",
-            "description": "A brave explorer.",
-            "role": "Explorer",
-            "inventory": {},
+            "relationship": "Friend",
+            "personality": "Adventurous",
+            "long_term_goal": "Explore the world",
+            "short_term_goal": "Find a hidden treasure",
+            "language_style": "Enthusiastic and bold",
+            "biography": "A brave explorer with a thirst for adventure.",
             "health": 10000,
             "energy": 100,
+            "hungry": 100,
+            "inventory": {},
         }
-        return {
-            'character_stats': fake_new_character_stats
-        }
-    
+        return {"character_stats": fake_new_character_stats}
+
     def update_meta(state: RunningState, config):
         # 从状态中获取当前的 meta
         fake_new_meta = {
             "tool_functions": "I can use the following tools: ['apple_picker', 'banana_picker']",
             "day": "Monday",
-            "available_locations": ["Forest", "Village"]
+            "available_locations": ["Forest", "Village"],
         }
-        return {
-            'meta': fake_new_meta
-        }
+        return {"meta": fake_new_meta}
+
     # 将节点添加到图中
-    graph.add_node('UpdateDecision', update_decision)
-    graph.add_node('UpdateCharacterStats', update_character_stats)
-    graph.add_node('UpdateMeta', update_meta)
+    graph.add_node("UpdateDecision", update_decision)
+    graph.add_node("UpdateCharacterStats", update_character_stats)
+    graph.add_node("UpdateMeta", update_meta)
 
     # 设置入口和出口点
-    graph.set_entry_point('UpdateDecision')
-    graph.add_edge('UpdateDecision', 'UpdateCharacterStats')
-    graph.add_edge('UpdateDecision', 'UpdateMeta')
-    graph.set_finish_point('UpdateMeta')
+    graph.set_entry_point("UpdateDecision")
+    graph.add_edge("UpdateDecision", "UpdateCharacterStats")
+    graph.add_edge("UpdateDecision", "UpdateMeta")
+    graph.set_finish_point("UpdateMeta")
 
     # 编译图
     compiled = graph.compile()
 
     # 准备初始状态
     initial_state = {
-        'userid': 1,
-        'character_stats': {
-            'name': 'Alice',
-            'gender': 'Female',
-            'slogan': 'Adventure awaits!',
-            'description': 'A brave explorer.',
-            'role': 'Explorer',
-            'inventory': {},
-            'health': 100,
-            'energy': 100,
+        "userid": 1,
+        "character_stats": {
+            "name": "Alice",
+            "gender": "Female",
+            "relationship": "Friend",
+            "personality": "Adventurous",
+            "long_term_goal": "Explore the unknown",
+            "short_term_goal": "Find a hidden path",
+            "language_style": "Enthusiastic and bold",
+            "biography": "A brave explorer with a thirst for adventure.",
+            "health": 100,
+            "energy": 100,
+            "hungry": 100,
+            "inventory": {},
         },
-        'decision': {
-            'need_replan': False,
-            'action_description': ["I successfully picked a banana."],
-            'new_plan': [],
-            'daily_objective': [],
-            'meta_seq': [],
-            'reflection': ["Nice"],
+        "decision": {
+            "need_replan": False,
+            "action_description": ["I successfully picked a banana."],
+            "new_plan": [],
+            "daily_objective": [],
+            "meta_seq": [],
+            "reflection": ["Nice"],
         },
-        'meta': {
-            'tool_functions': '',
-            'day': 'Monday',
-            'available_locations': ['Forest', 'Village'],
-        }
+        "meta": {
+            "tool_functions": "",
+            "day": "Monday",
+            "available_locations": ["Forest", "Village"],
+        },
     }
     import pprint
+
     # 调用编译后的图
     result = compiled.invoke(initial_state)
     # 输出结果

@@ -563,13 +563,24 @@ class DomainSpecificQueries:
         characterId,
         characterName=None,
         gender=None,
-        slogan=None,
-        description=None,
-        role=None,
-        task=None,
+        relationship=None,
+        personality=None,
+        long_term_goal=None,
+        short_term_goal=None,
+        language_style=None,
+        biography=None,
     ):
         # 拼接非空字段
-        fields = [characterName, gender, slogan, description, role, task]
+        fields = [
+            characterName,
+            gender,
+            relationship,
+            personality,
+            biography,
+            long_term_goal,
+            short_term_goal,
+            language_style,
+        ]
         full_profile = "; ".join([field for field in fields if field])
 
         # 如果 full_profile 为空，则设置为 " "
@@ -578,15 +589,17 @@ class DomainSpecificQueries:
             "characterId": characterId,
             "characterName": characterName,
             "gender": gender,
-            "slogan": slogan,
-            "description": description,
-            "role": role,
-            "task": task,
+            "relationship": relationship,
+            "personality": personality,
+            "long_term_goal": long_term_goal,
+            "short_term_goal": short_term_goal,
+            "language_style": language_style,
+            "biography": biography,
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "full_profile": full_profile,
         }
-        # Insert the document
+        # 插入文档
         inserted_id = self.db_utils.insert_document(
             config.agent_profile_collection_name, document
         )
@@ -670,7 +683,18 @@ class DomainSpecificQueries:
                 current_character[key] = value
 
         # 更新full_profile
-        full_profile = f"{current_character['characterName']}; {current_character['gender']}; {current_character['slogan']}; {current_character['description']}; {current_character['role']}; {current_character['task']}"
+        fields = [
+            current_character.get("characterName", ""),
+            current_character.get("gender", ""),
+            current_character.get("relationship", ""),
+            current_character.get("personality", ""),
+            current_character.get("long_term_goal", ""),
+            current_character.get("short_term_goal", ""),
+            current_character.get("language_style", ""),
+            current_character.get("biography", ""),
+        ]
+        full_profile = "; ".join([field for field in fields if field])
+        full_profile = full_profile if full_profile else " "
         update_data["$set"]["full_profile"] = full_profile
 
         # 生成新的text_embedding
@@ -824,13 +848,6 @@ if __name__ == "__main__":
     # print("character 数据更新前:")
     # original_character = queries.get_character(test_characterId)
     # print(original_character)
-
-    # # 准备更新数据
-    # update_data = {"slogan": "更新后的口号"}
-
-    # # 执行更新
-    # update_result = queries.update_character(test_characterId, update_data)
-    # print(f"\n更新结果: {update_result}")
 
     # # 获取更新后的 character 数据
     # print("\ncharacter 数据更新后:")

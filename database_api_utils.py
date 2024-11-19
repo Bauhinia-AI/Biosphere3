@@ -224,10 +224,12 @@ async def main():
         "characterId": 102,
         "characterName": "Diana",
         "gender": "Female",
-        "slogan": "Swift and silent.",
-        "description": "An agile ranger with unparalleled archery skills.",
-        "role": "Ranger",
-        "task": "Scout and protect the realm",
+        "relationship": "Scout",
+        "personality": "Swift and silent",
+        "long_term_goal": "Protect the realm with unparalleled archery skills",
+        "short_term_goal": "Scout the area for potential threats",
+        "language_style": "Stealthy and precise",
+        "biography": "An agile ranger with unparalleled archery skills.",
     }
     print(
         "Storing character:",

@@ -398,10 +398,12 @@ class StorecharacterRequest(BaseModel):
     characterId: int
     characterName: Optional[str] = None
     gender: Optional[str] = None
-    slogan: Optional[str] = None
-    description: Optional[str] = None
-    role: Optional[str] = None
-    task: Optional[str] = None
+    relationship: Optional[str] = None
+    personality: Optional[str] = None
+    long_term_goal: Optional[str] = None
+    short_term_goal: Optional[str] = None
+    language_style: Optional[str] = None
+    biography: Optional[str] = None
 
 
 class characterRAGRequest(BaseModel):
@@ -1427,10 +1429,12 @@ def store_character_api(request: StorecharacterRequest):
         "characterId": request.characterId,
         "characterName": request.characterName,
         "gender": request.gender,
-        "slogan": request.slogan,
-        "description": request.description,
-        "role": request.role,
-        "task": request.task,
+        "relationship": request.relationship,
+        "personality": request.personality,
+        "long_term_goal": request.long_term_goal,
+        "short_term_goal": request.short_term_goal,
+        "language_style": request.language_style,
+        "biography": request.biography,
     }
 
     # 删除值为 None 的字段

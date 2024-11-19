@@ -23,21 +23,29 @@ validators = {
                     "bsonType": ["string", "null"],
                     "description": "character 性别,必须为字符串",
                 },
-                "slogan": {
+                "relationship": {
                     "bsonType": ["string", "null"],
-                    "description": "character 标语",
+                    "description": "与玩家的关系"
                 },
-                "description": {
+                "personality": {
                     "bsonType": ["string", "null"],
-                    "description": "character 描述",
+                    "description": "性格描述"
                 },
-                "role": {
+                "long_term_goal": {
                     "bsonType": ["string", "null"],
-                    "description": "character 角色",
+                    "description": "长期目标"
                 },
-                "task": {
+                "short_term_goal": {
                     "bsonType": ["string", "null"],
-                    "description": "character 任务",
+                    "description": "短期目标"
+                },
+                "language_style": {
+                    "bsonType": ["string", "null"],
+                    "description": "语言风格"
+                },
+                "biography": {
+                    "bsonType": ["string", "null"],
+                    "description": "简介"
                 },
                 "created_at": {
                     "bsonType": "string",

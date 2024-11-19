@@ -355,7 +355,16 @@ class APIClient:
 
     # Characters
     def store_character(
-        self, characterId, characterName, gender, slogan, description, role, task
+        self,
+        characterId,
+        characterName=None,
+        gender=None,
+        relationship=None,
+        personality=None,
+        long_term_goal=None,
+        short_term_goal=None,
+        language_style=None,
+        biography=None,
     ):
         return self._make_request(
             "POST",
@@ -364,10 +373,12 @@ class APIClient:
                 "characterId": characterId,
                 "characterName": characterName,
                 "gender": gender,
-                "slogan": slogan,
-                "description": description,
-                "role": role,
-                "task": task,
+                "relationship": relationship,
+                "personality": personality,
+                "long_term_goal": long_term_goal,
+                "short_term_goal": short_term_goal,
+                "language_style": language_style,
+                "biography": biography,
             },
         )
 

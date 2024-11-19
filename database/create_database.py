@@ -163,11 +163,6 @@ class DatabaseSetupApp:
         # Load and prepare data
         df = self.load_and_prepare_data(data_file)
         print(df.head())
-        if collection_name is config.agent_profile_collection_name:
-            df["full_profile"] = df.apply(
-                lambda row: f"{row['characterName']}; {row['gender']}; {row['slogan']}; {row['description']}; {row['role']}; {row['task']}",
-                axis=1,
-            )
         if collection_name in config.RAG_COLLECTIONS:
             text_column = config.RAG_COLLECTIONS[collection_name]
             # Create embeddings

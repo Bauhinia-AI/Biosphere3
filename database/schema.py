@@ -6,12 +6,6 @@ validators = {
             "bsonType": "object",
             "required": [
                 "characterId",
-                "characterName",
-                "gender",
-                "slogan",
-                "description",
-                "role",
-                "task",
                 "created_at",
                 "updated_at",
                 "full_profile",
@@ -22,28 +16,28 @@ validators = {
                     "description": "character ID,必须为整数且为必填项",
                 },
                 "characterName": {
-                    "bsonType": "string",
-                    "description": "character 名字,必须为字符串且为必填项",
+                    "bsonType": ["string", "null"],
+                    "description": "character 名字,必须为字符串",
                 },
                 "gender": {
-                    "bsonType": "string",
-                    "description": "character 性别,必须为字符串且为必填项",
+                    "bsonType": ["string", "null"],
+                    "description": "character 性别,必须为字符串",
                 },
                 "slogan": {
-                    "bsonType": "string",
-                    "description": "character 标语,必须为字符串且为必填项",
+                    "bsonType": ["string", "null"],
+                    "description": "character 标语",
                 },
                 "description": {
-                    "bsonType": "string",
-                    "description": "character 描述,必须为字符串且为必填项",
+                    "bsonType": ["string", "null"],
+                    "description": "character 描述",
                 },
                 "role": {
-                    "bsonType": "string",
-                    "description": "character 角色,必须为字符串且为必填项",
+                    "bsonType": ["string", "null"],
+                    "description": "character 角色",
                 },
                 "task": {
-                    "bsonType": "string",
-                    "description": "character 任务,必须为字符串且为必填项",
+                    "bsonType": ["string", "null"],
+                    "description": "character 任务",
                 },
                 "created_at": {
                     "bsonType": "string",
@@ -53,9 +47,9 @@ validators = {
                     "bsonType": "string",
                     "description": "最后更新时间, 必须为字符串且为必填项",
                 },
-                "full_profile": {  # 新增字段
+                "full_profile": {
                     "bsonType": "string",
-                    "description": "完整的个人资料,必须为字符串且为必填项",
+                    "description": "完整的个人资料,必须为字符串",
                 },
             },
         }

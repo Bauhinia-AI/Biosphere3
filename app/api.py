@@ -396,12 +396,12 @@ class GetDiariesRequest(BaseModel):
 
 class StorecharacterRequest(BaseModel):
     characterId: int
-    characterName: Optional[str] = " "
-    gender: Optional[str] = " "
-    slogan: Optional[str] = " "
-    description: Optional[str] = " "
-    role: Optional[str] = " "
-    task: Optional[str] = " "
+    characterName: Optional[str] = None
+    gender: Optional[str] = None
+    slogan: Optional[str] = None
+    description: Optional[str] = None
+    role: Optional[str] = None
+    task: Optional[str] = None
 
 
 class characterRAGRequest(BaseModel):
@@ -1423,18 +1423,22 @@ def store_character_api(request: StorecharacterRequest):
             },
         )
 
-    # Proceed to store the character
+    character_data = {
+        "characterId": request.characterId,
+        "characterName": request.characterName,
+        "gender": request.gender,
+        "slogan": request.slogan,
+        "description": request.description,
+        "role": request.role,
+        "task": request.task,
+    }
+
+    # 删除值为 None 的字段
+    character_data = {k: v for k, v in character_data.items() if v is not None}
+
+    # Proceed to store the character with filtered data
     inserted_id = retry_operation(
-        domain_queries.store_character,
-        retries=3,
-        delay=2,
-        characterId=request.characterId,
-        characterName=request.characterName,
-        gender=request.gender,
-        slogan=request.slogan,
-        description=request.description,
-        role=request.role,
-        task=request.task,
+        domain_queries.store_character, retries=3, delay=2, **character_data
     )
 
     if inserted_id:

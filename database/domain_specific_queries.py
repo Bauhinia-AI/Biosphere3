@@ -559,12 +559,21 @@ class DomainSpecificQueries:
         return [doc["diary_content"] for doc in documents]
 
     def store_character(
-        self, characterId, characterName, gender, slogan, description, role, task
+        self,
+        characterId,
+        characterName=None,
+        gender=None,
+        slogan=None,
+        description=None,
+        role=None,
+        task=None,
     ):
-        # 生成 full_profile
-        full_profile = (
-            f"{characterName}; {gender}; {slogan}; {description}; {role}; {task}"
-        )
+        # 拼接非空字段
+        fields = [characterName, gender, slogan, description, role, task]
+        full_profile = "; ".join([field for field in fields if field])
+
+        # 如果 full_profile 为空，则设置为 " "
+        full_profile = full_profile if full_profile else " "
         document = {
             "characterId": characterId,
             "characterName": characterName,

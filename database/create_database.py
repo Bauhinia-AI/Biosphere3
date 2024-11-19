@@ -181,11 +181,11 @@ class DatabaseSetupApp:
 if __name__ == "__main__":
     app = DatabaseSetupApp()
 
-    # Setup collections
-    app.setup_database(config.cv_collection_name)
-    # app.setup_database(
-    #     config.agent_profile_collection_name, unique_index_fields=["characterId"]
-    # )
+    # # Setup collections
+    # app.setup_database(config.cv_collection_name)
+    app.setup_database(
+        config.agent_profile_collection_name, unique_index_fields=["characterId"]
+    )
     # app.setup_database(config.action_collection_name)
     # app.setup_database(config.impression_collection_name)
     # app.setup_database(config.descriptor_collection_name)
@@ -214,10 +214,10 @@ if __name__ == "__main__":
     #     config.cv_collection_name,
     #     "CV.json",
     # )
-    # app.import_data_into_collection(
-    #     config.agent_profile_collection_name,
-    #     "AGENT_PROFILE.json",
-    # )
+    app.import_data_into_collection(
+        config.agent_profile_collection_name,
+        "AGENT_PROFILE.json",
+    )
     # app.import_data_into_collection(
     #     config.tool_collection_name,
     #     "API.json",

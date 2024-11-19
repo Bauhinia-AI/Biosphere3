@@ -19,8 +19,8 @@ logging.basicConfig(
     ],
 )
 
-BASE_URL = "http://47.95.21.135:8085"
-# BASE_URL = "http://localhost:8085"
+# BASE_URL = "http://47.95.21.135:8085"
+BASE_URL = "http://localhost:8085"
 
 
 async def make_api_request_async(

@@ -1,12 +1,15 @@
 import sys
 
-sys.path.append("..")
+sys.path.append(".")
 from core.agent_srv.node_model import (
     DailyObjective,
     DetailedPlan,
     MetaActionSequence,
+    CV,
+    MayorDecision,
     RunningState,
 )
+from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
 from langchain_openai import ChatOpenAI
 from loguru import logger
@@ -15,7 +18,12 @@ import json
 import os
 from pprint import pprint
 import asyncio
+from langgraph.graph import StateGraph
 from core.db.database_api_utils import make_api_request_async
+from core.backend_service.backend_api_utils import (
+    make_api_request_sync as make_api_request_sync_backend,
+    make_api_request_async as make_api_request_async_backend,
+)
 
 from dotenv import load_dotenv
 
@@ -47,11 +55,11 @@ meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
 
 cv_generator = generate_cv_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0.7
-)
+).with_structured_output(CV)
 
 mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0.5
-)
+).with_structured_output(MayorDecision)
 
 
 async def generate_daily_objective(state: RunningState):
@@ -253,24 +261,32 @@ async def replan_action(state: RunningState):
 
 
 async def generate_change_job_cv(state: RunningState):
-    # 1. 获取state中的一些用于判断工作变更的信息
-    # 2. 获取可申请的工作列表
-    # 3. 根据这些信息生成cv，cv中预留一个字段保存jobId
-    # 4. cv内容存储在state中
+    # 1. 从后端接口调用获取角色信息和工作列表
+    # 2. 从state中获取用户状态信息和过去5条反思
+    # 3. 调用LLM，输出申请的jobId和cv内容
+    # 4. 存储在state中
+    character_info_task = make_api_request_async_backend(
+        "GET", f"/characters/getById/{state['userid']}"
+    )
+    available_public_jobs_task = make_api_request_async_backend(
+        "GET", "/publicWork/getAll"
+    )
+    character_info_response, available_public_jobs_response = await asyncio.gather(
+        character_info_task, available_public_jobs_task
+    )
+    character_info = character_info_response.get("data", {})
+    available_public_jobs = available_public_jobs_response.get("data", [])
+
     payload = {
         "character_stats": state["character_stats"],
-        "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
         "reflection": state["decision"]["reflection"][-5:],
-        "all_public_works": [],
+        "character_info": character_info,
+        "available_public_jobs": available_public_jobs,
     }
-    response = await make_api_request_async("GET", "/publicWork/getAll")
-    payload["all_public_works"] = response.get("data", [])
-    logger.info(f"💼 All public works: {payload['all_public_works']}")
-
     cv = await cv_generator.ainvoke(payload)
 
-    logger.info(f"📃 User {state['userid']}: Generated change job CV: {cv}")
-    return {"decision": {"cv": cv}}
+    logger.info(f"📃 CV: {cv}")
+    return {"decision": {"cv": cv.cv, "newJobId": cv.job_id}}
 
 
 async def generate_mayor_decision(state: RunningState):
@@ -280,22 +296,22 @@ async def generate_mayor_decision(state: RunningState):
     # 4. 设置随机数种子，增加决策的灵活性
     # 5. 根据这些信息生成决策，包括审核结果、评语
     # 6. 将简历、结果、评语返回发送给游戏端
-    job_id = state["decision"]["cv"]["jobId"]
-    payload = {
-        "character_stats": state["character_stats"],
-        "cv": state["decision"]["cv"],
-        "public_work_info": {},
-    }
-    response = await make_api_request_async("GET", f"/publicWork/getById/{job_id}")
-    payload["public_work_info"] = response.get("data", {})
-
-    character_info = await make_api_request_async(
+    job_id = state["decision"]["newJobId"]
+    public_work_task = make_api_request_async_backend(
+        "GET", f"/publicWork/getById/{job_id}"
+    )
+    character_info_task = make_api_request_async_backend(
         "GET", f"/characters/getById/{state['userid']}"
     )
-    experience = character_info.get("data", {}).get("experience", {})
-    education = character_info.get("data", {}).get("education", {})
+    public_work_info_response, character_info_response = await asyncio.gather(
+        public_work_task, character_info_task
+    )
+    public_work_info = public_work_info_response.get("data", {})
+    character_info = character_info_response.get("data", {})
+    experience = character_info.get("experience", {})
+    education = character_info.get("education", {})
 
-    check_result = await make_api_request_async(
+    check_result = make_api_request_sync_backend(
         "POST",
         "/publicWork/checkWork",
         data={
@@ -305,12 +321,38 @@ async def generate_mayor_decision(state: RunningState):
             "education": education,
         },
     )
-    code = check_result.get("data", {}).get("code", 0)
-    message = check_result.get("data", {}).get("message", "")
-    payload["meet_requirements"] = {"meet": code == 1, "message": message}
+    code = check_result.get("code", 0)
+    message = check_result.get("message", "")
+    payload = {
+        "character_stats": state["character_stats"],
+        "cv": state["decision"]["cv"],
+        "public_work_info": public_work_info,
+        "meet_requirements": {"meet": code == 1, "message": message},
+    }
+    mayor_decision = await mayor_decision_generator.ainvoke(payload)
+    logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
+    logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
+    return {
+        "decision": {
+            "mayor_decision": mayor_decision.decision,
+            "mayor_comments": mayor_decision.comments,
+        }
+    }
 
-    final_decision = await mayor_decision_generator.ainvoke(payload)
-    logger.info(
-        f"🧔 User {state['userid']}: Generated mayor decision: {final_decision}"
-    )
-    return {"decision": {"mayor_decision": final_decision}}
+
+async def main():
+    # 测试简历投递系统
+    state = RunningState(**generate_initial_state_hardcoded(1, None))
+    workflow = StateGraph(RunningState)
+    workflow.add_node("generate_change_job_cv", generate_change_job_cv)
+    workflow.add_node("generate_mayor_decision", generate_mayor_decision)
+
+    workflow.set_entry_point("generate_change_job_cv")
+    workflow.add_edge("generate_change_job_cv", "generate_mayor_decision")
+    graph = workflow.compile()
+
+    await graph.ainvoke(state)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

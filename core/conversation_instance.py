@@ -76,6 +76,17 @@ class ConversationInstance:
             elif message_name == "read_only":  # 当前user被玩家夺舍，只需要储存获得的消息，不需要触发回复流程
                 logger.info(f"User {self.user_id} receives a read-only message: {msg['data']}.")
                 current_time = calculate_game_time()
+
+                # 存储对话到数据库，先查询是否有同一条
+                readonly_data = {
+                    "characterIds": [msg['data']["from_id"], msg['data']['to_id']],
+                    "dialogue": msg['data']['dialogue'],
+                    "start_day": current_time[0],
+                    "start_time": msg["data"]["start_time"]
+                }
+                readonly_response = make_api_request_sync("POST", "/conversations/store", data=readonly_data)
+                logger.info(f"A read-only conversation is saved to database: {readonly_response['message']}")
+
                 # 检查列表中是否有同一个对话条目，有则更新，没有则添加
                 search_ids = [msg['data']["from_id"], msg['data']['to_id']]
                 search_ids_inverse = [msg['data']['to_id'], msg['data']["from_id"]]
@@ -103,7 +114,7 @@ class ConversationInstance:
                         "dialogue": msg['data']['dialogue']
                     }
                     logger.info(f"User {self.user_id}: An existing conversation event continues.")
-                logger.info(f"User {self.user_id}: conversation recorded.")
+                logger.info(f"User {self.user_id}: the conversation is recorded in the instance and is waited to be handled.")
             elif message_name == "to_agent":  # 当前玩家由agent接管，需要回复的消息
                 logger.info(f"User {self.user_id} receives a message and is waiting for agent response: {msg['data']}.")
                 await check_conversation_state(self.state, msg['data'])  # 判断对话是否结束，分别处理

@@ -71,10 +71,6 @@ class Prompts(TypedDict):
     tone_and_style: str
 
 
-class PublicData(TypedDict):
-    market_data: Dict[str, Any]  # 市场数据
-
-
 class RunningState(TypedDict):
     userid: int
     character_stats: Annotated[CharacterStats, generic_reducer]
@@ -84,7 +80,6 @@ class RunningState(TypedDict):
     message_queue: asyncio.Queue
     event_queue: asyncio.Queue
     false_action_queue: asyncio.Queue
-    public_data: PublicData
     websocket: Any
     current_pointer: str
     instance: Any
@@ -107,6 +102,20 @@ class MetaActionSequence(BaseModel):
     """Meta action sequence to follow in future"""
 
     meta_action_sequence: List[str] = Field(description="meta action sequence")
+
+
+class CV(BaseModel):
+    """CV to follow in future"""
+
+    job_id: int = Field(description="job id")
+    cv: str = Field(description="cv")
+
+
+class MayorDecision(BaseModel):
+    """Mayor decision to follow in future"""
+
+    decision: str = Field(description="yes or no")
+    comments: str = Field(description="comments")
 
 
 class Reflection(BaseModel):

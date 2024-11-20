@@ -161,3 +161,59 @@ describe_action_result_prompt = ChatPromptTemplate.from_template(
     Tone and style: {tone_and_style}\n
     """
 )
+
+generate_cv_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, decide if a job change is necessary.
+    User State:
+    {character_stats}
+    Reflection:
+    {reflection}
+    Character Info:
+    {character_info}
+    Available Jobs:
+    {available_public_jobs}
+
+    You should carefully analyze the user's current skills, interests and any other relevant factors to decide if the user is satisfied with the current job and the life style.
+    If the decision is NOT to change job, your output should be like this:
+    {{
+        "jobId": 0,
+        "cv": ""
+    }}
+    If the decision is to change job, you should choose a job from the available jobs with the jobId and generate a professional CV based on the detail of the job.
+    If you choose the job with jobId 1, Here is an example to follow (don't copy it):
+    {{
+        "jobId": 1,
+        "cv": "I think my knowledge level is good enough to be a student helper and I love this job"
+    }}
+    CV:
+    """
+)
+
+mayor_decision_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, make a decision regarding the user's job application.
+    
+    User State:
+    {character_stats}
+    CV:
+    {cv}
+    Details of the job:
+    {public_work_info}
+    From the perspective of the job criteria:
+    {meet_requirements}
+
+    You should carefully analyze the user's qualifications, the job requirements, and any other relevant factors to decide if the user should be offered the job.
+    Sometimes you don’t have to meet all the hard conditions. You can add some randomness to your decision-making process to make the decision results more flexible and random.
+    You should give the comments for your decision, explaining your decision in a reasonable way:
+    If the decision is to offer the job, here is an example to follow (don't copy it):
+    {{
+        "decision": "yes",
+        "comments": "The player's previous experience and education level meet the requirements, so he can be given a chance to do this job."
+    }}
+    If the decision is not to offer the job, here is an example to follow (don't copy it):
+    {{
+        "decision": "no",
+        "comments": "This job is not suitable for this player because there is too big a gap in education level."
+    }}
+    Decision:
+    """
+)

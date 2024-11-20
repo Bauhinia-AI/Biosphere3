@@ -432,17 +432,30 @@ async def generate_knowledge(state: ConversationState):
         "day": current_time[0]
     }
     talked_response = make_api_request_sync("POST", "/conversations/get_by_id_and_day", data=talked_data)
-    conversation_list = talked_response["data"]
+    if talked_response["data"] is None:
+        conversation_list = []
+    else:
+        conversation_list = talked_response["data"]
     # conversation_list = []
 
     logger.info(f"🧠 REFLECTING ON TODAY'S CONVERSATIONS...")
 
+    # 对话反思
     knowledge = knowledge_generator.invoke(
         {
             "player": profile,
             "conversation_list": conversation_list
         }
     )
+
+    # 存储到数据库知识表
+    updated_knowledge_data = {
+        "characterId": state["userid"],
+        "day": current_time[0],
+        "environment_information": knowledge.environment_information,
+        "personal_information": knowledge.personal_information
+    }
+    knowledge_response = make_api_request_sync("POST", "/knowledge/update", data=updated_knowledge_data)
 
     # logger
     logger.info(f"{state['userid']} have learned something from the environment.")

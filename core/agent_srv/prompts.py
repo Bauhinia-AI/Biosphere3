@@ -15,10 +15,26 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             {tool_functions}\n
             and the available locations are:\n
             {locations}\n
+            and the market data is:\n
+            {market_data}\n
 
+            Here's some specific requirements from user, ignore it if it's empty:\n
+            Daily Goal: {daily_goal}\n
+            Do you need to refer to the past daily objectives? {refer_to_previous}\n
+            Life Style: {life_style}\n
+            Additional Requirements: {additional_requirements}\n
 
-            The final format should be a list of daily objectives. Like this:\n
-            ["Working: Working in the farm","Studying: Discover something about science", "Socializing: Try to make friends"]\n
+            In general, you ultimately need to make money(selling goods) and get educated. Study costs you 50 units of money.
+            \n
+            
+            The goods you can sell are:
+            {market_data}
+            \n
+
+            The final format should be a list of daily objectives.
+            REMIND: you SHOULD NOT output other formats or other description words. 
+            Here's an example to follow:\n
+            ["Working: Working in the farm", "Studying: Discover something about science", "Socializing: Try to make friends"]
             """,
         ),
     ]
@@ -56,6 +72,19 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     \n
     locations_available:\n
     {locations}
+
+    Here's some specific requirements from user, ignore it if it is empty:\n
+    Task Priority: {task_priority}\n
+    Your meta action number should not exceed {max_actions}\n
+    Additional Requirements: {additional_requirements}\n
+
+    If the action is selling goods, you should sell all the goods you can sell.
+    Here's your inventory:
+    {inventory}
+    \n
+    And the market price data is:
+    {market_data}
+    \n
     The final format should be a list of meta actions. for example:\n
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
     \n
@@ -70,55 +99,55 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     available locations:
     {locations}
 
+    
     The following action has failed and needs to be replanned:
     Failed Action: {failed_action}
     Error Message: {error_message}
-    Current Location: {current_location}
 
     Please analyze the error and provide an alternative approach considering:
     1. If the error is location-related, ensure proper navigation
-    2. If the error is timing-related, adjust the sequence timing
-    3. If the error is resource-related, add necessary resource gathering steps
-    4. If the error is prerequisite-related, add missing prerequisite actions
-    {% endif %}
+    2. If the error is resource-related, add necessary resource gathering steps
+    3. If the error is money-related, add necessary money-related actions(sell)
+    4. If the error is sleep-related, add necessary sleep action(sleep [hours:int]: Sleep to recover energy and health.
+Constraints: Must be at home).\n
+
+
 
     Current sequence:
     {meta_seq}
+
+    Here's some specific requirements from user, ignore it if it is empty:
+    If the replan fails, you should try to find a alternative plan but no more than {replan_time_limit} actions.\n
+    Additional Requirements: {additional_requirements}\n
 
     Please provide a revised action sequence that:
     1. Avoids the failed action or its problematic conditions
     2. Still achieves the original objectives where possible
     3. Includes any necessary preparatory steps
-    4. Takes into account the current location and context
+
+    The final format should be a list of meta actions. for example:\n
+    [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
+    \n
     """
 )
 
 reflection_prompt = ChatPromptTemplate.from_template(
-    """As an AI agent, please analyze your recent activities and generate a thoughtful reflection.
+    """Based on the following meta action sequence and their execution results,
+    provide a brief reflection on the success of the plan, any unexpected outcomes,
+    and potential improvements for future planning:
 
-    Recent Objectives:
-    {past_objectives}
+    Meta Action Sequence:
+    {meta_seq}
 
-    Errors and Replanning History:
-    {replan_history}
+    Execution Results:
+    {execution_results}
 
-    Character Current State:
-    {character_stats}
+    Here's some specific requirements from user, ignore it if it is empty:\n
+    Focus on in a descending order: {focus_topic}\n
+    Depth of reflection: {depth_of_reflection}\n
+    Additional Requirements: {additional_requirements}\n
 
-    Please provide:
-    1. A comprehensive reflection on your activities
-    2. Analysis of patterns in errors and mistakes
-    3. What worked well and what didn't
-    4. Specific lessons learned
-    5. Suggestions for future improvement
-
-    Focus on:
-    - Patterns in failed actions and their root causes
-    - Effectiveness of replanning strategies
-    - Progress towards objectives
-    - Resource management and timing
-    - Location-based challenges
-    - Interaction patterns with the environment
+    Reflection:
     """
 )
 
@@ -126,5 +155,9 @@ describe_action_result_prompt = ChatPromptTemplate.from_template(
     """Based on the following action result,
     provide a brief description for the action result, like: I successfully studied for 2 hours.
     {action_result}
+
+    Here's some specific requirements from user, ignore it if it is empty:\n
+    Level of detail: {level_of_detail}\n
+    Tone and style: {tone_and_style}\n
     """
 )

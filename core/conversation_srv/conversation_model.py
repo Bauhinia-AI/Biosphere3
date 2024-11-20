@@ -37,8 +37,13 @@ class ConversationState(TypedDict):
     daily_task: List[dict]  # 还未开始的对话任务，格式DailyConversationPlan
     # finished_task: List[dict]  # 已经结束的对话任务， 格式npc_ids,start_time
     message_queue: asyncio.Queue  # 接收消息的队列，需要包含用于判断只读或回复模式的字段
-    waiting_response: asyncio.Queue  # 储存等待生成回复的消息， 每个条目格式为RunningConversation
+    waiting_response: (
+        asyncio.Queue
+    )  # 储存等待生成回复的消息， 每个条目格式为RunningConversation
     websocket: Any
+    prompt: Dict[
+        str, Any
+    ]  # 用于存放prompt,"topic_requirements", "impression_impact"两个字段
 
 
 # 正在进行中的对话
@@ -72,8 +77,12 @@ class ImpressionUpdate(BaseModel):
 # 每日总结反思
 class Knowledge(BaseModel):
     time: str = Field(description="The day before the knowledge is generated")
-    environment_information: str = Field(description="Short-term memory related to environment")
-    personal_information: str = Field(description="Long-term memory related to personal profile")
+    environment_information: str = Field(
+        description="Short-term memory related to environment"
+    )
+    personal_information: str = Field(
+        description="Long-term memory related to personal profile"
+    )
 
 
 # 每天的对话计划
@@ -86,6 +95,9 @@ class DailyConversationPlan(BaseModel):
 
 
 class IntimacyMark(BaseModel):
-    mark1: int = Field(description="The intimacy mark of player 1 towards the given conversation.")
-    mark2: int = Field(description="The intimacy mark of player 2 towards the given conversation.")
-
+    mark1: int = Field(
+        description="The intimacy mark of player 1 towards the given conversation."
+    )
+    mark2: int = Field(
+        description="The intimacy mark of player 2 towards the given conversation."
+    )

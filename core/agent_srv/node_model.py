@@ -54,13 +54,37 @@ class Meta(TypedDict):
     available_locations: List[str]
 
 
+class Prompts(TypedDict):
+    daily_goal: str
+    refer_to_previous: str
+    life_style: str
+    daily_objective_ar: str
+    task_priority: List[str]
+    max_actions: int
+    meta_seq_ar: str
+    replan_time_limit: int
+    meta_seq_adjuster_ar: str
+    focus_topic: List[str]
+    depth_of_reflection: str
+    reflection_ar: str
+    level_of_detail: str
+    tone_and_style: str
+
+
+class PublicData(TypedDict):
+    market_data: Dict[str, Any]  # 市场数据
+
+
 class RunningState(TypedDict):
     userid: int
     character_stats: Annotated[CharacterStats, generic_reducer]
     decision: Annotated[Decision, generic_reducer]
     meta: Annotated[Meta, generic_reducer]
+    prompts: Annotated[Prompts, generic_reducer]
     message_queue: asyncio.Queue
     event_queue: asyncio.Queue
+    false_action_queue: asyncio.Queue
+    public_data: PublicData
     websocket: Any
     current_pointer: str
     instance: Any
@@ -86,15 +110,7 @@ class MetaActionSequence(BaseModel):
 
 
 class Reflection(BaseModel):
-    reflection: str = Field(
-        description="A comprehensive reflection of the agent's recent activities"
-    )
-    key_learnings: List[str] = Field(
-        description="Key lessons learned from past mistakes and successes"
-    )
-    improvement_suggestions: List[str] = Field(
-        description="Specific suggestions for future improvement"
-    )
+    reflection: str
 
 
 class Response(BaseModel):

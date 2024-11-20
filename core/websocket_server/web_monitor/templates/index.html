@@ -1,31 +1,36 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>WebSocket Server Monitor</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
+        body {
+            font-family: Arial, sans-serif;
             margin: 20px;
             background-color: #f0f2f5;
         }
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        .card { 
-            border: 1px solid #ddd; 
-            padding: 20px; 
-            margin: 15px 0; 
+
+        .card {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 15px 0;
             border-radius: 8px;
             background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
+
         .refresh-btn {
             padding: 10px 20px;
             background: #4CAF50;
@@ -35,48 +40,63 @@
             cursor: pointer;
             transition: background 0.3s;
         }
+
         .refresh-btn:hover {
             background: #45a049;
         }
-        .status-active { color: #4CAF50; }
-        .status-timeout { color: #f44336; }
-        
+
+        .status-active {
+            color: #4CAF50;
+        }
+
+        .status-timeout {
+            color: #f44336;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin: 10px 0;
             background: white;
         }
-        th, td {
+
+        th,
+        td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #ddd;
         }
+
         th {
             background-color: #f8f9fa;
             font-weight: 600;
         }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-bottom: 20px;
         }
+
         .stat-card {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 6px;
             text-align: center;
         }
+
         .stat-value {
             font-size: 24px;
             font-weight: bold;
             margin: 10px 0;
         }
+
         .stat-label {
             color: #666;
             font-size: 14px;
         }
+
         .server-time {
             color: #666;
             font-size: 14px;
@@ -90,9 +110,9 @@
             const clients = data.character_monitor?.clients || { active_characters: [], hosted_characters: [] };
 
             // 更新服务器时间
-            document.getElementById('server-time').textContent = 
+            document.getElementById('server-time').textContent =
                 `Server Time: ${data.server_time || 'N/A'}`;
-            
+
             // 更新统计数据
             document.getElementById('stats').innerHTML = `
                 <div class="stat-card">
@@ -108,7 +128,7 @@
                     <div class="stat-label">Hosted Characters</div>
                 </div>
             `;
-            
+
             // 更新活跃角色表格
             const activeCharactersTable = clients.active_characters.length > 0 ? clients.active_characters.map(client => `
                 <tr>
@@ -188,13 +208,14 @@
         setInterval(refreshData, 5000);
     </script>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <h1>WebSocket Server Monitor</h1>
             <button class="refresh-btn" onclick="refreshData()">Refresh</button>
         </div>
-        
+
         <div class="server-time" id="server-time">
             Server Time: Loading...
         </div>
@@ -221,4 +242,5 @@
         </div>
     </div>
 </body>
+
 </html>

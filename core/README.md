@@ -42,3 +42,4 @@
 <p align="center">
 A Mass Multi-Agent Online Game that merges elements of the Stanford Town Simulator with The Sims. In this game, players can influence one of the citizens through conversation (establishing a bounded relationship) without exerting direct control. Together with other citizens, players collaboratively govern an autonomous, self-sustaining small society. This project will analyze the interactions between agents, humans, and other agents to refine our algorithms. Our goal is to explore future models of harmonious and efficient coexistence between humans and AI.
 
+

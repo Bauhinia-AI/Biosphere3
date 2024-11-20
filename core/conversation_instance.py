@@ -35,7 +35,7 @@ class ConversationInstance:
     # listener，监听消息，收入message_queue队列等待处理
     async def listener(self, message):
         # print("Listener started!")
-        # websocket = self.state["websocket"]
+        websocket = self.state["websocket"]
         message_queue = self.state["message_queue"]
 
         try:
@@ -59,15 +59,13 @@ class ConversationInstance:
         while True:
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
+            message_code = msg.get("messageCode")
 
-            if (
-                message_name == "gameTime"
-            ):  # 游戏端给到前一天经常遇到的人，收到这条消息时触发当天的对话规划流程
+            if message_name == "gameTime":
                 # logger.info(f"🏃 User {self.user_id}: IT'S A NEW DAY!")
                 # To do
                 # 批量减少亲密度
                 pass
-                # self.state["daily_task"] = [{"List": msg["data"]}]  # 将该列表临时存放在daily_task中
                 # self.plan_start_task = asyncio.create_task(self.run_workflow())
                 # await asyncio.sleep(5)  # 等待创建任务
                 # await self.plan_start_task
@@ -124,6 +122,18 @@ class ConversationInstance:
                 await check_conversation_state(
                     self.state, msg["data"]
                 )  # 判断对话是否结束，分别处理
+            elif message_name == "prompt_modification":  # 改prompt
+                new_prompt_data = msg.get("data")
+                logger.info(f"User {self.user_id}: new prompts received.")
+                new_topic_prompt = new_prompt_data["topic_planner_prompt"]
+                new_impression_prompt = new_prompt_data["responser_prompt"]
+                self.state["prompt"]["topic_requirements"] = new_topic_prompt
+                self.state["prompt"]["impression_impact"].update(new_impression_prompt)
+                logger.info(
+                    f"User {self.user_id}'s new prompts are: {self.state['prompt']}"
+                )
+            elif message_code < 100:
+                pass  # 忽略agent_instance的消息
             else:
                 logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 

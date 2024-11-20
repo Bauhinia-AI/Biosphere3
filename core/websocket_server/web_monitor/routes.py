@@ -2,6 +2,7 @@ from aiohttp import web
 from datetime import datetime
 from pathlib import Path
 
+
 class WebMonitor:
     def __init__(self, character_manager):
         self.character_manager = character_manager
@@ -26,7 +27,7 @@ class WebMonitor:
 
             status = {
                 "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "character_monitor": character_status
+                "character_monitor": character_status,
             }
 
             return web.json_response(status)
@@ -35,7 +36,7 @@ class WebMonitor:
 
     async def get_user_messages(self, request):
         """返回特定角色的消息记录页面"""
-        character_id = int(request.match_info['character_id'])
+        character_id = int(request.match_info["character_id"])
         character = self.character_manager.get_character(character_id)
         if not character:
             return web.json_response({"error": "Character not found"}, status=404)

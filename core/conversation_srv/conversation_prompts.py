@@ -6,6 +6,7 @@ conversation_topic_planner_prompt = ChatPromptTemplate.from_template(
     Your personal profile is: {character_stats}.
     This is your memory: {memory}.
     Based on your profile, generate 5 topics for today's conversation.
+    Also take these additional requirements into account: {requirements}.
     
     The output should be a list. And it should be in time order. 
     In detail, the conversation about the first topic should happen first. Then the second.
@@ -64,10 +65,7 @@ conversation_responser_prompt = ChatPromptTemplate.from_template(
     Your response must closely related to the history.
     You must consider both positive and negative effects of each impression item on the conversation response.
     In each impression, there are four items: relation, emotion, personality, habits and preferences.
-    Relation influences the length of conversation and how much information from player profiles should be included.
-    Emotion determines the tone of the players.
-    Personality influence the length of each player's answer and their willingness towards conversation.
-    Habits and preferences are something that one player thinks the other could be interested in and can also be mentioned in the conversation.
+    The impact of these items on the response content is: {impact}.
     
     Besides, also based on your profile, the impression and the conversation history, determine whether the conversation shoud end.
     AThe relation in impression can influence the overall round of the conversation.
@@ -163,4 +161,3 @@ intimacy_mark_prompt = ChatPromptTemplate.from_template(
     mark2:
     """
 )
-

@@ -138,7 +138,7 @@ class LangGraphInstance:
                     continue
                 # 如果action_result中最後一條信息不為sleep且和现在时间相差十秒，就往event_queue里放plan
                 if self.action_result[-1]["action_result"][
-                    "action_name"
+                    "actionName"
                 ] != "sleep" and datetime.now() - self.action_result[-1][
                     "timestamp"
                 ] > timedelta(

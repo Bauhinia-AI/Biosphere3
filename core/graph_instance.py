@@ -11,7 +11,8 @@ import asyncio
 from pprint import pprint
 from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict
 from core.agent_srv.node_engines import *
-from datetime import datetime
+from datetime import datetime, timedelta
+from core.agent_srv.node_engines import generate_accommodation_decision
 
 
 class LangGraphInstance:
@@ -82,6 +83,8 @@ class LangGraphInstance:
                 self.state["event_queue"].put_nowait("JOB_HUNTING")
             elif message_name == "onestep":
                 self.state["event_queue"].put_nowait("PLAN")
+            elif message_name == "accommodation_event":
+                self.state["event_queue"].put_nowait("ACCOMMODATION_EVENT")
 
             elif message_name == "check":
                 pprint(self.state["decision"]["action_result"])
@@ -152,6 +155,9 @@ class LangGraphInstance:
             elif event == "JOB_HUNTING":
                 return "Change_Job"
 
+            elif event == "ACCOMMODATION_EVENT":
+                return "Accommodation_Decision"
+
             elif event == "gameevent":
                 pass
 
@@ -172,6 +178,7 @@ class LangGraphInstance:
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
         workflow.add_node("Change_Job", generate_change_job_cv)
         workflow.add_node("Mayor_Decision", generate_mayor_decision)
+        workflow.add_node("Accommodation_Decision", generate_accommodation_decision)
         # workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
 
         workflow.add_node("Replan_Action", replan_action)
@@ -187,6 +194,7 @@ class LangGraphInstance:
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
         workflow.add_edge("Change_Job", "Mayor_Decision")
         workflow.add_edge("Mayor_Decision", "Sensing_Route")
+        workflow.add_edge("Accommodation_Decision", "Sensing_Route")
         # workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
         # 循环回消息处理
         # workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")

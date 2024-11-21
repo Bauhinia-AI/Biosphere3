@@ -50,8 +50,8 @@ class LangGraphInstance:
         # 三个协程
         # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
-        self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        # self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
+        #self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
+        self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")

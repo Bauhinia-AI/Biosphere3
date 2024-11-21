@@ -1,6 +1,10 @@
 import sys
-
-sys.path.append("..")
+import os
+from pprint import pprint
+from langchain_openai import ChatOpenAI
+from loguru import logger
+from db.database_api_utils import make_api_request_async
+from dotenv import load_dotenv
 from agent_srv.node_model import (
     DailyObjective,
     DetailedPlan,
@@ -8,16 +12,7 @@ from agent_srv.node_model import (
     RunningState,
 )
 from agent_srv.prompts import *
-from langchain_openai import ChatOpenAI
-from loguru import logger
-import websockets
-import json
-import os
-from pprint import pprint
-import asyncio
-from db.database_api_utils import make_api_request_async
-
-from dotenv import load_dotenv
+sys.path.append("..")
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")

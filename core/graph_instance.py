@@ -1,28 +1,45 @@
-import asyncio
-from agent_srv.node_engines import *
-from agent_srv.node_model import RunningState
+from datetime import datetime, timedelta
 import time
-from langgraph.graph import StateGraph
+import json
 import asyncio
 from pprint import pprint
-from agent_srv.utils import generate_initial_state_hardcoded
-from datetime import datetime, timedelta
+from langgraph.graph import StateGraph
+import websockets
+from loguru import logger
+from agent_srv.utils import generate_initial_state_hardcoded, update_dict
+from agent_srv.node_engines import (
+    sensing_environment,
+    generate_daily_objective,
+    generate_meta_action_sequence,
+    replan_action,
+)
+from agent_srv.node_model import RunningState
 
 
 class LangGraphInstance:
+    """
+    Manages the language graph instance for a specific user.
+
+    Initializes the state, sets up asynchronous tasks for message processing,
+    event scheduling, and runs the workflow graph.
+
+    Args:
+        user_id (str): The unique identifier for the user.
+        websocket (WebSocket, optional): The WebSocket connection for communication.
+    """
+
     def __init__(self, user_id, websocket=None):
         self.user_id = user_id
         self.websocket = websocket
         self.signal = None
         # 初始化 langgraph 实例
-        #  TODO We should 根据user_id 检索数据库中的信息，更新stat
+        # TODO We should 根据user_id 检索数据库中的信息，更新stat
         self.state = RunningState(
             **generate_initial_state_hardcoded(self.user_id, self.websocket)
         )
         self.state["instance"] = self
         self.connection_stats = {}
         # 数据竞争时，锁住state
-        self.state_lock = asyncio.Lock()
         self.websocket_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
         self.graph_config = {"recursion_limit": 1e10}
@@ -38,6 +55,13 @@ class LangGraphInstance:
         self.task = asyncio.create_task(self.a_run())
 
     async def msg_processor(self):
+        """
+        Continuously processes incoming messages from the message queue.
+
+        Handles different types of messages such as action results, prompt modifications,
+        one-step triggers, and checks. Updates the state accordingly and manages
+        event scheduling based on message content.
+        """
         while True:
 
             msg = await self.state["message_queue"].get()
@@ -84,13 +108,23 @@ class LangGraphInstance:
                 logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
     async def event_scheduler(self):
+        """
+        Schedules and manages events based on the state of action results and timings.
+
+        Continuously checks the latest action result and the elapsed time to decide whether
+        to enqueue new events such as "PLAN" or "REFLECT". It also monitors the total running
+        time to perform periodic reflections.
+
+        Raises:
+            Exception: Logs and terminates if any unexpected error occurs during event scheduling.
+        """
         # start timer
         try:
             start_time = time.time()
             while True:
                 if self.signal == "TERMINATE":
                     logger.error(
-                        f"⛔ Task event_scheduler terminated due to termination signal."
+                        "⛔ Task event_scheduler terminated due to termination signal."
                     )
                     break
                 await asyncio.sleep(1)
@@ -114,11 +148,14 @@ class LangGraphInstance:
             logger.error(f"User {self.user_id}: Error in event_scheduler: {e}")
 
     async def queue_visualizer(self):
+        """
+        Periodically logs the state of various queues for monitoring purposes.
+        """
         while True:
             await asyncio.sleep(10)
             if self.signal == "TERMINATE":
                 logger.error(
-                    f"⛔ Task queue_visualizer terminated due to termination signal."
+                    "⛔ Task queue_visualizer terminated due to termination signal."
                 )
                 break
             logger.info(
@@ -132,6 +169,20 @@ class LangGraphInstance:
             )
 
     async def event_router(self, state: RunningState):
+        """
+        Routes events from the event queue to the appropriate workflow nodes.
+
+        This method continuously listens for events in the `event_queue` and determines
+        the next workflow node to invoke based on the event type. It handles events
+        such as "PLAN", "REFLECT", and "REPLAN" by mapping them to their corresponding
+        workflow nodes.
+
+        Args:
+            state (RunningState): The current running state of the graph instance.
+
+        Returns:
+            str: The name of the next workflow node to invoke.
+        """
         while True:
             event = await state["event_queue"].get()
             logger.info(f"🚦 User {self.user_id}: Event: {event}")
@@ -222,16 +273,28 @@ class LangGraphInstance:
         return workflow.compile()
 
     async def a_run(self):
+        """
+        Executes the workflow graph asynchronously.
+
+        Invokes the graph with the current state and configuration.
+        Handles termination signals and logs any exceptions that occur during execution.
+        """
         try:
             await self.graph.ainvoke(self.state, config=self.graph_config)
         except Exception as e:
             self.signal = "TERMINATE"
 
             logger.error(f"User {self.user_id} Error in workflow: {e}")
-            logger.error(f"⛔ Task a_run terminated due to termination signal.")
+            logger.error("⛔ Task a_run terminated due to termination signal.")
             self.task.cancel()
 
     async def send_message(self, message):
+        """
+        Sends a message through the WebSocket connection.
+
+        Args:
+            message (dict): The message to send.
+        """
         async with self.websocket_lock:
             if self.websocket is None or self.websocket.closed:
                 logger.error(f"⛔ User {self.user_id}: WebSocket is not connected.")

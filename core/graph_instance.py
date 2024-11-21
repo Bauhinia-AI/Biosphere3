@@ -1,19 +1,22 @@
-from datetime import datetime, timedelta
-import time
-import json
 import asyncio
+import json
+import sys
+import time
+from datetime import datetime, timedelta
 from pprint import pprint
-from langgraph.graph import StateGraph
-import websockets
+
 from loguru import logger
-from agent_srv.utils import generate_initial_state_hardcoded, update_dict
-from agent_srv.node_engines import (
-    sensing_environment,
+import websockets
+from langgraph.graph import StateGraph
+
+from core.agent_srv.node_engines import (
     generate_daily_objective,
     generate_meta_action_sequence,
     replan_action,
+    sensing_environment,
 )
-from agent_srv.node_model import RunningState
+from core.agent_srv.node_model import RunningState
+from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict
 
 
 class LangGraphInstance:
@@ -97,6 +100,8 @@ class LangGraphInstance:
                 logger.info(
                     f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
                 )
+            elif message_name == "new_day":
+                self.state["event_queue"].put_nowait("JOB_HUNTING")
             elif message_name == "onestep":
                 self.state["event_queue"].put_nowait("PLAN")
 
@@ -192,6 +197,10 @@ class LangGraphInstance:
 
             elif event == "REFLECT":
                 return "Reflect_And_Summarize"
+
+            elif event == "JOB_HUNTING":
+                return "Change_Job"
+
             elif event == "gameevent":
                 pass
 
@@ -210,6 +219,8 @@ class LangGraphInstance:
         workflow.add_node("Sensing_Route", sensing_environment)
         workflow.add_node("Objectives_planner", generate_daily_objective)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
+        workflow.add_node("Change_Job", generate_change_job_cv)
+        workflow.add_node("Mayor_Decision", generate_mayor_decision)
         # workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
 
         workflow.add_node("Replan_Action", replan_action)
@@ -223,6 +234,8 @@ class LangGraphInstance:
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
+        workflow.add_edge("Change_Job", "Mayor_Decision")
+        workflow.add_edge("Mayor_Decision", "Sensing_Route")
         # workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
         # 循环回消息处理
         # workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")

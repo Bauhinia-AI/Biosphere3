@@ -20,6 +20,7 @@ from core.agent_srv.node_model import RunningState
 from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict
 
 
+
 class LangGraphInstance:
     """
     Manages the language graph instance for a specific user.

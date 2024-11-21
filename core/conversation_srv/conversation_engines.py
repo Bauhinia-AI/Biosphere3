@@ -1,5 +1,5 @@
-from conversation_srv.conversation_model import *
-from conversation_srv.conversation_prompts import *
+from core.conversation_srv.conversation_model import *
+from core.conversation_srv.conversation_prompts import *
 from langchain_openai import ChatOpenAI
 from loguru import logger
 from typing import Literal
@@ -9,7 +9,7 @@ import websockets
 import json
 import os
 import pprint
-from database_api_utils import make_api_request_async, make_api_request_sync
+from core.db.database_api_utils import make_api_request_async, make_api_request_sync
 from datetime import datetime, timedelta
 import random
 
@@ -73,13 +73,23 @@ async def generate_daily_conversation_plan(state: ConversationState):
     else:
         memory = []
     # 生成对话主题列表
-    topic_list = conversation_topic_planner.invoke(
-        {
-            "character_stats": state["character_stats"],
-            "memory": memory,
-            "requirements": state["prompt"]["topic_requirements"]
-        }
-    )
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            topic_list = conversation_topic_planner.invoke(
+                {
+                    "character_stats": state["character_stats"],
+                    "memory": memory,
+                    "requirements": state["prompt"]["topic_requirements"]
+                }
+            )
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in generate daily conversation topics: {e}"
+            )
+            retry_count += 1
+            continue
     logger.info(f"Today User {state['userid']} is going to talk with others about: {topic_list['topics']}")
 
     final_topic_list = topic_list["topics"]
@@ -174,13 +184,24 @@ async def start_conversation(state: ConversationState):
     talked = talked_response["data"]
 
     logger.info(f"🧠 CHECKING WHETHER TO START THE CONVERSATION ...")
-    check_response = conversation_check.invoke(
-        {
-            "profile": state['character_stats'],
-            "current_talk": current_talk,
-            "finished_talk": talked
-        }
-    )  # 检验对话任务是否有必要
+
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            check_response = conversation_check.invoke(
+                {
+                    "profile": state['character_stats'],
+                    "current_talk": current_talk,
+                    "finished_talk": talked
+                }
+            )  # 检验对话任务是否有必要
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in check conversation: {e}"
+            )
+            retry_count += 1
+            continue
 
     if check_response["Need"]:
         # rag 对话对象
@@ -235,12 +256,22 @@ async def start_conversation(state: ConversationState):
                 }
                 break
 
-        pre_single_conversation = conversation_planner.invoke(
-            {
-                "character_stats": state["character_stats"],
-                "topic_list": current_topic_list,
-            }
-        )
+        retry_count = 0
+        while retry_count < 3:
+            try:
+                pre_single_conversation = conversation_planner.invoke(
+                    {
+                        "character_stats": state["character_stats"],
+                        "topic_list": current_topic_list,
+                    }
+                )
+                break
+            except Exception as e:
+                logger.error(
+                    f"⛔ User {state['userid']} Error in starting a conversation: {e}"
+                )
+                retry_count += 1
+                continue
 
         talk_message = RunningConversation(
             from_id=current_talk["from_id"],
@@ -297,15 +328,26 @@ async def generate_response(state: ConversationState):
     impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
     logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {impression_response['data'][0]}")
 
-    conversation_response = conversation_responser.invoke(
-        {
-            "profile": state["character_stats"],
-            "impression": impression_response['data'][0],
-            "question": question,
-            "history": history,
-            "impact": state["prompt"]["impression_impact"]
-        }
-    )
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            conversation_response = conversation_responser.invoke(
+                {
+                    "profile": state["character_stats"],
+                    "impression": impression_response['data'][0],
+                    "question": question,
+                    "history": history,
+                    "impact": state["prompt"]["impression_impact"]
+                }
+            )
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in generate conversation response: {e}"
+            )
+            retry_count += 1
+            continue
+
     # conversation_response = {"response": "", "Finish": [False, False]}
     # 判断通话是否结束
     before_finish = question_item["Finish"]
@@ -390,12 +432,22 @@ async def update_impression(id1: int, id2: int, conversation):
         13.Relative, including Father, Mother, Son, Daughter, Grandfather, Grandmother, Grandson, Granddaughter
     '''
 
-    impression = impression_update.invoke(
-        {
-            "conversation": conversation,
-            "relation_list": relation_list
-         }
-    )
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            impression = impression_update.invoke(
+                {
+                    "conversation": conversation,
+                    "relation_list": relation_list
+                }
+            )
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {id1} and User {id2} Error in update impressions: {e}"
+            )
+            retry_count += 1
+            continue
 
     # logger
     logger.info(f"🧠 IMPRESSION FROM USER {id1} to USER {id2} UPDATED...")
@@ -526,13 +578,23 @@ async def update_intimacy(id1: int, id2: int, conversation):
     character_data = {"characterId": id2}
     profile2 = make_api_request_sync("POST", "/characters/get", data=character_data)
 
-    intimacy_mark = conversation_intimacy_mark.invoke(
-        {
-            "profile1": profile1,
-            "profile2": profile2,
-            "conversation": conversation
-        }
-    )
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            intimacy_mark = conversation_intimacy_mark.invoke(
+                {
+                    "profile1": profile1,
+                    "profile2": profile2,
+                    "conversation": conversation
+                }
+            )
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {id1} and User {id2} Error in updating intimacy score: {e}"
+            )
+            retry_count += 1
+            continue
 
     logger.info(f"The conversation is {conversation}.")
     logger.info(f"User {id1}'s attitude towards the conversation is: {intimacy_mark.mark1 - 3}")

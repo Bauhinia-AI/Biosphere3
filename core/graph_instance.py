@@ -1,6 +1,5 @@
 import asyncio
 import json
-import sys
 import time
 from datetime import datetime, timedelta
 from pprint import pprint
@@ -14,6 +13,8 @@ from core.agent_srv.node_engines import (
     generate_meta_action_sequence,
     replan_action,
     sensing_environment,
+    generate_change_job_cv,
+    generate_mayor_decision,
 )
 from core.agent_srv.node_model import RunningState
 from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict

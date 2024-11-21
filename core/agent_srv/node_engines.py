@@ -1,31 +1,31 @@
 import sys
+import os
+import json
+import asyncio
+from pprint import pprint
 
-sys.path.append(".")
+from dotenv import load_dotenv
+from loguru import logger
+import websockets
+
+from langchain_openai import ChatOpenAI
+from langgraph.graph import StateGraph
+
 from core.agent_srv.node_model import (
+    CV,
     DailyObjective,
     DetailedPlan,
-    MetaActionSequence,
-    CV,
     MayorDecision,
+    MetaActionSequence,
     RunningState,
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
-from langchain_openai import ChatOpenAI
-from loguru import logger
-import websockets
-import json
-import os
-from pprint import pprint
-import asyncio
-from langgraph.graph import StateGraph
 from core.db.database_api_utils import make_api_request_async
 from core.backend_service.backend_api_utils import (
-    make_api_request_sync as make_api_request_sync_backend,
     make_api_request_async as make_api_request_async_backend,
+    make_api_request_sync as make_api_request_sync_backend,
 )
-
-from dotenv import load_dotenv
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -74,6 +74,7 @@ async def generate_daily_objective(state: RunningState):
         "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
         "daily_goal": state["prompts"]["daily_goal"],
         "refer_to_previous": state["prompts"]["refer_to_previous"],
+        "market_data": state["public_data"]["market_data"],
         "life_style": state["prompts"]["life_style"],
         "additional_requirements": state["prompts"]["daily_objective_ar"],
     }
@@ -117,6 +118,8 @@ async def generate_meta_action_sequence(state: RunningState):
         ),
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
+        "inventory": state["character_stats"]["inventory"],
+        "market_data": state["public_data"]["market_data"],
         "task_priority": state["prompts"]["task_priority"],
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],
@@ -228,7 +231,7 @@ async def replan_action(state: RunningState):
         "current_meta_seq": state["decision"]["meta_seq"][-1],
         "daily_objective": state["decision"]["daily_objective"][-1],
     }
-
+    logger.info(f"🔧 User {state['userid']}: Error context: {error_context}")
     # try:
     # Generate new meta sequence with error context
     meta_action_sequence = await meta_seq_adjuster.ainvoke(

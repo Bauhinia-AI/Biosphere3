@@ -4,6 +4,7 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
+
             """You are the daily objectives planner in a RPG game. Come up with a general daily objectives. 
             
             The user profile is:{character_stats}. 
@@ -27,6 +28,14 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
             In general, you ultimately need to make money(selling goods) and get educated. Study costs you 50 units of money.
             And the market data of the goods that you can sell is:
             {market_data}
+
+
+            In general, you ultimately need to make money(selling goods) and get educated. Study costs you 50 units of money.
+            \n
+            
+            The goods you can sell are:
+            {market_data}
+            \n
 
             The final format should be a list of daily objectives.
             REMIND: you SHOULD NOT output other formats or other description words. 
@@ -75,7 +84,15 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     The total number of the meta actions should not exceed {max_actions}.
     Additional Requirements: {additional_requirements}
 
-    The final format should be a list of meta actions. for example:
+    If the action is selling goods, you should sell all the goods you can sell.
+    Here's your inventory:
+    {inventory}
+    \n
+    And the market price data is:
+    {market_data}
+    \n
+    The final format should be a list of meta actions. for example:\n
+
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
     """
 )
@@ -105,7 +122,8 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     1. If the error is location-related, ensure proper navigation
     2. If the error is resource-related, add necessary resource gathering steps
     3. If the error is money-related, add necessary money-related actions(sell)
-    4. If the error is sleep-related, add necessary sleep action(sleep)
+    4. If the error is sleep-related, add necessary sleep action(sleep [hours:int]: Sleep to recover energy and health.
+Constraints: Must be at home).\n
 
 
     Here are some specific requirements from user. You MUST take every item into account carefully
@@ -113,7 +131,20 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
     If the action is failed and replan is needed, your alternative plan should be less than {replan_time_limit} actions.
     Additional Requirements: {additional_requirements}
 
-    The final format should be a list of meta actions. for example:
+    Current sequence:
+    {meta_seq}
+
+    Here's some specific requirements from user, ignore it if it is empty:
+    If the replan fails, you should try to find a alternative plan but no more than {replan_time_limit} actions.\n
+    Additional Requirements: {additional_requirements}\n
+
+    Please provide a revised action sequence that:
+    1. Avoids the failed action or its problematic conditions
+    2. Still achieves the original objectives where possible
+    3. Includes any necessary preparatory steps
+
+    The final format should be a list of meta actions. for example:\n
+
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
     """
 )

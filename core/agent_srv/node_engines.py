@@ -1,33 +1,34 @@
 import sys
+import os
+import json
+import asyncio
+from pprint import pprint
 
-sys.path.append(".")
+from dotenv import load_dotenv
+from loguru import logger
+import websockets
+
+from langchain_openai import ChatOpenAI
+from langgraph.graph import StateGraph
+
 from core.agent_srv.node_model import (
+    CV,
     DailyObjective,
     DetailedPlan,
+    MayorDecision,
     MetaActionSequence,
     CV,
     MayorDecision,
     RunningState,
+    AccommodationDecision,
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
-from langchain_openai import ChatOpenAI
-from loguru import logger
-import websockets
-import json
-import os
-from pprint import pprint
-import asyncio
-from langgraph.graph import StateGraph
 from core.db.database_api_utils import make_api_request_async
 from core.backend_service.backend_api_utils import (
-    make_api_request_sync as make_api_request_sync_backend,
     make_api_request_async as make_api_request_async_backend,
+    make_api_request_sync as make_api_request_sync_backend,
 )
-from core.agent_srv.prompts import accommodation_decision_prompt
-from core.agent_srv.node_model import AccommodationDecision
-
-from dotenv import load_dotenv
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")

@@ -71,6 +71,10 @@ class Prompts(TypedDict):
     tone_and_style: str
 
 
+class PublicData(TypedDict):
+    market_data: Dict[str, Any]  # 市场数据
+
+
 class RunningState(TypedDict):
     userid: int
     character_stats: Annotated[CharacterStats, generic_reducer]
@@ -80,6 +84,7 @@ class RunningState(TypedDict):
     message_queue: asyncio.Queue
     event_queue: asyncio.Queue
     false_action_queue: asyncio.Queue
+    public_data: PublicData
     websocket: Any
     current_pointer: str
     instance: Any

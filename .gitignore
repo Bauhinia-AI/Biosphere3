@@ -6,4 +6,4 @@ agent_reflections.jsonl
 *.log
 *.ipynb
 .env
-core/action_results/
+# core/action_results/

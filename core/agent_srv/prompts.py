@@ -4,25 +4,31 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """You are the daily objectives planner in a RPG game. For the given user profile:\n
-            {character_stats}
-            \n
-            and the past daily objectives(can be empty) are:
-            {past_objectives}.
-            \n
-            Come up with a general daily objectives. Each daily objectives should be diverse and not repetitive. \n
-            These objectives are daily objectives that ONLY related to the following tool functions.\n
-            {tool_functions}\n
-            and the available locations are:\n
-            {locations}\n
-            and the market data is:\n
-            {market_data}\n
 
-            Here's some specific requirements from user, ignore it if it's empty:\n
-            Daily Goal: {daily_goal}\n
-            Do you need to refer to the past daily objectives? {refer_to_previous}\n
-            Life Style: {life_style}\n
-            Additional Requirements: {additional_requirements}\n
+            """You are the daily objectives planner in a RPG game. Come up with a general daily objectives. 
+            
+            The user profile is:{character_stats}. 
+            The daily objectives should be related to the introduction, the long-term and short-term goal from profile.
+            
+            The past daily objectives(can be empty) are:{past_objectives}.
+            Each daily objectives should be diverse and not repetitive. 
+            
+            These objectives are daily objectives that ONLY related to the following tool functions.
+            {tool_functions}
+            and the available locations are:
+            {locations}
+            
+            Here's some specific requirements. You MUST take every item into account carefully.
+            Ignore them if they  are empty:
+            Daily Goal: {daily_goal}, which are some goals that you must achieve.
+            Do you need to refer to the past daily objectives? {refer_to_previous}.
+            Life Style of this user: {life_style}. 
+            Additional Requirements: {additional_requirements}.
+
+            In general, you ultimately need to make money(selling goods) and get educated. Study costs you 50 units of money.
+            And the market data of the goods that you can sell is:
+            {market_data}
+
 
             In general, you ultimately need to make money(selling goods) and get educated. Study costs you 50 units of money.
             \n
@@ -33,7 +39,7 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
 
             The final format should be a list of daily objectives.
             REMIND: you SHOULD NOT output other formats or other description words. 
-            Here's an example to follow:\n
+            Here's an example to follow:
             ["Working: Working in the farm", "Studying: Discover something about science", "Socializing: Try to make friends"]
             """,
         ),
@@ -43,40 +49,40 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
 
 detail_planner_prompt = ChatPromptTemplate.from_template(
     """For the given daily objectives,
-    \n
     {daily_objective}
-    \n
-    come up with a detailed plan only associated with the available actions.\n
-    actions_available:
+    come up with a detailed plan only associated with the available actions,
     {tool_functions}
-]\n
-    The detailed plan may involve plans that are not in the daily objectives.(daily actions like eating meals, random actions like chatting with friends.)\n
+    
+    You must carefully arrange every item in the daily objectives and consider the time order.
+    The detailed plan may involve plans that are not in the daily objectives.
+    You can add some daily necessities like eating meals and sleeping.
+    You can also randomly add some actions, like goto somewhere to meet friends.
 
-    The final format should be a list of daily objectives. for example:\n
-    Working: "I should navigate to the farm, then do a freelance job."\n,
-    daily_action:"I should eat breakfast, lunch and dinner."\n,
-    Study:"I should study"\n,
-    Socializing:"Perhaps I should go to the square and talk to someone."\n
+    The final format should be a list of daily objectives. For example:
+    Working: "I should navigate to the farm, then do a freelance job.",
+    daily_action:"I should eat breakfast, lunch and dinner.",
+    Study:"I should study",
+    Socializing:"Perhaps I should go to the square and talk to someone."
 
     """
 )
 
 meta_action_sequence_prompt = ChatPromptTemplate.from_template(
-    """For the given detailed plan, think step by step to come up with a player action sequence ONLY associated with the available actions/locations.\n
-    
+    """For the given detailed plan, 
     {daily_objective}
-    \n
-
-    actions_available:
-    {tool_functions}
-    \n
-    locations_available:\n
+    think step by step to come up with a player action sequence ONLY associated with the available actions:
+    {tool_functions}, which also includes some corresponding parameters,
+    and the available locations:
     {locations}
+ 
+    Also consider the market data when you want to trade.
+    {market_data}
 
-    Here's some specific requirements from user, ignore it if it is empty:\n
-    Task Priority: {task_priority}\n
-    Your meta action number should not exceed {max_actions}\n
-    Additional Requirements: {additional_requirements}\n
+    Here's some specific requirements from user. You MUST take every item into account carefully.
+    Ignore it if it is empty:
+    Task Priority: {task_priority}, which determine the priority of tasks in the daily objectives.
+    The total number of the meta actions should not exceed {max_actions}.
+    Additional Requirements: {additional_requirements}
 
     If the action is selling goods, you should sell all the goods you can sell.
     Here's your inventory:
@@ -86,20 +92,28 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     {market_data}
     \n
     The final format should be a list of meta actions. for example:\n
+
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
-    \n
     """
 )
 
 meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
-    """For the given meta action sequence, adjust the sequence to make sure the player can finish all the daily objectives and follow the constraints.
-    tool_functions and constraints:
-    {tool_functions}
-
-    available locations:
-    {locations}
-
+    """For the given meta action sequence,
+    {meta_seq}.
+    Please provide a revised action sequence that:
+    1. Avoids the failed action or its problematic conditions
+    2. Still achieves the original objectives where possible
+    3. Includes any necessary preparatory steps according to constraints.
     
+    The constraints are here.
+    1.Tool functions are:
+    {tool_functions}
+    Each function includes a detail description of constrains. 
+    You MUST carefully check and adjust the meta action sequence according to these constraints.
+    2.Available locations are:
+    {locations}
+    You should not include actions whose constraints include going to locations that are not available.
+
     The following action has failed and needs to be replanned:
     Failed Action: {failed_action}
     Error Message: {error_message}
@@ -112,6 +126,10 @@ meta_seq_adjuster_prompt = ChatPromptTemplate.from_template(
 Constraints: Must be at home).\n
 
 
+    Here are some specific requirements from user. You MUST take every item into account carefully
+    Ignore them if they are empty:
+    If the action is failed and replan is needed, your alternative plan should be less than {replan_time_limit} actions.
+    Additional Requirements: {additional_requirements}
 
     Current sequence:
     {meta_seq}
@@ -126,26 +144,27 @@ Constraints: Must be at home).\n
     3. Includes any necessary preparatory steps
 
     The final format should be a list of meta actions. for example:\n
+
     [meta_action1 param1,meta_action2 param1,...,meta_actionN param1 param2 param3]
-    \n
     """
 )
 
 reflection_prompt = ChatPromptTemplate.from_template(
-    """Based on the following meta action sequence and their execution results,
-    provide a brief reflection on the success of the plan, any unexpected outcomes,
-    and potential improvements for future planning:
+    """Based on the following meta action sequence,
+    {meta_seq},
+    and their execution results,
+    {execution_results},
+    provide a brief reflection.
+     
+    You should learn from the successful actions as well as the failures.
+    Also summarize any unexpected outcomes.
+    You should mainly focus on how to improve future planning.
 
-    Meta Action Sequence:
-    {meta_seq}
-
-    Execution Results:
-    {execution_results}
-
-    Here's some specific requirements from user, ignore it if it is empty:\n
-    Focus on in a descending order: {focus_topic}\n
-    Depth of reflection: {depth_of_reflection}\n
-    Additional Requirements: {additional_requirements}\n
+    Here's some specific requirements from user, You MUST take every item into account carefully.
+    Ignore them if they are empty:
+    You should focus on these topics in a descending order: {focus_topic}.
+    Depth of reflection: {depth_of_reflection}
+    Additional Requirements: {additional_requirements}
 
     Reflection:
     """
@@ -153,12 +172,74 @@ reflection_prompt = ChatPromptTemplate.from_template(
 
 describe_action_result_prompt = ChatPromptTemplate.from_template(
     """Based on the following action result,
-    provide a brief description for the action result, like: I successfully studied for 2 hours.
-    {action_result}
+    {action_result},
+    provide a description for the action results.
+    
+    The descriptions should be clear and simple while include all the necessary information.
+    For example, I successfully studied for 2 hours.
+    If some actions are all aiming at the same task, just describe them as a whole.
+    For example, the action "goto school" and "study 2" can be summarized together as I successfully studied for 2 hours at school. 
 
-    Here's some specific requirements from user, ignore it if it is empty:\n
-    Level of detail: {level_of_detail}\n
-    Tone and style: {tone_and_style}\n
+    Here's some specific requirements from user, You MUST take every item into account carefully.
+    Ignore it if it is empty:
+    Level of detail: {level_of_detail}, which determines how much detail information you should include in your description.
+    This is the tone and style of your description: {tone_and_style}.
+    """
+)
+
+generate_cv_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, decide if a job change is necessary.
+    User State:
+    {character_stats}
+    Reflection:
+    {reflection}
+    Character Info:
+    {character_info}
+    Available Jobs:
+    {available_public_jobs}
+
+    You should carefully analyze the user's current skills, interests and any other relevant factors to decide if the user is satisfied with the current job and the life style.
+    If the decision is NOT to change job, your output should be like this:
+    {{
+        "jobId": 0,
+        "cv": ""
+    }}
+    If the decision is to change job, you should choose a job from the available jobs with the jobId and generate a professional CV based on the detail of the job.
+    If you choose the job with jobId 1, Here is an example to follow (don't copy it):
+    {{
+        "jobId": 1,
+        "cv": "I think my knowledge level is good enough to be a student helper and I love this job"
+    }}
+    CV:
+    """
+)
+
+mayor_decision_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, make a decision regarding the user's job application.
+    
+    User State:
+    {character_stats}
+    CV:
+    {cv}
+    Details of the job:
+    {public_work_info}
+    From the perspective of the job criteria:
+    {meet_requirements}
+
+    You should carefully analyze the user's qualifications, the job requirements, and any other relevant factors to decide if the user should be offered the job.
+    Sometimes you don’t have to meet all the hard conditions. You can add some randomness to your decision-making process to make the decision results more flexible and random.
+    You should give the comments for your decision, explaining your decision in a reasonable way:
+    If the decision is to offer the job, here is an example to follow (don't copy it):
+    {{
+        "decision": "yes",
+        "comments": "The player's previous experience and education level meet the requirements, so he can be given a chance to do this job."
+    }}
+    If the decision is not to offer the job, here is an example to follow (don't copy it):
+    {{
+        "decision": "no",
+        "comments": "This job is not suitable for this player because there is too big a gap in education level."
+    }}
+    Decision:
     """
 )
 

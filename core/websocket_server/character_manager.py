@@ -44,7 +44,7 @@ class CharacterManager:
     def add_character(
         self,
         character_id: int,
-        agent_instance,# : LangGraphInstance,
+        agent_instance:LangGraphInstance,
         conversation_instance: ConversationInstance,
         callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None,
     ) -> None:

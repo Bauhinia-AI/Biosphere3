@@ -19,7 +19,7 @@ def check_termination(coro):
     return wrapper
 
 
-def generate_initial_state(userid, websocket):
+def generate_initial_state_hardcoded(userid, websocket):
     initial_state = {
         "userid": userid,
         "character_stats": {
@@ -107,8 +107,6 @@ Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,whea
     
     10. study [hours:int]: Study to achieve a higher degree, will cost money.
 Constraints: Must be in school and have enough money.\n
-    11. sleep [hours:int]: Sleep to recover energy and health only when your energy is low.
-Constraints: Must be at home.\n
 """
 # 6. buy [itemType:string] [amount:int]: Purchase items, costing money.
 # Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n

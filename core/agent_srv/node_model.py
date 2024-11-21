@@ -118,6 +118,14 @@ class MayorDecision(BaseModel):
     comments: str = Field(description="comments")
 
 
+class AccommodationDecision(BaseModel):
+    """Accommodation decision including accommodation_id and lease_weeks."""
+
+    accommodation_id: int = Field(description="ID of the chosen accommodation")
+    lease_weeks: int = Field(description="Number of weeks to lease (1-12)")
+    comments: str = Field(description="comments")
+
+
 class Reflection(BaseModel):
     reflection: str
 

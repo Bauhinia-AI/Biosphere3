@@ -217,3 +217,57 @@ mayor_decision_prompt = ChatPromptTemplate.from_template(
     Decision:
     """
 )
+
+accommodation_decision_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, decide which accommodation the user should rent next and for how many weeks (1-12).
+
+    User State:
+    {character_stats}
+    Current Accommodation:
+    {current_accommodation}
+    Available Accommodations:
+    {available_accommodations}
+    Financial Status:
+    {financial_status}
+
+    Previous failed attempts:
+    {failure_reasons}
+
+    Consider the following explanations about the game systems:
+
+    **Health System:**
+    - Each day, there is a chance to get sick, reducing health by varying amounts depending on the illness.
+    - Visiting a doctor restores +10 health but costs 100 coins.
+    - No illness will occur in the first 14 game days.
+    - The health efficiency multiplier is min(100, health)/100.
+
+    **Hunger System:**
+    - Hunger decreases over time, reducing by 10% of the maximum hunger every hour.
+    - When absolute hunger is below 50, production efficiency = hunger/100.
+
+    **Energy System:**
+    - Energy decreases when performing various activities.
+    - Sleeping restores 10% of energy per hour.
+    - During production activities, efficiency multiplier = max(energy, 100)/100.
+
+    Different accommodations affect maximum energy, health, hunger, and energy recovery rates.
+
+    Considering the user's financial status, needs, these game mechanics, and the previous failed attempts, decide on the accommodation and lease duration.
+
+    Your output should be a JSON object like:
+    {{
+        "accommodation_id": <int>,  # ID of the chosen accommodation
+        "lease_weeks": <int>,       # Number of weeks to lease (1-12)
+        "comments": "<Your comments>"
+    }}
+
+    For example:
+    {{
+        "accommodation_id": 3,
+        "lease_weeks": 4,
+        "comments": "I can afford a better apartment now, which would improve my quality of life."
+    }}
+
+    Decision:
+    """
+)

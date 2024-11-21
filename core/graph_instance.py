@@ -146,10 +146,10 @@ class LangGraphInstance:
                 #     seconds=5
                 # ):
                 #     self.state["event_queue"].put_nowait("PLAN")
-                # 如果时间超过5分钟，则往队列里放[REFLECT
+                # PLAN
                 if time.time() - start_time > 300:
                     # BUG REFLECT raise error
-                    self.state["event_queue"].put_nowait("REFLECT")
+                    self.state["event_queue"].put_nowait("PLAN")
                     start_time = time.time()
                     # self.state["event_queue"].put_nowait("REFLECT")
                 # self.state["event_queue"].put_nowait("PLAN")

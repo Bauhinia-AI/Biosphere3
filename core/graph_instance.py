@@ -1,6 +1,5 @@
 import asyncio
 import json
-import sys
 import time
 from datetime import datetime, timedelta
 from pprint import pprint
@@ -14,9 +13,12 @@ from core.agent_srv.node_engines import (
     generate_meta_action_sequence,
     replan_action,
     sensing_environment,
+    generate_change_job_cv,
+    generate_mayor_decision,
 )
 from core.agent_srv.node_model import RunningState
 from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict
+
 
 
 class LangGraphInstance:
@@ -50,7 +52,7 @@ class LangGraphInstance:
         # self.listener_task = asyncio.create_task(self.listener())
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        # self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
+        self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")
@@ -133,19 +135,22 @@ class LangGraphInstance:
                     )
                     break
                 await asyncio.sleep(1)
-                # 如果action_result中最後一條信息不為sleep且和现在时间相差十秒，就往event_queue里放plan
-                if self.action_result[-1]["action_result"][
-                    "action_name"
-                ] != "sleep" and datetime.now() - self.action_result[-1][
-                    "timestamp"
-                ] > timedelta(
-                    seconds=5
-                ):
-                    self.state["event_queue"].put_nowait("PLAN")
-                # 如果时间超过5分钟，则往队列里放[REFLECT
+                # if len(self.action_result) == 0:
+                #     continue
+                # # 如果action_result中最後一條信息不為sleep且和现在时间相差十秒，就往event_queue里放plan
+                # if self.action_result[-1]["action_result"][
+                #     "actionName"
+                # ] != "sleep" and datetime.now() - self.action_result[-1][
+                #     "timestamp"
+                # ] > timedelta(
+                #     seconds=5
+                # ):
+                #     self.state["event_queue"].put_nowait("PLAN")
+                # PLAN
                 if time.time() - start_time > 300:
                     # BUG REFLECT raise error
-                    pass
+                    self.state["event_queue"].put_nowait("PLAN")
+                    start_time = time.time()
                     # self.state["event_queue"].put_nowait("REFLECT")
                 # self.state["event_queue"].put_nowait("PLAN")
                 # logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")

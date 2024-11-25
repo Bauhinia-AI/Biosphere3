@@ -68,7 +68,7 @@ class Prompts(TypedDict):
 
 
 class PublicData(TypedDict):
-    market_data: Dict[str, Any] # 市场数据
+    market_data: Dict[str, Any]  # 市场数据
 
 
 class RunningState(TypedDict):

@@ -9,7 +9,8 @@ import websockets
 import json
 import os
 import pprint
-from core.db.database_api_utils import make_api_request_async, make_api_request_sync
+from core.db.database_api_utils import make_api_request_sync
+from core.backend_service.backend_api_utils import make_api_request_sync as make_backend_api_request_sync
 from datetime import datetime, timedelta
 import random
 
@@ -61,8 +62,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
     logger.info(f"User {state['userid']}: {profile['message']}")
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
 
-    # To do
-    # 获取其他记忆
+    # 获取daily objectives
     get_daily_objectives_data = {
         "characterId": state["userid"],
         "k": 1
@@ -72,6 +72,15 @@ async def generate_daily_conversation_plan(state: ConversationState):
         memory = objective_response["data"]
     else:
         memory = []
+
+    # 获取角色弧光
+    arc_response = make_api_request_sync("POST", "/character_arc/get", data={"characterId": state["userid"]})
+    if not arc_response:
+        arc_data = []
+    else:
+        arc_data = arc_response["data"]
+    logger.info(f"User {state['userid']} current character arc is {arc_data}")
+
     # 生成对话主题列表
     retry_count = 0
     while retry_count < 3:
@@ -80,6 +89,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
                 {
                     "character_stats": state["character_stats"],
                     "memory": memory,
+                    "personality": arc_data,
                     "requirements": state["prompt"]["topic_requirements"]
                 }
             )
@@ -95,11 +105,17 @@ async def generate_daily_conversation_plan(state: ConversationState):
     final_topic_list = topic_list["topics"]
 
     conversation_plan = DailyConversationPlan(conversations=[])
-    timetable = 10  # 对话开始时间的
-    for talk in final_topic_list:
-        start_minute = (state['userid'] % 60 + random.randint(0, 60)) % 60
-        start_time = str(timetable)+":"+f"{start_minute:02}"
-        timetable += 1
+
+    # 生成对话发生的时间，在发条值时间内
+    try:
+        start_time_list = generate_talk_time(5, state['userid'])
+        if not start_time_list:
+            raise ValueError("POWER IS NOT ENOUGH!")
+    except ValueError as e:
+        logger.info(f"⛔ User {state['userid']} Error in planning conversation: {e}")
+
+    for index, talk in enumerate(final_topic_list):
+        start_time = start_time_list[index]
         # 重组格式
         single_conversation = ConversationTask(
             from_id=state["userid"],
@@ -231,14 +247,31 @@ async def start_conversation(state: ConversationState):
 
         current_topic_list = {}
         if len(rag_response['data']) == 0:
-            logger.info(f"User {state['userid']}: There is no suitable person to talk to on this topic {current_talk['topic']}.")
+            logger.info(f"User {state['userid']}: There is no suitable person to talk to on this topic {current_talk['topic']}. Randomly choose one.")
+            id_data = random_user_with_power(5, state['userid'])
+            rag_response["data"] = [{"characterId": id_data}]
 
         for user in rag_response["data"]:
             if user["characterId"] != state["userid"]:  # 排除自己和自己对话
-                logger.info(f"User {state['userid']} is going to talk with {user['characterId']} on this topic.")
+                logger.info(f"User {state['userid']} plans to talk to {user['characterId']} on this topic.")
+                # 检查发条值
+                id_data = user["characterId"]
+                endpoint = "/characterPower/getByCharacterId/" + str(id_data)
+                power_check = make_backend_api_request_sync("GET", endpoint=endpoint)
+                if not power_check["data"]:
+                    # 随机找一个人对话,剩余发条值5分钟以上
+                    to_id = random_user_with_power(5, state['userid'])
+                    logger.info(f"User {user['characterId']} is running out of power, choose another player to talk.")
+                elif power_check["data"]["currentPower"] < 5:
+                    # 随机找一个人对话
+                    to_id = random_user_with_power(5, state['userid'])
+                    logger.info(f"User {user['characterId']} current power is not enough for a whole conversation, choose another player to talk.")
+                else:
+                    to_id = user["characterId"]
+                logger.info(f"User {state['userid']} finally decided to talk with {to_id} on this topic.")
                 impression_query_data = {
                     "from_id": state["userid"],
-                    "to_id": user["characterId"],
+                    "to_id": to_id,
                     "k": 1
                 }
                 impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
@@ -248,13 +281,21 @@ async def start_conversation(state: ConversationState):
                     current_impression = impression_response["data"][0]
                 else:
                     current_impression = []
-                logger.info(f"The impression from User {state['userid']} to User {user['characterId']} is {current_impression}.")
+                logger.info(f"The impression from User {state['userid']} to User {to_id} is {current_impression}.")
                 current_topic_list = {
                     "topic": current_talk['topic'],
-                    "userid": user["characterId"],
+                    "userid": to_id,
                     "impression": current_impression
                 }
                 break
+
+        # 获取角色弧光
+        arc_response = make_api_request_sync("POST", "/character_arc/get", data={"characterId": state["userid"]})
+        if not arc_response:
+            arc_data = []
+        else:
+            arc_data = arc_response["data"]
+        logger.info(f"User {state['userid']} current character arc is {arc_data}")
 
         retry_count = 0
         while retry_count < 3:
@@ -263,6 +304,7 @@ async def start_conversation(state: ConversationState):
                     {
                         "character_stats": state["character_stats"],
                         "topic_list": current_topic_list,
+                        "personality": arc_data
                     }
                 )
                 break
@@ -326,7 +368,20 @@ async def generate_response(state: ConversationState):
         "k": 1
     }
     impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
-    logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {impression_response['data'][0]}")
+
+    if impression_response["data"]:
+        current_impression = impression_response["data"][0]
+    else:
+        current_impression = []
+    logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {current_impression}")
+
+    # 获取角色弧光
+    arc_response = make_api_request_sync("POST", "/character_arc/get", data={"characterId": state["userid"]})
+    if not arc_response:
+        arc_data = []
+    else:
+        arc_data = arc_response["data"]
+    logger.info(f"User {state['userid']} current character arc is {arc_data}")
 
     retry_count = 0
     while retry_count < 3:
@@ -334,10 +389,11 @@ async def generate_response(state: ConversationState):
             conversation_response = conversation_responser.invoke(
                 {
                     "profile": state["character_stats"],
-                    "impression": impression_response['data'][0],
+                    "impression": current_impression,
                     "question": question,
                     "history": history,
-                    "impact": state["prompt"]["impression_impact"]
+                    "impact": state["prompt"]["impression_impact"],
+                    "personality": arc_data
                 }
             )
             break
@@ -668,7 +724,7 @@ async def update_intimacy(id1: int, id2: int, conversation):
 
 
 # 现实时间到游戏时间转换器
-def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-11 20:00'):  # 暂时设置的day1，real_time=datetime.now()
+def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-11 10:00'):  # 暂时设置的day1，real_time=datetime.now()
     # 解析现实时间
     day1 = datetime.strptime(day1_str, "%Y-%m-%d %H:%M")
     # 第1天的开始时间
@@ -684,4 +740,43 @@ def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-11 20:00'): 
     game_hour, remainder = divmod(remaining_seconds, 3600)
     game_minute, seconds = divmod(remainder, 60)
     return [game_day, game_hour, game_minute]
+
+
+# 查询所有发条值>k的角色并随机返回一个除user以外的角色
+def random_user_with_power(k: int, user: int):
+    check_response = make_backend_api_request_sync("GET","/characterPower/getAll")
+    all_power_list = check_response["data"]
+    all_num = len(all_power_list)
+    while True:
+        index = random.randint(0, all_num-1)
+        candidate = all_power_list[index]["characterId"]
+        power = all_power_list[index]["currentPower"]
+        if power > k and candidate != user:
+            final_user = candidate
+            break
+
+    return final_user
+
+
+# 随机生成k次对话发生的时间，从当前时间开始到发条值结束前10分钟为之。时间输出为游戏时间
+def generate_talk_time(k: int, id: int):
+    day, hour, minute = calculate_game_time()
+
+    endpoint = "/characterPower/getByCharacterId/" + str(id)
+    power_check = make_backend_api_request_sync("GET", endpoint=endpoint)
+    if not power_check["data"]:
+        return []
+    elif power_check["data"]["currentPower"] < 6:
+        return []
+    power_minute = power_check["data"]["currentPower"]
+
+    time_list = []
+    random_numbers = [random.randint(2, power_minute-10) for _ in range(k)]
+    sorted_numbers = sorted(random_numbers)
+    for t in sorted_numbers:
+        add_hour, add_minute = divmod(minute+t, 60)
+        start_time = f"{(hour+add_hour):02}" + ":" + f"{add_minute:02}"
+        time_list.append(start_time)
+
+    return time_list
 

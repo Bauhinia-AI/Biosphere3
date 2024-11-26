@@ -5,9 +5,11 @@ conversation_topic_planner_prompt = ChatPromptTemplate.from_template(
     You are a daily conversation planner in a RPG game.
     Your personal profile is: {character_stats}.
     This is your daily objectives: {memory}.
+    Your current personality is: {personality}.
     Based on your profile, generate 5 topics for today's conversation.
     The topics should be related to the daily objectives and profile.
-    Also randomly add some casual topics, for example talking about weather, complaining of food, praising others clothing.
+    Also randomly add at most one casual topics. Try to combine the casual topic with the profile and personality.
+    The casual topics could be, for example, weather, food, emotion, clothing, health condition, education, product prize.
     Also take these additional requirements into account: {requirements}.
     
     The output should be a list. And it should be in time order. 
@@ -22,6 +24,7 @@ conversation_planner_prompt = ChatPromptTemplate.from_template(
     """
     You are a daily conversation planner in a RPG game. Your job is to start a conversation.
     Your personal profile is: {character_stats}.
+    Your current personality is: {personality}.
     Now you are provided a conversation topic: {topic_list}.
     
     Every conversation event includes three items:
@@ -31,7 +34,7 @@ conversation_planner_prompt = ChatPromptTemplate.from_template(
     
     Now based on the impressions and topic, generate your first sentence about this conversation.
     The first sentence MUST be closely related to the topic you received.
-    Also consider the impression and determine your tone and style.
+    Also consider the impression and your personality. Determine your tone and style based on both factors.
     Since this is to start a conversation, add some greeting words if needed.
     
     Each conversation should be a dictionary in the following form:
@@ -66,17 +69,18 @@ conversation_responser_prompt = ChatPromptTemplate.from_template(
     """
     You are a conversation responser in a RPG game.
     Your profile is: {profile}.
+    Your current personality is {personality}. 
     Your impression towards the other speaker is: {impression}.
     The conversation history between you and the other speaker is: {history}.
     
     You have received the message: {question}.
-    Generate a short response message based on your profile, the impression and the conversation history.
+    Generate a short response message based on your profile, personality, the impression and the conversation history.
     Your response must closely related to the history.
     You must consider both positive and negative effects of each impression item on the conversation response.
     In each impression, there are four items: relation, emotion, personality, habits and preferences.
     The impact of these items on the response content is: {impact}.
     
-    Besides, also based on your profile, the impression and the conversation history, determine whether the conversation shoud end.
+    Besides, also based on your profile, personality, the impression and the conversation history, determine whether the conversation shoud end.
     The relation in impression can influence the overall round of the conversation.
     For example, if two speakers are close friends, they may talk until the 4th round.
     If they not friends, the conversation may end very soon, say after 2 rounds.

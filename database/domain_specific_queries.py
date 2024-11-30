@@ -832,10 +832,90 @@ class DomainSpecificQueries:
 
         return selected_documents
 
+    def get_personality_sample(self):
+        profile_sample = self.db_utils.find_one(
+            collection_name=config.profile_sample_collection_name
+        )
+        personality_list = profile_sample.get("personality", [])
+
+        # 随机抽取 3 到 5 个性格特征
+        sample_size = random.randint(3, 5)
+        personality_sample = random.sample(personality_list, sample_size)
+
+        return personality_sample
+
+    def get_long_term_goal_sample(self):
+        profile_sample = self.db_utils.find_one(
+            collection_name=config.profile_sample_collection_name
+        )
+        long_term_goal_list = profile_sample.get("long_term_goal", [])
+
+        # 随机抽取 2 到 3 个长期目标
+        sample_size = random.randint(2, 3)
+        long_term_goal_sample = random.sample(long_term_goal_list, sample_size)
+
+        return long_term_goal_sample
+
+    def get_short_term_goal_sample(self):
+        profile_sample = self.db_utils.find_one(
+            collection_name=config.profile_sample_collection_name
+        )
+        short_term_goal_list = profile_sample.get("short_term_goal", [])
+
+        # 随机抽取 1 到 3 个短期目标
+        sample_size = random.randint(1, 3)
+        short_term_goal_sample = random.sample(short_term_goal_list, sample_size)
+
+        return short_term_goal_sample
+
+    def get_language_style_sample(self):
+        profile_sample = self.db_utils.find_one(
+            collection_name=config.profile_sample_collection_name
+        )
+        language_style_list = profile_sample.get("language_style", [])
+
+        # 随机抽取 3 到 5 个语言风格
+        sample_size = random.randint(3, 5)
+        language_style_sample = random.sample(language_style_list, sample_size)
+
+        return language_style_sample
+
+    def get_biography_sample(self):
+        profile_sample = self.db_utils.find_one(
+            collection_name=config.profile_sample_collection_name
+        )
+        biography_list = profile_sample.get("biography", [])
+
+        # 随机抽取一个传记
+        biography_sample = random.choice(biography_list)
+
+        return biography_sample
+
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
+
+    # 测试 get_personality_sample 方法
+    personality_sample = queries.get_personality_sample()
+    print("随机抽取的性格特征样本:", personality_sample)
+
+    # 测试 get_long_term_goal_sample 方法
+    long_term_goal_sample = queries.get_long_term_goal_sample()
+    print("随机抽取的长期目标样本:", long_term_goal_sample)
+
+    # 测试 get_short_term_goal_sample 方法
+    short_term_goal_sample = queries.get_short_term_goal_sample()
+    print("随机抽取的短期目标样本:", short_term_goal_sample)
+
+    # 测试 get_language_style_sample 方法
+    language_style_sample = queries.get_language_style_sample()
+    print("随机抽取的语言风格样本:", language_style_sample)
+
+    # 测试 get_biography_sample 方法
+    biography_sample = queries.get_biography_sample()
+    print("随机抽取的传记样本:", biography_sample)
+
     # print(queries.get_conversations_with_characterIds(characterIds_list=[1, 5], k=1))
     # print(queries.get_character_RAG(2, "study with my friends", 3))
 
@@ -1009,7 +1089,7 @@ if __name__ == "__main__":
     # print("\n查询 characterId=101 且 week=1 的数据:")
     # print(queries.get_cv(characterId=101, week=1))
 
-    # 测试获取所有角色
-    print("获取所有角色:")
-    all_characters = queries.get_character()
-    print(all_characters)
+    # # 测试获取所有角色
+    # print("获取所有角色:")
+    # all_characters = queries.get_character()
+    # print(all_characters)

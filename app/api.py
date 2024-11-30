@@ -9,6 +9,7 @@ import uvicorn
 import sys
 import os
 import time
+from enum import Enum
 
 from pymongo.errors import PyMongoError, DuplicateKeyError
 
@@ -459,6 +460,19 @@ class GetCharacterArcChangesRequest(BaseModel):
     characterId: int
     item: str
     k: Optional[int] = 1
+
+
+# 定义一个枚举类来限制 item_name 的值
+class SampleItem(str, Enum):
+    personality = "personality"
+    long_term_goal = "long_term_goal"
+    short_term_goal = "short_term_goal"
+    language_style = "language_style"
+    biography = "biography"
+
+
+class SampleRequest(BaseModel):
+    item_name: Optional[SampleItem] = None
 
 
 # Utility function for retrying operations
@@ -1642,6 +1656,38 @@ def get_character_arc_changes_api(request: GetCharacterArcChangesRequest):
         raise HTTPException(status_code=404, detail="No character arc changes found.")
 
 
+# Sample Router
+sample_router = APIRouter(prefix="/sample", tags=["Sample"])
+
+
+@sample_router.post("/get", response_model=StandardResponse)
+def get_sample_api(request: SampleRequest):
+    if request.item_name is None:
+        # 获取所有项的样本
+        samples = {
+            "personality": domain_queries.get_personality_sample(),
+            "long_term_goal": domain_queries.get_long_term_goal_sample(),
+            "short_term_goal": domain_queries.get_short_term_goal_sample(),
+            "language_style": domain_queries.get_language_style_sample(),
+            "biography": domain_queries.get_biography_sample(),
+        }
+    else:
+        # 根据请求的项名获取相应的样本
+        sample_method = {
+            SampleItem.personality: domain_queries.get_personality_sample,
+            SampleItem.long_term_goal: domain_queries.get_long_term_goal_sample,
+            SampleItem.short_term_goal: domain_queries.get_short_term_goal_sample,
+            SampleItem.language_style: domain_queries.get_language_style_sample,
+            SampleItem.biography: domain_queries.get_biography_sample,
+        }[request.item_name]
+
+        samples = {request.item_name: sample_method()}
+    if samples:
+        return success_response(data=samples, message="Sample retrieved successfully.")
+    else:
+        raise HTTPException(status_code=404, detail="No sample found.")
+
+
 # Include all routers into the main app
 app.include_router(crud_router)
 app.include_router(vector_search_router)
@@ -1660,6 +1706,7 @@ app.include_router(encounter_count_router)
 app.include_router(intimacy_router)
 app.include_router(knowledge_router)
 app.include_router(character_arc_router)
+app.include_router(sample_router)
 
 # Start the application
 if __name__ == "__main__":

@@ -25,28 +25,25 @@ validators = {
                 },
                 "relationship": {
                     "bsonType": ["string", "null"],
-                    "description": "与玩家的关系"
+                    "description": "与玩家的关系",
                 },
                 "personality": {
                     "bsonType": ["string", "null"],
-                    "description": "性格描述"
+                    "description": "性格描述",
                 },
                 "long_term_goal": {
                     "bsonType": ["string", "null"],
-                    "description": "长期目标"
+                    "description": "长期目标",
                 },
                 "short_term_goal": {
                     "bsonType": ["string", "null"],
-                    "description": "短期目标"
+                    "description": "短期目标",
                 },
                 "language_style": {
                     "bsonType": ["string", "null"],
-                    "description": "语言风格"
+                    "description": "语言风格",
                 },
-                "biography": {
-                    "bsonType": ["string", "null"],
-                    "description": "简介"
-                },
+                "biography": {"bsonType": ["string", "null"], "description": "简介"},
                 "created_at": {
                     "bsonType": "string",
                     "description": "创建时间,必须为字符串且为必填项",
@@ -504,6 +501,60 @@ validators = {
                 "created_at": {
                     "bsonType": "string",
                     "description": "创建时间, 必须为字符串且为必填项",
+                },
+            },
+        }
+    },
+    "profile_sample": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": [
+                "personality",
+                "long_term_goal",
+                "short_term_goal",
+                "language_style",
+                "biography",
+            ],
+            "properties": {
+                "personality": {
+                    "bsonType": "array",
+                    "description": "性格特征列表, 必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "性格特征, 必须为字符串",
+                    },
+                },
+                "long_term_goal": {
+                    "bsonType": "array",
+                    "description": "长期目标列表, 必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "长期目标, 必须为字符串",
+                    },
+                },
+                "short_term_goal": {
+                    "bsonType": "array",
+                    "description": "短期目标列表, 必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "短期目标, 必须为字符串",
+                    },
+                },
+                "language_style": {
+                    "bsonType": "array",
+                    "description": "语言风格列表, 必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "语言风格, 必须为字符串",
+                    },
+                },
+                "biography": {
+                    "bsonType": "array",
+                    "description": "简介列表, 必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "简介, 必须为字符串",
+                    },
                 },
             },
         }

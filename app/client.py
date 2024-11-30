@@ -584,6 +584,14 @@ class APIClient:
             {"characterId": characterId, "item": item, "k": k},
         )
 
+    # 新增获取样本的方法
+    def get_sample(self, item_name=None):
+        return self._make_request(
+            "POST",
+            f"{self.base_url}/sample/get",
+            {"item_name": item_name},
+        )
+
 
 if __name__ == "__main__":
     client = APIClient(base_url="http://localhost:8085")
@@ -604,7 +612,7 @@ if __name__ == "__main__":
     # # 若characterId已存在
     # # Storing character: {'code': 2, 'message': 'Character with characterId 102 already exists.', 'data': None}
 
-    print("Retrieving character:", client.get_character())
+    # print("Retrieving character:", client.get_character())
 
     # print("Retrieving character:", client.get_character(102))
     # # Retrieving character: {'code': 1, 'message': 'characters retrieved successfully.', 'data': [{'characterId': 102, 'characterName': 'Diana', 'gender': 'Female', 'slogan': 'Swift and silent.', 'description': 'An agile ranger with unparalleled archery skills.', 'role': 'Ranger', 'task': 'Scout and protect the realm', 'created_at': '2024-10-30 20:23:39', 'full_profile': 'Diana; Female; Swift and silent.; An agile ranger with unparalleled archery skills.; Ranger; Scout and protect the realm'}]}
@@ -1061,3 +1069,10 @@ if __name__ == "__main__":
     #     client.update_character_arc(character_id, updated_category_data),
     # )
     # # Updating Character Arc: {'code': 1, 'message': 'Character arc updated successfully.', 'data': 1}
+
+    # 测试获取样本数据的方法
+    print("Testing get_sample with no specific item:")
+    print(client.get_sample())
+
+    print("Testing get_sample with 'personality' item:")
+    print(client.get_sample(item_name="personality"))

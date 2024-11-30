@@ -23,6 +23,7 @@ intimacy_collection_name = "intimacy"
 knowledge_collection_name = "knowledge"
 character_arc_collection_name = "character_arc"
 character_arc_change_collection_name = "character_arc_change"
+profile_sample_collection_name = "profile_sample"
 
 mongo_uri = os.getenv("MONGO_URI")
 index_name = "vector_index"

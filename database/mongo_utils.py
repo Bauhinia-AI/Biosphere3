@@ -194,6 +194,27 @@ class MongoDBUtils:
             )
             raise
 
+    def find_one(self, collection_name, query={}, projection=None, include_id=False):
+        try:
+            collection = self.db[collection_name]
+            document = collection.find_one(query, projection)
+
+            if document and not include_id:
+                document.pop(
+                    "_id", None
+                )  # Remove _id to avoid JSON serialization issues
+
+            logging.info(f"Retrieved one document from '{collection_name}'.")
+            return document
+        except PyMongoError as e:
+            logging.error(f"Error finding one document in '{collection_name}': {e}")
+            raise
+        except Exception as e:
+            logging.error(
+                f"An unexpected error occurred during document retrieval: {e}"
+            )
+            raise
+
 
 if __name__ == "__main__":
     try:

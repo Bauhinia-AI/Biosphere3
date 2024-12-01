@@ -1,6 +1,10 @@
 import httpx
+import os
+import dotenv
 
-BASE_URL = "http://47.95.21.135:8085"
+dotenv.load_dotenv()
+
+BASE_URL = os.getenv("AGENT_BACKEND_URL")
 # BASE_URL = "http://localhost:8085"
 
 

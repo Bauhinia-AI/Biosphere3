@@ -1,8 +1,14 @@
 import functools
-import asyncio
 import requests
+import os
+import asyncio
 from pprint import pprint
-
+from dotenv import load_dotenv
+from loguru import logger
+load_dotenv()
+GAME_BACKEND_URL = os.getenv("GAME_BACKEND_URL")
+AMM_POOL_GET_AVG_PRICE = os.getenv("AMM_POOL_GET_AVG_PRICE")
+GAME_BACKEND_TIMEOUT = os.getenv("GAME_BACKEND_TIMEOUT")
 
 # BETTER WAY？
 def check_termination(coro):
@@ -23,7 +29,7 @@ def check_termination(coro):
 
 def get_inventory(userid) -> dict:
     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
-    response = requests.get(f"http://47.95.21.135:8082/bag/getByCharacterId/{userid}")
+    response = requests.get(f"{GAME_BACKEND_URL}/bag/getByCharacterId/{userid}",timeout=GAME_BACKEND_TIMEOUT)
     # 只保留ore, apple, wheat, fish
     inventory_dict = {}
     for x in response.json()["data"]:
@@ -35,17 +41,26 @@ def get_inventory(userid) -> dict:
     return inventory_dict
 
 
+def get_initial_state_from_db(userid, websocket):
+    pass
+
+
 def generate_initial_state_hardcoded(userid, websocket):
     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
-    price_response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
-    market_data = price_response.json()["data"]
-    market_data_dict = dict(
-        {
-            x["name"]: x["averagePrice"]
-            for x in market_data
-            if x["name"] in ["ore", "apple", "wheat", "fish"]
-        }
-    )
+    try:
+        price_response = requests.get(AMM_POOL_GET_AVG_PRICE, timeout=GAME_BACKEND_TIMEOUT)
+        market_data = price_response.json()["data"]
+        market_data_dict = dict(
+            {
+                x["name"]: x["averagePrice"]
+                for x in market_data
+                if x["name"] in ["ore", "apple", "wheat", "fish"]
+            }
+        )
+    except TimeoutError:
+        logger.error(f"Failed to get market data from {AMM_POOL_GET_AVG_PRICE}")
+        market_data_dict = {}
+    
     initial_state = {
         "userid": userid,
         "character_stats": {

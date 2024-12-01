@@ -1,7 +1,7 @@
 import asyncio
 import json
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pprint import pprint
 
 from loguru import logger
@@ -17,8 +17,7 @@ from core.agent_srv.node_engines import (
     generate_mayor_decision,
 )
 from core.agent_srv.node_model import RunningState
-from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict
-
+from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict, get_initial_state_from_db
 
 
 class LangGraphInstance:
@@ -39,10 +38,12 @@ class LangGraphInstance:
         self.signal = None
         # 初始化 langgraph 实例
         # TODO We should 根据user_id 检索数据库中的信息，更新stat
-        self.state = RunningState(
-            **generate_initial_state_hardcoded(self.user_id, self.websocket)
-        )
+        # self.state = RunningState(
+        #     **generate_initial_state_hardcoded(self.user_id, self.websocket)
+        # )
+        self.state = RunningState(**asyncio.run(get_initial_state_from_db(self.user_id, self.websocket)))
         self.state["instance"] = self
+        pprint(self.state)
         self.connection_stats = {}
         # 数据竞争时，锁住state
         self.websocket_lock = asyncio.Lock()
@@ -330,3 +331,6 @@ class LangGraphInstance:
                 pass
             except Exception as e:
                 logger.error(f"User {self.user_id}: Error sending message: {e}")
+
+if __name__ == "__main__":
+    a = LangGraphInstance(42)

@@ -1,5 +1,5 @@
-from conversation_srv.conversation_model import *
-from conversation_srv.conversation_prompts import *
+from core.conversation_srv.conversation_model import *
+from core.conversation_srv.conversation_prompts import *
 from langchain_openai import ChatOpenAI
 from loguru import logger
 from typing import Literal
@@ -9,8 +9,8 @@ import websockets
 import json
 import os
 import pprint
-from database_api_utils import make_api_request_sync
-from backend_api_utils import make_api_request_sync as make_backend_api_request_sync
+from core.db.database_api_utils import make_api_request_sync
+from core.backend_service.backend_api_utils import make_api_request_sync as make_backend_api_request_sync
 from datetime import datetime, timedelta
 import random
 
@@ -759,6 +759,7 @@ def random_user_with_power(k: int, user: int):
 
 
 # 随机生成k次对话发生的时间，从当前时间开始到发条值结束前10分钟为之。时间输出为游戏时间
+# 按天截断，新的一天另外plan
 def generate_talk_time(k: int, id: int):
     day, hour, minute = calculate_game_time()
 

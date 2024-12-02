@@ -1,49 +1,67 @@
 import sys
+import os
+import json
+import asyncio
+from pprint import pprint
 
-sys.path.append("..")
-from agent_srv.node_model import (
+from dotenv import load_dotenv
+from loguru import logger
+import websockets
+
+from langchain_openai import ChatOpenAI
+from langgraph.graph import StateGraph
+
+from core.agent_srv.node_model import (
+    CV,
     DailyObjective,
     DetailedPlan,
+    MayorDecision,
     MetaActionSequence,
     RunningState,
 )
-from agent_srv.prompts import *
-from langchain_openai import ChatOpenAI
-from loguru import logger
-import websockets
-import json
-import os
-from pprint import pprint
-import asyncio
-from db.database_api_utils import make_api_request_async
-
-from dotenv import load_dotenv
+from core.agent_srv.utils import generate_initial_state_hardcoded
+from core.agent_srv.prompts import *
+from core.db.database_api_utils import make_api_request_async
+from core.backend_service.backend_api_utils import (
+    make_api_request_async as make_api_request_async_backend,
+    make_api_request_sync as make_api_request_sync_backend,
+)
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
+base_url = (
+    "https://api.aiproxy.io/v1" if os.getenv("ENVIRONMENT") == "production" else None
+)
 obj_planner = obj_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
+    base_url=base_url, model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)
 
 descritor = describe_action_result_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 )
 # replanner = replanner_prompt | ChatOpenAI(
 #     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 # ).with_structured_output(Act)
 
 detail_planner = detail_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(DetailedPlan)
 
 meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
 
 meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
+
+cv_generator = generate_cv_prompt | ChatOpenAI(
+    base_url=base_url, model="gpt-4o-mini", temperature=0.7
+).with_structured_output(CV)
+
+mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
+    base_url=base_url, model="gpt-4o-mini", temperature=0.5
+).with_structured_output(MayorDecision)
 
 
 async def generate_daily_objective(state: RunningState):
@@ -58,6 +76,7 @@ async def generate_daily_objective(state: RunningState):
         "past_objectives": state.get("decision", []).get("daily_objective", [])[-3:],
         "daily_goal": state["prompts"]["daily_goal"],
         "refer_to_previous": state["prompts"]["refer_to_previous"],
+        "market_data": state["public_data"]["market_data"],
         "life_style": state["prompts"]["life_style"],
         "additional_requirements": state["prompts"]["daily_objective_ar"],
     }
@@ -101,6 +120,8 @@ async def generate_meta_action_sequence(state: RunningState):
         ),
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
+        "inventory": state["character_stats"]["inventory"],
+        "market_data": state["public_data"]["market_data"],
         "task_priority": state["prompts"]["task_priority"],
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],
@@ -212,7 +233,7 @@ async def replan_action(state: RunningState):
         "current_meta_seq": state["decision"]["meta_seq"][-1],
         "daily_objective": state["decision"]["daily_objective"][-1],
     }
-
+    logger.info(f"🔧 User {state['userid']}: Error context: {error_context}")
     # try:
     # Generate new meta sequence with error context
     meta_action_sequence = await meta_seq_adjuster.ainvoke(
@@ -242,3 +263,101 @@ async def replan_action(state: RunningState):
     )
 
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
+
+
+async def generate_change_job_cv(state: RunningState):
+    # 1. 从后端接口调用获取角色信息和工作列表
+    # 2. 从state中获取用户状态信息和过去5条反思
+    # 3. 调用LLM，输出申请的jobId和cv内容
+    # 4. 存储在state中
+    character_info_task = make_api_request_async_backend(
+        "GET", f"/characters/getById/{state['userid']}"
+    )
+    available_public_jobs_task = make_api_request_async_backend(
+        "GET", "/publicWork/getAll"
+    )
+    character_info_response, available_public_jobs_response = await asyncio.gather(
+        character_info_task, available_public_jobs_task
+    )
+    character_info = character_info_response.get("data", {})
+    available_public_jobs = available_public_jobs_response.get("data", [])
+
+    payload = {
+        "character_stats": state["character_stats"],
+        "reflection": state["decision"]["reflection"][-5:],
+        "character_info": character_info,
+        "available_public_jobs": available_public_jobs,
+    }
+    cv = await cv_generator.ainvoke(payload)
+
+    logger.info(f"📃 CV: {cv}")
+    return {"decision": {"cv": cv.cv, "newJobId": cv.job_id}}
+
+
+async def generate_mayor_decision(state: RunningState):
+    # 1. 获取state中的一些用于判断工作变更的信息，如cv、个人资料、jobId
+    # 2. 获取目前职位的具体情况
+    # 3. 获取职位的限制条件
+    # 4. 设置随机数种子，增加决策的灵活性
+    # 5. 根据这些信息生成决策，包括审核结果、评语
+    # 6. 将简历、结果、评语返回发送给游戏端
+    job_id = state["decision"]["newJobId"]
+    public_work_task = make_api_request_async_backend(
+        "GET", f"/publicWork/getById/{job_id}"
+    )
+    character_info_task = make_api_request_async_backend(
+        "GET", f"/characters/getById/{state['userid']}"
+    )
+    public_work_info_response, character_info_response = await asyncio.gather(
+        public_work_task, character_info_task
+    )
+    public_work_info = public_work_info_response.get("data", {})
+    character_info = character_info_response.get("data", {})
+    experience = character_info.get("experience", {})
+    education = character_info.get("education", {})
+
+    check_result = make_api_request_sync_backend(
+        "POST",
+        "/publicWork/checkWork",
+        data={
+            "characterId": state["userid"],
+            "newJobId": job_id,
+            "experience": experience,
+            "education": education,
+        },
+    )
+    code = check_result.get("code", 0)
+    message = check_result.get("message", "")
+    payload = {
+        "character_stats": state["character_stats"],
+        "cv": state["decision"]["cv"],
+        "public_work_info": public_work_info,
+        "meet_requirements": {"meet": code == 1, "message": message},
+    }
+    mayor_decision = await mayor_decision_generator.ainvoke(payload)
+    logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
+    logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
+    return {
+        "decision": {
+            "mayor_decision": mayor_decision.decision,
+            "mayor_comments": mayor_decision.comments,
+        }
+    }
+
+
+async def main():
+    # 测试简历投递系统
+    state = RunningState(**generate_initial_state_hardcoded(1, None))
+    workflow = StateGraph(RunningState)
+    workflow.add_node("generate_change_job_cv", generate_change_job_cv)
+    workflow.add_node("generate_mayor_decision", generate_mayor_decision)
+
+    workflow.set_entry_point("generate_change_job_cv")
+    workflow.add_edge("generate_change_job_cv", "generate_mayor_decision")
+    graph = workflow.compile()
+
+    await graph.ainvoke(state)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

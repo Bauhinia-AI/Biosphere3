@@ -149,6 +149,8 @@ async def adjust_meta_action_sequence(state: RunningState):
             "meta_seq": state["decision"]["meta_seq"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
+            "failed_action": "",
+            "error_message": "",
             "replan_time_limit": state["prompts"]["replan_time_limit"],
             "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
         }

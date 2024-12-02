@@ -1,5 +1,5 @@
-from core.conversation_srv.conversation_model import *
-from core.conversation_srv.conversation_prompts import *
+from conversation_srv.conversation_model import *
+from conversation_srv.conversation_prompts import *
 from langchain_openai import ChatOpenAI
 from loguru import logger
 from typing import Literal
@@ -9,8 +9,8 @@ import websockets
 import json
 import os
 import pprint
-from core.db.database_api_utils import make_api_request_sync
-from core.backend_service.backend_api_utils import make_api_request_sync as make_backend_api_request_sync
+from database_api_utils import make_api_request_sync
+from backend_api_utils import make_api_request_sync as make_backend_api_request_sync
 from datetime import datetime, timedelta
 import random
 
@@ -724,7 +724,7 @@ async def update_intimacy(id1: int, id2: int, conversation):
 
 
 # 现实时间到游戏时间转换器
-def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-11 10:00'):  # 暂时设置的day1，real_time=datetime.now()
+def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-11 7:30'):  # 暂时设置的day1，real_time=datetime.now()
     # 解析现实时间
     day1 = datetime.strptime(day1_str, "%Y-%m-%d %H:%M")
     # 第1天的开始时间
@@ -775,6 +775,10 @@ def generate_talk_time(k: int, id: int):
     sorted_numbers = sorted(random_numbers)
     for t in sorted_numbers:
         add_hour, add_minute = divmod(minute+t, 60)
+        if (hour+add_hour) >= 24:
+            break
+        elif (hour+add_hour) == 23 and add_minute >= 55:
+            break
         start_time = f"{(hour+add_hour):02}" + ":" + f"{add_minute:02}"
         time_list.append(start_time)
 

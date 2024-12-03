@@ -10,11 +10,13 @@ import json
 import os
 import pprint
 from core.db.database_api_utils import make_api_request_sync
-from core.backend_service.backend_api_utils import make_api_request_sync as make_backend_api_request_sync
+from core.db.backend_service.backend_api_utils import make_api_request_sync as make_backend_api_request_sync
 from datetime import datetime, timedelta
 import random
+import numpy as np
 
-os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+os.environ["OPENAI_API_KEY"] = "sk-NquCLO5noTHt6snKaYLkF2v5oUHBgcUHkyJqmx6jWIv10FGI"
+# os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
 
 conversation_topic_planner = conversation_topic_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
@@ -74,7 +76,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
         memory = []
 
     # 获取角色弧光
-    arc_response = make_api_request_sync("POST", "/character_arc/get", data={"characterId": state["userid"]})
+    arc_response = make_api_request_sync("POST", "/character_arc/get_with_changes", data={"characterId": state["userid"], "k": 1})
     if not arc_response:
         arc_data = []
     else:
@@ -108,14 +110,15 @@ async def generate_daily_conversation_plan(state: ConversationState):
 
     # 生成对话发生的时间，在发条值时间内
     try:
-        start_time_list = generate_talk_time(5, state['userid'])
+        start_time_list = generate_talk_time(10, state['userid'])
         if not start_time_list:
             raise ValueError("POWER IS NOT ENOUGH!")
     except ValueError as e:
-        logger.info(f"⛔ User {state['userid']} Error in planning conversation: {e}")
+        logger.error(f"⛔ User {state['userid']} Error in planning conversation: {e}")
 
-    for index, talk in enumerate(final_topic_list):
-        start_time = start_time_list[index]
+    for index, start_time in enumerate(start_time_list):
+        # start_time = start_time_list[index]
+        talk = final_topic_list[index]
         # 重组格式
         single_conversation = ConversationTask(
             from_id=state["userid"],
@@ -181,7 +184,7 @@ async def start_conversation(state: ConversationState):
         await asyncio.sleep(sleep_time-5)  # 设定定时任务，考虑执行check步骤需要的时间-5秒
     else:
         logger.info(f"User {state['userid']} missed one conversation. Start this task right now...")
-        current_talk['start_time'] = str(current_time[1])+":"+str(current_time[2])
+        current_talk['start_time'] = f"{current_time[1]:02}"+":"+f"{current_time[2]:02}"
 
     # 从数据库获取当前用户的最新状态
     userid = state["userid"]
@@ -290,7 +293,7 @@ async def start_conversation(state: ConversationState):
                 break
 
         # 获取角色弧光
-        arc_response = make_api_request_sync("POST", "/character_arc/get", data={"characterId": state["userid"]})
+        arc_response = make_api_request_sync("POST", "/character_arc/get_with_changes", data={"characterId": state["userid"], "k": 1})
         if not arc_response:
             arc_data = []
         else:
@@ -376,7 +379,7 @@ async def generate_response(state: ConversationState):
     logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {current_impression}")
 
     # 获取角色弧光
-    arc_response = make_api_request_sync("POST", "/character_arc/get", data={"characterId": state["userid"]})
+    arc_response = make_api_request_sync("POST", "/character_arc/get_with_changes", data={"characterId": state["userid"], "k": 1})
     if not arc_response:
         arc_data = []
     else:
@@ -428,7 +431,7 @@ async def generate_response(state: ConversationState):
     # 发送消息
     await send_conversation_message(state, response_message)
 
-    return {"response": response_message["latest_message"]}
+    return {"response": response_message}
 
 
 # 判断是否所有任务都已经完成，如果有未开始的对话，连接到starter模块，如果所有对话都已发出，连接到end，发起对话流程结束
@@ -724,7 +727,7 @@ async def update_intimacy(id1: int, id2: int, conversation):
 
 
 # 现实时间到游戏时间转换器
-def calculate_game_time(real_time=datetime.now(), day1_str='2024-11-11 7:30'):  # 暂时设置的day1，real_time=datetime.now()
+def calculate_game_time(real_time=datetime.now(), day1_str='2024-12-1 10:00'):  # 暂时设置的day1，real_time=datetime.now()
     # 解析现实时间
     day1 = datetime.strptime(day1_str, "%Y-%m-%d %H:%M")
     # 第1天的开始时间
@@ -759,7 +762,6 @@ def random_user_with_power(k: int, user: int):
 
 
 # 随机生成k次对话发生的时间，从当前时间开始到发条值结束前10分钟为之。时间输出为游戏时间
-# 按天截断，新的一天另外plan
 def generate_talk_time(k: int, id: int):
     day, hour, minute = calculate_game_time()
 
@@ -770,6 +772,8 @@ def generate_talk_time(k: int, id: int):
     elif power_check["data"]["currentPower"] < 6:
         return []
     power_minute = power_check["data"]["currentPower"]
+
+    k = min(k, power_minute//10)    # 预留通信时间，控制通话次数
 
     time_list = []
     random_numbers = [random.randint(2, power_minute-10) for _ in range(k)]

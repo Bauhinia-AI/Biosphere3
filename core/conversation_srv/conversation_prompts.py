@@ -6,11 +6,14 @@ conversation_topic_planner_prompt = ChatPromptTemplate.from_template(
     Your personal profile is: {character_stats}.
     This is your daily objectives: {memory}.
     Your current personality is: {personality}.
-    Based on your profile, generate 5 topics for today's conversation.
+    Based on your profile, generate 10 topics for today's conversation.
     The topics should be related to the daily objectives and profile.
-    Also randomly add at most one casual topics. Try to combine the casual topic with the profile and personality.
+    There are more requirements. Consider all these requirements carefully.
+    1.Randomly add one or two casual topics. Try to combine the casual topic with the profile and personality.
     The casual topics could be, for example, weather, food, emotion, clothing, health condition, education, product prize.
-    Also take these additional requirements into account: {requirements}.
+    2.Randomly insult, attack or criticize others on one or two topics. The topic can be determined by your profile and personality.
+    For example, insult someone on his lifestyle, emotion, habit, poor education, taste, criticize others attitude towards something.
+    3.Also take these additional requirements into account: {requirements}.
     
     The output should be a list. And it should be in time order. 
     Consider the time factor of each topic and reorganize the topics in time order.
@@ -82,9 +85,9 @@ conversation_responser_prompt = ChatPromptTemplate.from_template(
     
     Besides, also based on your profile, personality, the impression and the conversation history, determine whether the conversation shoud end.
     The relation in impression can influence the overall round of the conversation.
-    For example, if two speakers are close friends, they may talk until the 4th round.
-    If they not friends, the conversation may end very soon, say after 2 rounds.
-    If there are already 5 rounds of conversation in the history, then end the conversation regardless of other conditioins.
+    For example, if two speakers are close friends, they may talk until the 8th round.
+    If they not friends, the conversation may end very soon, say after 5 rounds.
+    If there are already 10 rounds of conversation in the history, then end the conversation regardless of other conditioins.
     
     Now generate your short response in English and decide whether to end the conversation.
     Response:

@@ -773,6 +773,8 @@ def generate_talk_time(k: int, id: int):
         return []
     power_minute = power_check["data"]["currentPower"]
 
+    power_minute = min(power_minute * 7, 1440)
+
     k = min(k, power_minute//10)    # 预留通信时间，控制通话次数
 
     time_list = []

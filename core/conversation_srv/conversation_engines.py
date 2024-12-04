@@ -229,7 +229,13 @@ async def start_conversation(state: ConversationState):
                     "k": 10
                 }
         encounter_response = make_api_request_sync("POST", "/encounter_count/get_by_from_id", data=encounter_data)
-        if encounter_response["data"] is None:
+
+        candidate_list = []
+        for item in encounter_response["data"]:
+            if item["count"] != 0:
+                candidate_list.append(item['to_id'])
+                
+        if not candidate_list:
             character_rag_data = {
                 "characterId": state["userid"],
                 "topic": current_talk["topic"],
@@ -237,9 +243,6 @@ async def start_conversation(state: ConversationState):
             }
             rag_response = make_api_request_sync("POST", "/characters/get_rag", data=character_rag_data)
         else:
-            candidate_list = []
-            for item in encounter_response["data"]:
-                candidate_list.append(item['to_id'])
             character_rag_data = {
                 "characterId": state["userid"],
                 "characterList": candidate_list,

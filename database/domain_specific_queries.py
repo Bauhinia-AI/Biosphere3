@@ -563,6 +563,7 @@ class DomainSpecificQueries:
         characterId,
         characterName=None,
         gender=None,
+        spriteId=0,
         relationship=None,
         personality=None,
         long_term_goal=None,
@@ -589,6 +590,7 @@ class DomainSpecificQueries:
             "characterId": characterId,
             "characterName": characterName,
             "gender": gender,
+            "spriteId": spriteId,
             "relationship": relationship,
             "personality": personality,
             "long_term_goal": long_term_goal,
@@ -831,6 +833,18 @@ class DomainSpecificQueries:
         selected_documents.sort(key=lambda doc: doc["created_at"])
 
         return selected_documents
+
+    def get_relationship_sample(self):
+        profile_sample = self.db_utils.find_one(
+            collection_name=config.profile_sample_collection_name
+        )
+        relationship_list = profile_sample.get("relationship", [])
+
+        # 随机抽取 2 到 4 个关系特征
+        sample_size = random.randint(2, 4)
+        relationship_sample = random.sample(relationship_list, sample_size)
+
+        return relationship_sample
 
     def get_personality_sample(self):
         profile_sample = self.db_utils.find_one(

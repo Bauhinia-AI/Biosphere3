@@ -23,6 +23,10 @@ validators = {
                     "bsonType": ["string", "null"],
                     "description": "character 性别,必须为字符串",
                 },
+                "spriteId": {  # 新增字段
+                    "bsonType": "int",
+                    "description": "agent 样貌, 必须为整数",
+                },
                 "relationship": {
                     "bsonType": ["string", "null"],
                     "description": "与玩家的关系",

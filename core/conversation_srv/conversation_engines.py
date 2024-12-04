@@ -226,7 +226,7 @@ async def start_conversation(state: ConversationState):
         # rag 对话对象
         encounter_data = {
                     "from_id": state["userid"],
-                    "k": 3
+                    "k": 10
                 }
         encounter_response = make_api_request_sync("POST", "/encounter_count/get_by_from_id", data=encounter_data)
         if encounter_response["data"] is None:

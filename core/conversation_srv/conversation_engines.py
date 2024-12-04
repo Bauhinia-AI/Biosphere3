@@ -15,8 +15,8 @@ from datetime import datetime, timedelta
 import random
 import numpy as np
 
-os.environ["OPENAI_API_KEY"] = "sk-NquCLO5noTHt6snKaYLkF2v5oUHBgcUHkyJqmx6jWIv10FGI"
-# os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+
+os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
 
 conversation_topic_planner = conversation_topic_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
@@ -110,7 +110,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
 
     # 生成对话发生的时间，在发条值时间内
     try:
-        start_time_list = generate_talk_time(10, state['userid'])
+        start_time_list = generate_talk_time(5, state['userid'])
         if not start_time_list:
             raise ValueError("POWER IS NOT ENOUGH!")
     except ValueError as e:

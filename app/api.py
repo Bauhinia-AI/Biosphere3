@@ -464,6 +464,7 @@ class GetCharacterArcChangesRequest(BaseModel):
 
 # 定义一个枚举类来限制 item_name 的值
 class SampleItem(str, Enum):
+    relationship = "relationship"
     personality = "personality"
     long_term_goal = "long_term_goal"
     short_term_goal = "short_term_goal"
@@ -1665,6 +1666,7 @@ def get_sample_api(request: SampleRequest):
     if request.item_name is None:
         # 获取所有项的样本
         samples = {
+            "relationship": domain_queries.get_relationship_sample(),  # 新增 relationship
             "personality": domain_queries.get_personality_sample(),
             "long_term_goal": domain_queries.get_long_term_goal_sample(),
             "short_term_goal": domain_queries.get_short_term_goal_sample(),
@@ -1674,6 +1676,7 @@ def get_sample_api(request: SampleRequest):
     else:
         # 根据请求的项名获取相应的样本
         sample_method = {
+            SampleItem.relationship: domain_queries.get_relationship_sample,  # 新增 relationship
             SampleItem.personality: domain_queries.get_personality_sample,
             SampleItem.long_term_goal: domain_queries.get_long_term_goal_sample,
             SampleItem.short_term_goal: domain_queries.get_short_term_goal_sample,

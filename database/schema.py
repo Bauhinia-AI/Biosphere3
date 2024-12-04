@@ -509,6 +509,7 @@ validators = {
         "$jsonSchema": {
             "bsonType": "object",
             "required": [
+                "relationship",
                 "personality",
                 "long_term_goal",
                 "short_term_goal",
@@ -516,6 +517,14 @@ validators = {
                 "biography",
             ],
             "properties": {
+                "relationship": {
+                    "bsonType": "array",
+                    "description": "关系列表, 必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "与用户的关系, 必须为字符串",
+                    },
+                },
                 "personality": {
                     "bsonType": "array",
                     "description": "性格特征列表, 必须为字符串数组且为必填项",

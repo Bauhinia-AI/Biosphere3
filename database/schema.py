@@ -127,6 +127,9 @@ validators = {
             "required": [
                 "from_id",
                 "to_id",
+                "to_id_name",  # 新增字段
+                "to_id_spriteId",  # 新增字段
+                "relationship",  # 新增字段
                 "intimacy_level",
                 "created_at",
                 "updated_at",
@@ -139,6 +142,18 @@ validators = {
                 "to_id": {
                     "bsonType": "int",
                     "description": "表示亲密度指向的 character 的 ID, 必须为整数且为必填项",
+                },
+                "to_id_name": {  # 新增字段
+                    "bsonType": "string",
+                    "description": "指向角色的名字, 必须为字符串",
+                },
+                "to_id_spriteId": {  # 新增字段
+                    "bsonType": "int",
+                    "description": "指向角色的样貌ID, 必须为整数",
+                },
+                "relationship": {  # 新增字段
+                    "bsonType": "string",
+                    "description": "与指向角色的关系, 必须为字符串",
                 },
                 "intimacy_level": {
                     "bsonType": "int",

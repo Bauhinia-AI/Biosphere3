@@ -1,4 +1,5 @@
 # database/domain_specific_queries.py
+import pprint
 import sys
 import os
 
@@ -140,11 +141,44 @@ class DomainSpecificQueries:
         )
         return [doc["impression"] for doc in documents]
 
-    def store_intimacy(self, from_id, to_id, intimacy_level):
+    def get_relationship(self, intimacy_level):
+        if 0 <= intimacy_level < 20:
+            return "不共戴天"
+        elif 20 <= intimacy_level < 30:
+            return "厌恶"
+        elif 30 <= intimacy_level < 40:
+            return "不满"
+        elif 40 <= intimacy_level < 60:
+            return "陌生人"
+        elif 60 <= intimacy_level < 70:
+            return "点头之交"
+        elif 70 <= intimacy_level < 80:
+            return "朋友"
+        elif 80 <= intimacy_level < 90:
+            return "好友"
+        elif 90 <= intimacy_level <= 100:
+            return "密友"
+
+    def store_intimacy(self, from_id, to_id, intimacy_level=50, relationship="陌生人"):
+        # 根据 to_id 获取角色信息
+        character_documents = self.get_character(characterId=to_id)
+        if character_documents:
+            to_id_name = character_documents[0].get("characterName", "")  # 获取角色名字
+            to_id_spriteId = character_documents[0].get("spriteId", 0)  # 获取角色样貌ID
+        else:
+            to_id_name = ""
+            to_id_spriteId = 0  # 默认值或处理未找到角色的情况
+
+        if intimacy_level != 50:
+            relationship = self.get_relationship(intimacy_level)
+
         document = {
             "from_id": from_id,
             "to_id": to_id,
             "intimacy_level": intimacy_level,
+            "to_id_name": to_id_name,  # 新增字段
+            "to_id_spriteId": to_id_spriteId,  # 新增字段
+            "relationship": relationship,  # 新增字段
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
@@ -176,21 +210,29 @@ class DomainSpecificQueries:
         )
         return documents
 
-    def update_intimacy(self, from_id, to_id, new_intimacy_level):
+    def update_intimacy(self, from_id, to_id, new_intimacy_level=None):
+        if new_intimacy_level is None:
+            raise ValueError("new_intimacy_level must be provided")
+
+        relationship = self.get_relationship(new_intimacy_level)
+
         query = {"from_id": from_id, "to_id": to_id}
         update = {
             "$set": {
                 "intimacy_level": new_intimacy_level,
+                "relationship": relationship,
                 "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             }
         }
         result = self.db_utils.update_documents(
-            collection_name=config.intimacy_collection_name, query=query, update=update
+            collection_name=config.intimacy_collection_name,
+            query=query,
+            update=update,
         )
         return result
 
     def decrease_all_intimacy_levels(self):
-        query = {"intimacy_level": {"$gt": 50}}  # 仅更新 intamacy_level > 0 的文档
+        query = {"intimacy_level": {"$gt": 50}}  # 仅更新 intamacy_level > 50 的文档
         update = {
             "$inc": {"intimacy_level": -1},  # 将 intimacy_level 递减 1
             "$set": {"updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
@@ -201,6 +243,26 @@ class DomainSpecificQueries:
             update=update,
             multi=True,
         )
+
+        for level in [59, 69, 79, 89]:
+            documents = self.get_intimacy(
+                intimacy_level_min=level, intimacy_level_max=level
+            )
+            for document in documents:
+                new_relationship = self.get_relationship(document["intimacy_level"])
+                query = {"from_id": document["from_id"], "to_id": document["to_id"]}
+                update = {
+                    "$set": {
+                        "relationship": new_relationship,
+                        "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    }
+                }
+                self.db_utils.update_documents(
+                    collection_name=config.intimacy_collection_name,
+                    query=query,
+                    update=update,
+                )
+
         return result
 
     def get_encounter_count(self, from_id, to_id):
@@ -910,25 +972,57 @@ if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试 get_personality_sample 方法
-    personality_sample = queries.get_personality_sample()
-    print("随机抽取的性格特征样本:", personality_sample)
+    # # 插入更多数据：亲密度从 40 到 90
+    # print("插入数据...")
+    # for i in range(1, 6):
+    #     queries.store_intimacy(i, i + 1, intimacy_level=40 + i * 10)
+    # print(queries.get_intimacy())
 
-    # 测试 get_long_term_goal_sample 方法
-    long_term_goal_sample = queries.get_long_term_goal_sample()
-    print("随机抽取的长期目标样本:", long_term_goal_sample)
+    # # 测试 decrease_all_intimacy_levels：递减所有亲密度大于 50 的记录
+    # print("\n执行 decrease_all_intimacy_levels...")
+    # decrease_count = queries.decrease_all_intimacy_levels()
+    # print(f"递减成功，更新了 {decrease_count} 个文档。")
+    # print(queries.get_intimacy())
 
-    # 测试 get_short_term_goal_sample 方法
-    short_term_goal_sample = queries.get_short_term_goal_sample()
-    print("随机抽取的短期目标样本:", short_term_goal_sample)
+    # # 插入数据：亲密度为 50，relationship 由系统自动计算
+    # print("插入数据...")
+    # inserted_id = queries.store_intimacy(1, 2, intimacy_level=50)
+    # print(f"插入成功，文档 ID：{inserted_id}")
 
-    # 测试 get_language_style_sample 方法
-    language_style_sample = queries.get_language_style_sample()
-    print("随机抽取的语言风格样本:", language_style_sample)
+    # # 获取数据：查询 from_id=1 和 to_id=2 的亲密度
+    # print("\n获取数据...")
+    # intimacy_records = queries.get_intimacy(1, 2)
+    # print(intimacy_records)
 
-    # 测试 get_biography_sample 方法
-    biography_sample = queries.get_biography_sample()
-    print("随机抽取的传记样本:", biography_sample)
+    # # 更新数据：将亲密度更新为 80
+    # print("\n更新数据...")
+    # updated_count = queries.update_intimacy(1, 2, new_intimacy_level=80)
+    # print(f"更新成功，修改了 {updated_count} 个文档。")
+
+    # # 再次获取数据：查询更新后的亲密度
+    # print("\n更新后的数据...")
+    # updated_records = queries.get_intimacy(1, 2)
+    # print(updated_records)
+
+    # # 测试 get_personality_sample 方法
+    # personality_sample = queries.get_personality_sample()
+    # print("随机抽取的性格特征样本:", personality_sample)
+
+    # # 测试 get_long_term_goal_sample 方法
+    # long_term_goal_sample = queries.get_long_term_goal_sample()
+    # print("随机抽取的长期目标样本:", long_term_goal_sample)
+
+    # # 测试 get_short_term_goal_sample 方法
+    # short_term_goal_sample = queries.get_short_term_goal_sample()
+    # print("随机抽取的短期目标样本:", short_term_goal_sample)
+
+    # # 测试 get_language_style_sample 方法
+    # language_style_sample = queries.get_language_style_sample()
+    # print("随机抽取的语言风格样本:", language_style_sample)
+
+    # # 测试 get_biography_sample 方法
+    # biography_sample = queries.get_biography_sample()
+    # print("随机抽取的传记样本:", biography_sample)
 
     # print(queries.get_conversations_with_characterIds(characterIds_list=[1, 5], k=1))
     # print(queries.get_character_RAG(2, "study with my friends", 3))

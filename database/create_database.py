@@ -224,5 +224,5 @@ if __name__ == "__main__":
     # )
     app.import_data_into_collection(
         config.profile_sample_collection_name,
-        "PROFILE_SAMPLE.json",
+        "PROFILE_SAMPLE_en.json",
     )

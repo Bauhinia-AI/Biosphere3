@@ -58,10 +58,11 @@ conversation_check_prompt = ChatPromptTemplate.from_template(
     Now you need to determine whether you need to start this conversation: {current_talk}.
     
     You need to check the following two things:
-    1. First summarize the topics of finished conversations.
+    First summarize the topics of finished conversations.
     Then if you have talked about some similar topics, you should not start this conversation.
-    2. Check each of your profile items such as your daily objectives, current state and inventories.
-    If the conversation has conflict with your current profile, then you should not start this conversation.
+    
+    Do not cancel the conversation unless you have talked about the same topic.
+    Do not cancel any criticizing or insulting conversations. 
      
     After check, if your decision is this conversation is no longer needed, return FALSE.
     Otherwise, return TRUE. 
@@ -82,6 +83,7 @@ conversation_responser_prompt = ChatPromptTemplate.from_template(
     You must consider both positive and negative effects of each impression item on the conversation response.
     In each impression, there are four items: relation, emotion, personality, habits and preferences.
     The impact of these items on the response content is: {impact}.
+    You do not need to always agree with others. When others are criticizing, challenging or insulting you, stick to your point and also criticize them. 
     
     Besides, also based on your profile, personality, the impression and the conversation history, determine whether the conversation shoud end.
     The relation in impression can influence the overall round of the conversation.

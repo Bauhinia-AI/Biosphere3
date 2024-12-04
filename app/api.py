@@ -399,6 +399,7 @@ class StorecharacterRequest(BaseModel):
     characterId: int
     characterName: Optional[str] = None
     gender: Optional[str] = None
+    spriteId: Optional[int] = 0
     relationship: Optional[str] = None
     personality: Optional[str] = None
     long_term_goal: Optional[str] = None
@@ -1440,20 +1441,32 @@ def store_character_api(request: StorecharacterRequest):
             },
         )
 
+    # 获取样本值的方法映射
+    sample_methods = {
+        "relationship": lambda: domain_queries.get_relationship_sample()[0],
+        "personality": lambda: ", ".join(domain_queries.get_personality_sample()),
+        "long_term_goal": lambda: ", ".join(domain_queries.get_long_term_goal_sample()),
+        "short_term_goal": lambda: ", ".join(
+            domain_queries.get_short_term_goal_sample()
+        ),
+        "language_style": lambda: ", ".join(domain_queries.get_language_style_sample()),
+        "biography": domain_queries.get_biography_sample,
+    }
+
+    # 构建角色数据，使用样本值替代 None
     character_data = {
         "characterId": request.characterId,
         "characterName": request.characterName,
         "gender": request.gender,
-        "relationship": request.relationship,
-        "personality": request.personality,
-        "long_term_goal": request.long_term_goal,
-        "short_term_goal": request.short_term_goal,
-        "language_style": request.language_style,
-        "biography": request.biography,
+        "spriteId":request.spriteId,
+        "relationship": request.relationship or sample_methods["relationship"](),
+        "personality": request.personality or sample_methods["personality"](),
+        "long_term_goal": request.long_term_goal or sample_methods["long_term_goal"](),
+        "short_term_goal": request.short_term_goal
+        or sample_methods["short_term_goal"](),
+        "language_style": request.language_style or sample_methods["language_style"](),
+        "biography": request.biography or sample_methods["biography"](),
     }
-
-    # 删除值为 None 的字段
-    character_data = {k: v for k, v in character_data.items() if v is not None}
 
     # Proceed to store the character with filtered data
     inserted_id = retry_operation(

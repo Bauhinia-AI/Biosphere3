@@ -455,13 +455,19 @@ class APIClient:
 
     # Intimacy
     def get_intimacy(
-        self, from_id=None, to_id=None, intimacy_level_min=None, intimacy_level_max=None
+        self,
+        from_id=None,
+        to_id=None,
+        intimacy_level_min=None,
+        intimacy_level_max=None,
+        have_conversation=False,
     ):
         request_data = {
             "from_id": from_id,
             "to_id": to_id,
             "intimacy_level_min": intimacy_level_min,  # 新增参数
             "intimacy_level_max": intimacy_level_max,  # 新增参数
+            "have_conversation": have_conversation,  # 新增参数
         }
         # 过滤掉值为 None 的参数
         request_data = {k: v for k, v in request_data.items() if v is not None}
@@ -929,15 +935,15 @@ if __name__ == "__main__":
     # )
     # # Retrieving Encounters by From ID: {'code': 1, 'message': 'Encounters retrieved successfully.', 'data': [{'from_id': 1, 'to_id': 5, 'count': 1, 'created_at': '2024-11-06 16:56:16', 'updated_at': '2024-11-06 16:56:16'}, {'from_id': 1, 'to_id': 2, 'count': 5, 'created_at': '2024-11-06 16:54:13', 'updated_at': '2024-11-06 16:56:27'}]}
 
-    # 测试存储和检索好感度
-    intimacy_data = {"from_id": 1, "to_id": 3, "intimacy_level": 55}
-    print("Storing Intimacy:", client.store_intimacy(**intimacy_data))
-    # Storing Intimacy: {'code': 1, 'message': 'Intimacy level stored successfully.', 'data': 1}
+    # # 测试存储和检索好感度
+    # intimacy_data = {"from_id": 1, "to_id": 3, "intimacy_level": 55}
+    # print("Storing Intimacy:", client.store_intimacy(**intimacy_data))
+    # # Storing Intimacy: {'code': 1, 'message': 'Intimacy level stored successfully.', 'data': 1}
 
-    # 测试 get_intimacy 方法
-    print("查询 from_id=10 和 to_id=20 的亲密度:")
-    print(client.get_intimacy(from_id=1, to_id=3))
-    # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
+    # # 测试 get_intimacy 方法
+    # print("查询 from_id=10 和 to_id=20 的亲密度:")
+    # print(client.get_intimacy(from_id=1, to_id=3))
+    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
 
     # print("\n查询 from_id=10 的所有记录:")
     # print(client.get_intimacy(from_id=10))
@@ -1081,9 +1087,10 @@ if __name__ == "__main__":
 
     # # 测试存储和检索 character
     # character_data = {
-    #     "characterId": 886,
+    #     "characterId": 887,
     #     "characterName": "ZZ",
     #     "gender": "Female",
+    #     "spriteId": 5,
     # }
     # print("Storing character:", client.store_character(**character_data))
     # # Storing character: {'code': 1, 'message': 'Character stored successfully.', 'data': '67503299d96ea15c878e7ab9'}

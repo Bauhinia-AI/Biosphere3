@@ -211,6 +211,7 @@ class IntimacyRequest(BaseModel):
     to_id: Optional[int] = None  # 将 to_id 设置为可选
     intimacy_level_min: Optional[int] = None  # 新增字段，用于指定亲密度的最小值
     intimacy_level_max: Optional[int] = None  # 新增字段，用于指定亲密度的最大值
+    have_conversation: Optional[bool] = False  # 新增字段，用于指定是否考虑对话记录
 
 
 class StoreIntimacyRequest(BaseModel):
@@ -684,6 +685,7 @@ def get_intimacy_api(request: IntimacyRequest):
         to_id=request.to_id,
         intimacy_level_min=request.intimacy_level_min,  # 新增参数
         intimacy_level_max=request.intimacy_level_max,  # 新增参数
+        have_conversation=request.have_conversation,  # 新增参数
     )
     if intimacy:
         return success_response(
@@ -1458,7 +1460,7 @@ def store_character_api(request: StorecharacterRequest):
         "characterId": request.characterId,
         "characterName": request.characterName,
         "gender": request.gender,
-        "spriteId":request.spriteId,
+        "spriteId": request.spriteId,
         "relationship": request.relationship or sample_methods["relationship"](),
         "personality": request.personality or sample_methods["personality"](),
         "long_term_goal": request.long_term_goal or sample_methods["long_term_goal"](),

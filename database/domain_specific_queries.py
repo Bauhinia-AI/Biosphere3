@@ -188,7 +188,12 @@ class DomainSpecificQueries:
         return inserted_id
 
     def get_intimacy(
-        self, from_id=None, to_id=None, intimacy_level_min=None, intimacy_level_max=None
+        self,
+        from_id=None,
+        to_id=None,
+        intimacy_level_min=None,
+        intimacy_level_max=None,
+        have_conversation=False,
     ):
         # 构建查询条件
         query = {}
@@ -203,6 +208,22 @@ class DomainSpecificQueries:
                 query["intimacy_level"]["$lte"] = intimacy_level_max
             else:
                 query["intimacy_level"] = {"$lte": intimacy_level_max}
+
+        # 如果 have_conversation 为 True，获取所有包含 from_id 的 characterIds
+        if have_conversation and from_id is not None:
+            conversation_documents = self.db_utils.find_documents(
+                collection_name=config.conversation_collection_name,
+                query={"characterIds": from_id},
+                projection={"characterIds": 1},
+            )
+            # 提取所有相关的 characterIds
+            related_ids = set()
+            for doc in conversation_documents:
+                related_ids.update(doc["characterIds"])
+            # 移除 from_id 自身
+            related_ids.discard(from_id)
+            # 更新查询条件
+            query["to_id"] = {"$in": list(related_ids)}
 
         # 执行查询
         documents = self.db_utils.find_documents(
@@ -971,6 +992,14 @@ class DomainSpecificQueries:
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
+
+    # 测试 get_intimacy 函数
+    print("查询 from_id=1 的所有对话记录:")
+    print(queries.get_conversations_containing_characterId(1, 0))
+
+    # 测试 get_intimacy 函数
+    print("查询 from_id=1 的所有记录:")
+    print(queries.get_intimacy(from_id=1))
 
     # # 插入更多数据：亲密度从 40 到 90
     # print("插入数据...")

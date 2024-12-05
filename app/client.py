@@ -600,6 +600,68 @@ class APIClient:
             {"item_name": item_name},
         )
 
+    # Agent Prompt 操作
+    def store_agent_prompt(
+        self,
+        characterId,
+        daily_goal=None,
+        refer_to_previous=None,
+        life_style=None,
+        daily_objective_ar=None,
+        task_priority=None,
+        max_actions=None,
+        meta_seq_ar=None,
+        replan_time_limit=None,
+        meta_seq_adjuster_ar=None,
+        focus_topic=None,
+        depth_of_reflection=None,
+        reflection_ar=None,
+        level_of_detail=None,
+        tone_and_style=None,
+    ):
+        return self._make_request(
+            "POST",
+            f"{self.base_url}/agent_prompt/store",
+            {
+                "characterId": characterId,
+                "daily_goal": daily_goal,
+                "refer_to_previous": refer_to_previous,
+                "life_style": life_style,
+                "daily_objective_ar": daily_objective_ar,
+                "task_priority": task_priority,
+                "max_actions": max_actions,
+                "meta_seq_ar": meta_seq_ar,
+                "replan_time_limit": replan_time_limit,
+                "meta_seq_adjuster_ar": meta_seq_adjuster_ar,
+                "focus_topic": focus_topic,
+                "depth_of_reflection": depth_of_reflection,
+                "reflection_ar": reflection_ar,
+                "level_of_detail": level_of_detail,
+                "tone_and_style": tone_and_style,
+            },
+        )
+
+    def get_agent_prompt(self, characterId):
+        return self._make_request(
+            "POST",
+            f"{self.base_url}/agent_prompt/get",
+            {"characterId": characterId},
+        )
+
+    def update_agent_prompt(self, characterId, update_fields):
+        return self._make_request(
+            "POST",
+            f"{self.base_url}/agent_prompt/update",
+            {"characterId": characterId, "update_fields": update_fields},
+        )
+
+    def delete_agent_prompt(self, characterId):
+        return self._make_request(
+            "POST",
+            f"{self.base_url}/agent_prompt/delete",
+            {"characterId": characterId},
+        )
+
 
 if __name__ == "__main__":
     client = APIClient(base_url="http://localhost:8085")
@@ -1097,3 +1159,38 @@ if __name__ == "__main__":
 
     # print("Retrieving character:", client.get_character(886))
     # # {'code': 1, 'message': 'Characters retrieved successfully.', 'data': [{'characterId': 886, 'characterName': 'ZZ', 'gender': 'Female', 'spriteId': 0, 'relationship': 'Subordinate', 'personality': 'Tough, Talkative, Smart, Breezy', 'long_term_goal': 'Become a celebrity in the game world, Create popular items or services, Become the most knowledgeable agent', 'short_term_goal': 'Buy a basic apartment, Interact with three players of different professions', 'language_style': 'antithetical, unprintable, indirect, polished', 'biography': 'Born into a family that values education, I have always enjoyed learning new knowledge. I dream of becoming a teacher or educational scholar.', 'created_at': '2024-12-04 19:45:15', 'updated_at': '2024-12-04 19:45:15', 'full_profile': 'ZZ; Female; Subordinate; Tough, Talkative, Smart, Breezy; Born into a family that values education, I have always enjoyed learning new knowledge. I dream of becoming a teacher or educational scholar.; Become a celebrity in the game world, Create popular items or services, Become the most knowledgeable agent; Buy a basic apartment, Interact with three players of different professions; antithetical, unprintable, indirect, polished'}]}
+
+    # 测试存储 agent prompt
+    agent_prompt_data = {
+        "characterId": 101,
+        "daily_goal": "sleep well",
+        "refer_to_previous": "True",
+        "life_style": "Busy",
+        "daily_objective_ar": "",
+        "task_priority": [],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle",
+    }
+    print("Storing Agent Prompt:", client.store_agent_prompt(**agent_prompt_data))
+    # {'code': 1, 'message': 'Agent prompt stored successfully.', 'data': '6751da0a71394602eb0c3f39'}
+    # {'code': 2, 'message': 'Agent prompt for characterId 101 already exists.', 'data': None}
+
+    # 测试检索 agent prompt
+    print("Retrieving Agent Prompt:", client.get_agent_prompt(characterId=101))
+    # {'code': 1, 'message': 'Agent prompt retrieved successfully.', 'data': [{'characterId': 101, 'daily_goal': 'sleep well', 'refer_to_previous': True, 'life_style': 'Busy', 'daily_objective_ar': '', 'task_priority': [], 'max_actions': 10, 'meta_seq_ar': '', 'replan_time_limit': 1, 'meta_seq_adjuster_ar': '', 'focus_topic': [], 'depth_of_reflection': 'Deep', 'reflection_ar': '', 'level_of_detail': 'Shallow', 'tone_and_style': 'Gentle', 'created_at': '2024-12-06 00:51:22', 'updated_at': '2024-12-06 00:51:22'}]}
+
+    # 测试更新 agent prompt
+    update_fields = {"daily_goal": "Complete the updated mission"}
+    print("Updating Agent Prompt:", client.update_agent_prompt(101, update_fields))
+    # {'code': 1, 'message': 'Agent prompt updated successfully.', 'data': 1}
+
+    # 测试删除 agent prompt
+    print("Deleting Agent Prompt:", client.delete_agent_prompt(101))
+    # {'code': 1, 'message': 'Agent prompt deleted successfully.', 'data': 1}

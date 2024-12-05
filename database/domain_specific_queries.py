@@ -1013,6 +1013,143 @@ class DomainSpecificQueries:
 
         return biography_sample
 
+    def store_agent_prompt(
+        self,
+        characterId,
+        daily_goal=None,
+        refer_to_previous=None,
+        life_style=None,
+        daily_objective_ar=None,
+        task_priority=None,
+        max_actions=None,
+        meta_seq_ar=None,
+        replan_time_limit=None,
+        meta_seq_adjuster_ar=None,
+        focus_topic=None,
+        depth_of_reflection=None,
+        reflection_ar=None,
+        level_of_detail=None,
+        tone_and_style=None,
+    ):
+        # 默认值字典
+        defaults = {
+            "daily_goal": "sleep well",
+            "refer_to_previous": True,
+            "life_style": "Busy",
+            "daily_objective_ar": "",
+            "task_priority": [],
+            "max_actions": 10,
+            "meta_seq_ar": "",
+            "replan_time_limit": 1,
+            "meta_seq_adjuster_ar": "",
+            "focus_topic": [],
+            "depth_of_reflection": "Deep",
+            "reflection_ar": "",
+            "level_of_detail": "Shallow",
+            "tone_and_style": "Gentle",
+        }
+
+        # 使用字典的 get 方法来设置参数值
+        document = {
+            "characterId": characterId,
+            "daily_goal": (
+                daily_goal if daily_goal is not None else defaults["daily_goal"]
+            ),
+            "refer_to_previous": (
+                refer_to_previous
+                if refer_to_previous is not None
+                else defaults["refer_to_previous"]
+            ),
+            "life_style": (
+                life_style if life_style is not None else defaults["life_style"]
+            ),
+            "daily_objective_ar": (
+                daily_objective_ar
+                if daily_objective_ar is not None
+                else defaults["daily_objective_ar"]
+            ),
+            "task_priority": (
+                task_priority
+                if task_priority is not None
+                else defaults["task_priority"]
+            ),
+            "max_actions": (
+                max_actions if max_actions is not None else defaults["max_actions"]
+            ),
+            "meta_seq_ar": (
+                meta_seq_ar if meta_seq_ar is not None else defaults["meta_seq_ar"]
+            ),
+            "replan_time_limit": (
+                replan_time_limit
+                if replan_time_limit is not None
+                else defaults["replan_time_limit"]
+            ),
+            "meta_seq_adjuster_ar": (
+                meta_seq_adjuster_ar
+                if meta_seq_adjuster_ar is not None
+                else defaults["meta_seq_adjuster_ar"]
+            ),
+            "focus_topic": (
+                focus_topic if focus_topic is not None else defaults["focus_topic"]
+            ),
+            "depth_of_reflection": (
+                depth_of_reflection
+                if depth_of_reflection is not None
+                else defaults["depth_of_reflection"]
+            ),
+            "reflection_ar": (
+                reflection_ar
+                if reflection_ar is not None
+                else defaults["reflection_ar"]
+            ),
+            "level_of_detail": (
+                level_of_detail
+                if level_of_detail is not None
+                else defaults["level_of_detail"]
+            ),
+            "tone_and_style": (
+                tone_and_style
+                if tone_and_style is not None
+                else defaults["tone_and_style"]
+            ),
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+
+        inserted_id = self.db_utils.insert_document(
+            config.agent_prompt_collection_name, document
+        )
+        return inserted_id
+
+    def get_agent_prompt(self, characterId):
+        query = {"characterId": characterId}
+        documents = self.db_utils.find_documents(
+            collection_name=config.agent_prompt_collection_name,
+            query=query,
+        )
+        return documents
+
+    def update_agent_prompt(self, characterId, update_fields):
+        query = {"characterId": characterId}
+        update_data = {"$set": update_fields}
+        update_data["$set"]["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        result = self.db_utils.update_documents(
+            collection_name=config.agent_prompt_collection_name,
+            query=query,
+            update=update_data,
+            upsert=False,
+            multi=False,
+        )
+        return result
+
+    def delete_agent_prompt(self, characterId):
+        query = {"characterId": characterId}
+        result = self.db_utils.delete_documents(
+            collection_name=config.agent_prompt_collection_name,
+            query=query,
+        )
+        return result
+
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
@@ -1026,17 +1163,17 @@ if __name__ == "__main__":
     # print("查询 from_id=1 的所有记录:")
     # print(queries.get_intimacy(from_id=1))
 
-    # 插入更多数据：亲密度从 40 到 90
-    print("插入数据...")
-    for i in range(1, 6):
-        queries.store_intimacy(i, i + 1, intimacy_level=40 + i * 10)
-    print(queries.get_intimacy())
+    # # 插入更多数据：亲密度从 40 到 90
+    # print("插入数据...")
+    # for i in range(1, 6):
+    #     queries.store_intimacy(i, i + 1, intimacy_level=40 + i * 10)
+    # print(queries.get_intimacy())
 
-    # 测试 decrease_all_intimacy_levels：递减所有亲密度大于 50 的记录
-    print("\n执行 decrease_all_intimacy_levels...")
-    decrease_count = queries.decrease_all_intimacy_levels()
-    print(f"递减成功，更新了 {decrease_count} 个文档。")
-    print(queries.get_intimacy())
+    # # 测试 decrease_all_intimacy_levels：递减所有亲密度大于 50 的记录
+    # print("\n执行 decrease_all_intimacy_levels...")
+    # decrease_count = queries.decrease_all_intimacy_levels()
+    # print(f"递减成功，更新了 {decrease_count} 个文档。")
+    # print(queries.get_intimacy())
 
     # # 插入数据：亲密度为 50，relationship 由系统自动计算
     # print("插入数据...")

@@ -478,6 +478,37 @@ class SampleRequest(BaseModel):
     item_name: Optional[SampleItem] = None
 
 
+class AgentPromptRequest(BaseModel):
+    characterId: int
+    daily_goal: Optional[str] = None
+    refer_to_previous: Optional[bool] = None
+    life_style: Optional[str] = None
+    daily_objective_ar: Optional[str] = None
+    task_priority: Optional[list] = None
+    max_actions: Optional[int] = None
+    meta_seq_ar: Optional[str] = None
+    replan_time_limit: Optional[int] = None
+    meta_seq_adjuster_ar: Optional[str] = None
+    focus_topic: Optional[list] = None
+    depth_of_reflection: Optional[str] = None
+    reflection_ar: Optional[str] = None
+    level_of_detail: Optional[str] = None
+    tone_and_style: Optional[str] = None
+
+
+class UpdateAgentPromptRequest(BaseModel):
+    characterId: int
+    update_fields: dict
+
+
+class GetAgentPromptRequest(BaseModel):
+    characterId: int
+
+
+class DeleteAgentPromptRequest(BaseModel):
+    characterId: int
+
+
 # Utility function for retrying operations
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
     """Utility function to retry an operation, skipping retries for DuplicateKeyError."""
@@ -1706,6 +1737,107 @@ def get_sample_api(request: SampleRequest):
         raise HTTPException(status_code=404, detail="No sample found.")
 
 
+# Define APIRouter for agent_prompt
+agent_prompt_router = APIRouter(prefix="/agent_prompt", tags=["Agent Prompt"])
+
+
+@agent_prompt_router.post("/store", response_model=StandardResponse)
+def store_agent_prompt_api(request: AgentPromptRequest):
+    # 检查是否已存在相同的代理提示
+    existing_prompt = retry_operation(
+        domain_queries.get_agent_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+    )
+
+    if existing_prompt:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "code": 2,
+                "message": f"Agent prompt for characterId {request.characterId} already exists.",
+                "data": None,
+            },
+        )
+
+    inserted_id = retry_operation(
+        domain_queries.store_agent_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        daily_goal=request.daily_goal,
+        refer_to_previous=request.refer_to_previous,
+        life_style=request.life_style,
+        daily_objective_ar=request.daily_objective_ar,
+        task_priority=request.task_priority,
+        max_actions=request.max_actions,
+        meta_seq_ar=request.meta_seq_ar,
+        replan_time_limit=request.replan_time_limit,
+        meta_seq_adjuster_ar=request.meta_seq_adjuster_ar,
+        focus_topic=request.focus_topic,
+        depth_of_reflection=request.depth_of_reflection,
+        reflection_ar=request.reflection_ar,
+        level_of_detail=request.level_of_detail,
+        tone_and_style=request.tone_and_style,
+    )
+    if inserted_id:
+        return success_response(
+            data=str(inserted_id), message="Agent prompt stored successfully."
+        )
+    else:
+        raise HTTPException(status_code=500, detail="Failed to store agent prompt.")
+
+
+@agent_prompt_router.post("/get", response_model=StandardResponse)
+def get_agent_prompt_api(request: GetAgentPromptRequest):
+    documents = retry_operation(
+        domain_queries.get_agent_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+    )
+    if documents:
+        return success_response(
+            data=documents, message="Agent prompt retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No agent prompt found.")
+
+
+@agent_prompt_router.post("/update", response_model=StandardResponse)
+def update_agent_prompt_api(request: UpdateAgentPromptRequest):
+    result = retry_operation(
+        domain_queries.update_agent_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        update_fields=request.update_fields,
+    )
+    if result:
+        return success_response(
+            data=result, message="Agent prompt updated successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No agent prompt found to update.")
+
+
+@agent_prompt_router.post("/delete", response_model=StandardResponse)
+def delete_agent_prompt_api(request: DeleteAgentPromptRequest):
+    result = retry_operation(
+        domain_queries.delete_agent_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+    )
+    if result:
+        return success_response(
+            data=result, message="Agent prompt deleted successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No agent prompt found to delete.")
+
+
 # Include all routers into the main app
 app.include_router(crud_router)
 app.include_router(vector_search_router)
@@ -1725,6 +1857,7 @@ app.include_router(intimacy_router)
 app.include_router(knowledge_router)
 app.include_router(character_arc_router)
 app.include_router(sample_router)
+app.include_router(agent_prompt_router)
 
 # Start the application
 if __name__ == "__main__":

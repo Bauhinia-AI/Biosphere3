@@ -587,4 +587,92 @@ validators = {
             },
         }
     },
+    "agent_prompt": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["characterId"],
+            "properties": {
+                "characterId": {
+                    "bsonType": "int",
+                    "description": "角色ID, 必须为整数且为必填项",
+                },
+                "daily_goal": {
+                    "bsonType": "string",
+                    "description": "玩家通过字符串调整的日常目标",
+                },
+                "refer_to_previous": {
+                    "bsonType": "bool",
+                    "description": "是否参考过去的日常目标",
+                },
+                "life_style": {
+                    "bsonType": "string",
+                    "enum": ["Busy", "Moderate", "Casual"],
+                    "description": "调整生活风格, 可选项有Busy, Moderate, Casual",
+                },
+                "daily_objective_ar": {
+                    "bsonType": "string",
+                    "description": "一些补充信息，字符串内容",
+                },
+                "task_priority": {
+                    "bsonType": "array",
+                    "description": "任务优先级列表, 按重要度排序",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "任务名称",
+                    },
+                },
+                "max_actions": {
+                    "bsonType": "int",
+                    "description": "允许规划的最大meta action数",
+                },
+                "meta_seq_ar": {
+                    "bsonType": "string",
+                    "description": "一些补充信息，字符串内容",
+                },
+                "replan_time_limit": {
+                    "bsonType": "int",
+                    "description": "重新规划的次数限制",
+                },
+                "meta_seq_adjuster_ar": {
+                    "bsonType": "string",
+                    "description": "一些补充信息，字符串内容",
+                },
+                "focus_topic": {
+                    "bsonType": "array",
+                    "description": "重点关注的话题, 按重要度排序",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "话题名称",
+                    },
+                },
+                "depth_of_reflection": {
+                    "bsonType": "string",
+                    "enum": ["Deep", "Moderate", "Shallow"],
+                    "description": "反思的深度, 可选项有Deep, Moderate, Shallow",
+                },
+                "reflection_ar": {
+                    "bsonType": "string",
+                    "description": "一些补充信息，字符串内容",
+                },
+                "level_of_detail": {
+                    "bsonType": "string",
+                    "enum": ["Deep", "Moderate", "Shallow"],
+                    "description": "对于细节的关注, 可选项有Deep, Moderate, Shallow",
+                },
+                "tone_and_style": {
+                    "bsonType": "string",
+                    "enum": ["Formal", "Moderate", "Gentle"],
+                    "description": "描述时语言的语气和风格, 可选项有Formal, Moderate, Gentle",
+                },
+                "created_at": {
+                    "bsonType": "string",
+                    "description": "创建时间,必须为字符串且为必填项",
+                },
+                "updated_at": {
+                    "bsonType": "string",
+                    "description": "最后更新时间, 必须为字符串且为必填项",
+                },
+            },
+        }
+    },
 }

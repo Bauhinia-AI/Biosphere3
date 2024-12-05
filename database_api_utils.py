@@ -220,6 +220,32 @@ async def process_characters():
     await asyncio.gather(*tasks)
 
 
+async def create_agent_prompts_for_characters():
+    characters = await get_all_characters()
+    for character in characters:
+        agent_prompt_data = {
+            "characterId": character["id"],
+            "daily_goal": None,
+            "refer_to_previous": None,
+            "life_style": None,
+            "daily_objective_ar": None,
+            "task_priority": None,
+            "max_actions": None,
+            "meta_seq_ar": None,
+            "replan_time_limit": None,
+            "meta_seq_adjuster_ar": None,
+            "focus_topic": None,
+            "depth_of_reflection": None,
+            "reflection_ar": None,
+            "level_of_detail": None,
+            "tone_and_style": None,
+        }
+        response = await make_api_request_async(
+            "POST", "/agent_prompt/store", data=agent_prompt_data
+        )
+        print(f"Agent prompt created for character ID {character['id']}: {response}")
+
+
 async def main():
     # # Test storing and retrieving character
     # character_data = {
@@ -947,52 +973,64 @@ async def main():
     #     ),
     # )
 
-    # 测试获取样本数据
-    print("Testing get_sample with no specific item:")
-    response = make_api_request_sync("POST", "/sample/get", {"item_name": None})
-    print(response)
-    # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'personality': ['婆婆妈妈', '懒惰', '羞涩', '风趣幽默', '雄韬伟略'], 'long_term_goal': ['在智能体的生活中达到完美平衡', '帮助其他智能体实现他们的目标'], 'short_term_goal': ['收集并加工10个木材', '提升自己的健康至100点', '购买并食用一份水果沙拉'], 'language_style': ['
-    # 质朴', '表达直接', '夸张幽默', '回味无穷', '典雅高贵'], 'biography': '生活在一座海港城市，自己从小对航海充满了好奇。希望能成为一名船长，掌控自己的船只。'}}
+    # # 测试获取样本数据
+    # print("Testing get_sample with no specific item:")
+    # response = make_api_request_sync("POST", "/sample/get", {"item_name": None})
+    # print(response)
+    # # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'personality': ['婆婆妈妈', '懒惰', '羞涩', '风趣幽默', '雄韬伟略'], 'long_term_goal': ['在智能体的生活中达到完美平衡', '帮助其他智能体实现他们的目标'], 'short_term_goal': ['收集并加工10个木材', '提升自己的健康至100点', '购买并食用一份水果沙拉'], 'language_style': ['
+    # # 质朴', '表达直接', '夸张幽默', '回味无穷', '典雅高贵'], 'biography': '生活在一座海港城市，自己从小对航海充满了好奇。希望能成为一名船长，掌控自己的船只。'}}
 
-    print("Testing get_sample with 'personality' item:")
-    response = make_api_request_sync(
-        "POST", "/sample/get", {"item_name": "personality"}
+    # print("Testing get_sample with 'personality' item:")
+    # response = make_api_request_sync(
+    #     "POST", "/sample/get", {"item_name": "personality"}
+    # )
+    # print(response)
+    # # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'personality': ['开朗大方', '务实实际', '过分敏感']}}
+
+    # # 测试获取长期目标样本
+    # print("Testing get_sample with 'long_term_goal' item:")
+    # response = make_api_request_sync(
+    #     "POST", "/sample/get", {"item_name": "long_term_goal"}
+    # )
+    # print(response)
+    # # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'long_term_goal': ['与其他智能体结成联盟', '撰写并发表突破性的研究论文']}}
+
+    # # 测试获取短期目标样本
+    # print("Testing get_sample with 'short_term_goal' item:")
+    # response = make_api_request_sync(
+    #     "POST", "/sample/get", {"item_name": "short_term_goal"}
+    # )
+    # print(response)
+    # # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'short_term_goal': ['完成一次学术研究']}}
+
+    # # 测试获取语言风格样本
+    # print("Testing get_sample with 'language_style' item:")
+    # response = make_api_request_sync(
+    #     "POST", "/sample/get", {"item_name": "language_style"}
+    # )
+    # print(response)
+    # # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'language_style': ['温暖人心', '自信从容', '高雅', '冷静理性', '自信心满满']}}
+
+    # # 测试获取传记样本
+    # print("Testing get_sample with 'biography' item:")
+    # response = make_api_request_sync("POST", "/sample/get", {"item_name": "biography"})
+    # print(response)
+    # # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'biography': '家中有一个小型的花卉店，自己从小便对植物充满兴趣，梦想有一天能开一家属于自己的花卉园艺 公司。'}}
+
+    # Test storing and retrieving character
+    character_data = {
+        "characterId": 888,
+        "characterName": "ZZ",
+        "gender": "Female",
+        "spriteId": 5,
+    }
+    print(
+        "Storing character:",
+        await make_api_request_async("POST", "/characters/store", character_data),
     )
-    print(response)
-    # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'personality': ['开朗大方', '务实实际', '过分敏感']}}
 
-    # 测试获取长期目标样本
-    print("Testing get_sample with 'long_term_goal' item:")
-    response = make_api_request_sync(
-        "POST", "/sample/get", {"item_name": "long_term_goal"}
-    )
-    print(response)
-    # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'long_term_goal': ['与其他智能体结成联盟', '撰写并发表突破性的研究论文']}}
-
-    # 测试获取短期目标样本
-    print("Testing get_sample with 'short_term_goal' item:")
-    response = make_api_request_sync(
-        "POST", "/sample/get", {"item_name": "short_term_goal"}
-    )
-    print(response)
-    # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'short_term_goal': ['完成一次学术研究']}}
-
-    # 测试获取语言风格样本
-    print("Testing get_sample with 'language_style' item:")
-    response = make_api_request_sync(
-        "POST", "/sample/get", {"item_name": "language_style"}
-    )
-    print(response)
-    # {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'language_style': ['温暖人心', '自信从容', '高雅', '冷静理性', '自信心满满']}}
-
-    # 测试获取传记样本
-    print("Testing get_sample with 'biography' item:")
-    response = make_api_request_sync("POST", "/sample/get", {"item_name": "biography"})
-    print(response)
-
-
-# {'code': 1, 'message': 'Sample retrieved successfully.', 'data': {'biography': '家中有一个小型的花卉店，自己从小便对植物充满兴趣，梦想有一天能开一家属于自己的花卉园艺 公司。'}}
 
 if __name__ == "__main__":
     # asyncio.run(main())
-    asyncio.run(process_characters())
+    # asyncio.run(process_characters())
+    asyncio.run(create_agent_prompts_for_characters())

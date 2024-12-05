@@ -1,3 +1,6 @@
+import sys
+sys.path.append(".")
+
 import asyncio
 import json
 import time

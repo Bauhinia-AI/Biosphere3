@@ -11,11 +11,23 @@ from datetime import datetime, timedelta
 from pymongo.errors import DuplicateKeyError
 from database.mongo_utils import MongoDBUtils
 import random
+import bisect
 
 
 class DomainSpecificQueries:
     def __init__(self, db_utils):
         self.db_utils = db_utils
+        self.intimacy_thresholds = [0, 20, 30, 40, 60, 70, 80, 90]
+        self.relationships = [
+            "Mortal Enemies",
+            "Rivals",
+            "Hostile",
+            "Neutral",
+            "Acquaintances",
+            "Friends",
+            "Close Friends",
+            "Best Friends",
+        ]
 
     def vector_search(
         self, collection_name, query_text, fields_to_return, k, filter_list=None
@@ -142,24 +154,11 @@ class DomainSpecificQueries:
         return [doc["impression"] for doc in documents]
 
     def get_relationship(self, intimacy_level):
-        if 0 <= intimacy_level < 20:
-            return "不共戴天"
-        elif 20 <= intimacy_level < 30:
-            return "厌恶"
-        elif 30 <= intimacy_level < 40:
-            return "不满"
-        elif 40 <= intimacy_level < 60:
-            return "陌生人"
-        elif 60 <= intimacy_level < 70:
-            return "点头之交"
-        elif 70 <= intimacy_level < 80:
-            return "朋友"
-        elif 80 <= intimacy_level < 90:
-            return "好友"
-        elif 90 <= intimacy_level <= 100:
-            return "密友"
+        index = bisect.bisect_right(self.intimacy_thresholds, intimacy_level) - 1
+        index = max(0, min(index, len(self.relationships) - 1))
+        return self.relationships[index]
 
-    def store_intimacy(self, from_id, to_id, intimacy_level=50, relationship="陌生人"):
+    def store_intimacy(self, from_id, to_id, intimacy_level=50, relationship="Neutral"):
         # 根据 to_id 获取角色信息
         character_documents = self.get_character(characterId=to_id)
         if character_documents:
@@ -253,9 +252,10 @@ class DomainSpecificQueries:
         return result
 
     def decrease_all_intimacy_levels(self):
-        query = {"intimacy_level": {"$gt": 50}}  # 仅更新 intamacy_level > 50 的文档
+        # 递减 intimacy_level 并更新时间
+        query = {"intimacy_level": {"$gt": 50}}
         update = {
-            "$inc": {"intimacy_level": -1},  # 将 intimacy_level 递减 1
+            "$inc": {"intimacy_level": -1},
             "$set": {"updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")},
         }
         result = self.db_utils.update_documents(
@@ -265,24 +265,49 @@ class DomainSpecificQueries:
             multi=True,
         )
 
-        for level in [59, 69, 79, 89]:
-            documents = self.get_intimacy(
-                intimacy_level_min=level, intimacy_level_max=level
+        # 定义阈值与相应的新关系映射
+        threshold_relationship_map = {
+            59: "Neutral",
+            69: "Acquaintances",
+            79: "Friends",
+            89: "Close Friends",
+        }
+
+        # 获取所有达到阈值的文档
+        query = {"intimacy_level": {"$in": list(threshold_relationship_map.keys())}}
+        documents = self.db_utils.find_documents(
+            collection_name=config.intimacy_collection_name, query=query
+        )
+
+        # 构建批量更新操作
+        bulk_operations = []
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        for document in documents:
+            new_level = document["intimacy_level"]
+            new_relationship = threshold_relationship_map.get(
+                new_level, document["relationship"]
             )
-            for document in documents:
-                new_relationship = self.get_relationship(document["intimacy_level"])
-                query = {"from_id": document["from_id"], "to_id": document["to_id"]}
-                update = {
-                    "$set": {
-                        "relationship": new_relationship,
-                        "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    }
+            bulk_operations.append(
+                {
+                    "filter": {
+                        "from_id": document["from_id"],
+                        "to_id": document["to_id"],
+                    },
+                    "update": {
+                        "$set": {
+                            "relationship": new_relationship,
+                            "updated_at": current_time,
+                        }
+                    },
                 }
-                self.db_utils.update_documents(
-                    collection_name=config.intimacy_collection_name,
-                    query=query,
-                    update=update,
-                )
+            )
+
+        # 执行批量更新
+        self.db_utils.bulk_update_documents(
+            collection_name=config.intimacy_collection_name,
+            operations=bulk_operations,
+            ordered=False,  # 可根据需求设置为 True 或 False
+        )
 
         return result
 
@@ -993,25 +1018,25 @@ if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试 get_intimacy 函数
-    print("查询 from_id=1 的所有对话记录:")
-    print(queries.get_conversations_containing_characterId(1, 0))
+    # # 测试 get_intimacy 函数
+    # print("查询 from_id=1 的所有对话记录:")
+    # print(queries.get_conversations_containing_characterId(1, 0))
 
-    # 测试 get_intimacy 函数
-    print("查询 from_id=1 的所有记录:")
-    print(queries.get_intimacy(from_id=1))
+    # # 测试 get_intimacy 函数
+    # print("查询 from_id=1 的所有记录:")
+    # print(queries.get_intimacy(from_id=1))
 
-    # # 插入更多数据：亲密度从 40 到 90
-    # print("插入数据...")
-    # for i in range(1, 6):
-    #     queries.store_intimacy(i, i + 1, intimacy_level=40 + i * 10)
-    # print(queries.get_intimacy())
+    # 插入更多数据：亲密度从 40 到 90
+    print("插入数据...")
+    for i in range(1, 6):
+        queries.store_intimacy(i, i + 1, intimacy_level=40 + i * 10)
+    print(queries.get_intimacy())
 
-    # # 测试 decrease_all_intimacy_levels：递减所有亲密度大于 50 的记录
-    # print("\n执行 decrease_all_intimacy_levels...")
-    # decrease_count = queries.decrease_all_intimacy_levels()
-    # print(f"递减成功，更新了 {decrease_count} 个文档。")
-    # print(queries.get_intimacy())
+    # 测试 decrease_all_intimacy_levels：递减所有亲密度大于 50 的记录
+    print("\n执行 decrease_all_intimacy_levels...")
+    decrease_count = queries.decrease_all_intimacy_levels()
+    print(f"递减成功，更新了 {decrease_count} 个文档。")
+    print(queries.get_intimacy())
 
     # # 插入数据：亲密度为 50，relationship 由系统自动计算
     # print("插入数据...")

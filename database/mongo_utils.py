@@ -3,7 +3,7 @@ import sys
 import os
 import logging
 
-from pymongo import DESCENDING
+from pymongo import DESCENDING, UpdateOne
 from pymongo.errors import PyMongoError
 from pprint import pprint
 
@@ -11,6 +11,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database import config
 from database.utils import connect_to_mongo, embed_text
 from bson import ObjectId
+from datetime import datetime
 
 # Get project root directory
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -98,6 +99,54 @@ class MongoDBUtils:
             raise
         except Exception as e:
             logging.error(f"An unexpected error occurred during document update: {e}")
+            raise
+
+    def bulk_update_documents(self, collection_name, operations, ordered=False):
+        """
+        Perform bulk update operations on a collection.
+
+        :param collection_name: Name of the collection.
+        :param operations: A list of dictionaries, each containing 'filter' and 'update' keys.
+                           Example:
+                           [
+                               {
+                                   "filter": {"from_id": 1, "to_id": 2},
+                                   "update": {"$set": {"relationship": "Friends"}}
+                               },
+                               ...
+                           ]
+        :param ordered: Whether to execute operations in order. If False, allows out-of-order execution.
+        :return: The result of the bulk write operation.
+        """
+        try:
+            collection = self.db[collection_name]
+            bulk_operations = []
+
+            for op in operations:
+                filter_criteria = op.get("filter")
+                update_values = op.get("update")
+                if not filter_criteria or not update_values:
+                    logging.warning(
+                        f"Skipping invalid operation: {op}. 'filter' and 'update' are required."
+                    )
+                    continue
+                bulk_operations.append(UpdateOne(filter_criteria, update_values))
+
+            if not bulk_operations:
+                logging.info("No valid operations to perform in bulk update.")
+                return 0
+
+            result = collection.bulk_write(bulk_operations, ordered=ordered)
+            logging.info(
+                f"Bulk update completed. Matched: {result.matched_count}, "
+                f"Modified: {result.modified_count}."
+            )
+            return result.modified_count
+        except PyMongoError as e:
+            logging.error(f"Error performing bulk update on '{collection_name}': {e}")
+            raise
+        except Exception as e:
+            logging.error(f"An unexpected error occurred during bulk update: {e}")
             raise
 
     def delete_document(self, collection_name, query):

@@ -24,6 +24,7 @@ knowledge_collection_name = "knowledge"
 character_arc_collection_name = "character_arc"
 character_arc_change_collection_name = "character_arc_change"
 profile_sample_collection_name = "profile_sample"
+agent_prompt_collection_name = "agent_prompt"
 
 mongo_uri = os.getenv("MONGO_URI")
 index_name = "vector_index"

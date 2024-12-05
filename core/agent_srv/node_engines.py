@@ -32,36 +32,38 @@ from core.backend_service.backend_api_utils import (
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-
+base_url = (
+    "https://api.aiproxy.io/v1" if os.getenv("ENVIRONMENT") == "production" else None
+)
 obj_planner = obj_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.5
+    base_url=base_url, model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)
 
 descritor = describe_action_result_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 )
 # replanner = replanner_prompt | ChatOpenAI(
 #     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
 # ).with_structured_output(Act)
 
 detail_planner = detail_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(DetailedPlan)
 
 meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
 
 meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+    base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
 
 cv_generator = generate_cv_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0.7
+    base_url=base_url, model="gpt-4o-mini", temperature=0.7
 ).with_structured_output(CV)
 
 mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0.5
+    base_url=base_url, model="gpt-4o-mini", temperature=0.5
 ).with_structured_output(MayorDecision)
 
 accommodation_decision_generator = accommodation_decision_prompt | ChatOpenAI(

@@ -24,11 +24,13 @@ class Character:
 
     def log_message(self, direction: str, message: str):
         """记录消息"""
-        self.message_log.append({
-            "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-            "direction": direction,
-            "message": message
-        })
+        self.message_log.append(
+            {
+                "time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                "direction": direction,
+                "message": message,
+            }
+        )
 
 
 class CharacterManager:
@@ -44,11 +46,13 @@ class CharacterManager:
     def add_character(
         self,
         character_id: int,
-        agent_instance:LangGraphInstance,
+        agent_instance: LangGraphInstance,
         conversation_instance: ConversationInstance,
         callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None,
     ) -> None:
-        self._characters[character_id] = Character(agent_instance, conversation_instance)
+        self._characters[character_id] = Character(
+            agent_instance, conversation_instance
+        )
         if callback:
             self._characters[character_id].callback = callback
 

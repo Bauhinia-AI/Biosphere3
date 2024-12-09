@@ -243,6 +243,7 @@ mayor_decision_prompt = ChatPromptTemplate.from_template(
     """
 )
 
+
 generate_cv_prompt = ChatPromptTemplate.from_template(
     """Based on the following information, decide if a job change is necessary.
     User State:

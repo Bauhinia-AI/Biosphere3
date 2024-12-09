@@ -1,12 +1,21 @@
 import httpx
+import os
+import dotenv
 
-BASE_URL = "http://47.95.21.135:8085"
+dotenv.load_dotenv()
+
+BASE_URL = os.getenv("AGENT_BACKEND_URL")
 # BASE_URL = "http://localhost:8085"
 
 
 # 异步函数
 async def make_api_request_async(
-    method: str, endpoint: str, params: dict = None, data: dict = None
+    method: str,
+    endpoint: str,
+    params: dict = None,
+    _logger=None,
+    userid: int = None,
+    timeout: int = 8,
 ):
     url = f"{BASE_URL}{endpoint}"
     method = method.upper()
@@ -14,9 +23,13 @@ async def make_api_request_async(
     async with httpx.AsyncClient() as client:
         try:
             if method == "GET":
-                response = await client.get(url, params=params)
+                response = await client.get(
+                    url, params=params, timeout=timeout
+                )
             else:
-                response = await client.request(method, url, json=data)
+                response = await client.request(
+                    method, url, json={"characterId": userid}, timeout=timeout
+                )
 
             response.raise_for_status()
             return response.json()
@@ -30,8 +43,29 @@ async def make_api_request_async(
 
 # 同步函数
 def make_api_request_sync(
-    method: str, endpoint: str, params: dict = None, data: dict = None
+    method: str,
+    endpoint: str,
+    params: dict = None,
+    data: dict = None,
+    timeout: int = 8,
 ):
+    """
+       sample response:
+       {'code': 1,
+    'data': [{'biography': None,
+              'characterId': 42,
+              'characterName': 'ricky5\u200b',
+              'created_at': '2024-11-19 23:41:17',
+              'full_profile': 'ricky5\u200b; Female',
+              'gender': 'Female',
+              'language_style': None,
+              'long_term_goal': None,
+              'personality': None,
+              'relationship': None,
+              'short_term_goal': None,
+              'updated_at': '2024-11-19 23:41:17'}],
+    'message': 'Characters retrieved successfully.'}
+    """
     url = f"{BASE_URL}{endpoint}"
     method = method.upper()
 
@@ -40,7 +74,7 @@ def make_api_request_sync(
             if method == "GET":
                 response = client.get(url, params=params)
             else:
-                response = client.request(method, url, json=data)
+                response = client.request(method, url, json=data, timeout=timeout)
 
         response.raise_for_status()  # 如果状态码不是 2xx，会抛出异常
 

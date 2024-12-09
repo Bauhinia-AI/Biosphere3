@@ -32,6 +32,8 @@ class CharacterStats(TypedDict):
     inventory: Dict[str, Any]
     health: int
     energy: int
+    education: str
+
 
 
 class Decision(TypedDict):
@@ -130,95 +132,8 @@ class Response(BaseModel):
 
 
 if __name__ == "__main__":
-    # 创建 StateGraph 实例
-    graph = StateGraph(RunningState)
-
-    # 定义一个更新 decision 的节点函数
-    def update_decision(state: RunningState, config):
-        # 从状态中获取当前的 decision
-        decision = state["decision"]
-        # 创建新的 action_description 和 reflection
-        new_action_description = [
-            "I successfully picked an apple.",
-            "I successfully picked a banana.",
-            "I successfully picked a pear.",
-        ]
-        new_reflection = ["I feel happy about finding food."]
-        # 返回对 decision 的更新
-        return {
-            "decision": {
-                "action_description": new_action_description,
-                "reflection": new_reflection,
-            }
-        }
-
-    def update_character_stats(state: RunningState, config):
-        # 从状态中获取当前的 character_stats,fake data
-        fake_new_character_stats = {
-            "name": "Bobo",
-            "gender": "male",
-            "slogan": "Adventure awaits!",
-            "description": "A brave explorer.",
-            "role": "Explorer",
-            "inventory": {},
-            "health": 10000,
-            "energy": 100,
-        }
-        return {"character_stats": fake_new_character_stats}
-
-    def update_meta(state: RunningState, config):
-        # 从状态中获取当前的 meta
-        fake_new_meta = {
-            "tool_functions": "I can use the following tools: ['apple_picker', 'banana_picker']",
-            "day": "Monday",
-            "available_locations": ["Forest", "Village"],
-        }
-        return {"meta": fake_new_meta}
-
-    # 将节点添加到图中
-    graph.add_node("UpdateDecision", update_decision)
-    graph.add_node("UpdateCharacterStats", update_character_stats)
-    graph.add_node("UpdateMeta", update_meta)
-
-    # 设置入口和出口点
-    graph.set_entry_point("UpdateDecision")
-    graph.add_edge("UpdateDecision", "UpdateCharacterStats")
-    graph.add_edge("UpdateDecision", "UpdateMeta")
-    graph.set_finish_point("UpdateMeta")
-
-    # 编译图
-    compiled = graph.compile()
-
-    # 准备初始状态
-    initial_state = {
-        "userid": 1,
-        "character_stats": {
-            "name": "Alice",
-            "gender": "Female",
-            "slogan": "Adventure awaits!",
-            "description": "A brave explorer.",
-            "role": "Explorer",
-            "inventory": {},
-            "health": 100,
-            "energy": 100,
-        },
-        "decision": {
-            "need_replan": False,
-            "action_description": ["I successfully picked a banana."],
-            "new_plan": [],
-            "daily_objective": [],
-            "meta_seq": [],
-            "reflection": ["Nice"],
-        },
-        "meta": {
-            "tool_functions": "",
-            "day": "Monday",
-            "available_locations": ["Forest", "Village"],
-        },
-    }
     import pprint
+    run = RunningState()
 
-    # 调用编译后的图
-    result = compiled.invoke(initial_state)
-    # 输出结果
-    pprint.pprint(result)
+    pprint(run)
+

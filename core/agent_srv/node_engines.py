@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from loguru import logger
 import websockets
 
+
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph
 
@@ -151,6 +152,8 @@ async def adjust_meta_action_sequence(state: RunningState):
             "meta_seq": state["decision"]["meta_seq"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
+            "failed_action": "",
+            "error_message": "",
             "replan_time_limit": state["prompts"]["replan_time_limit"],
             "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
         }
@@ -293,15 +296,6 @@ async def generate_change_job_cv(state: RunningState):
     cv = await cv_generator.ainvoke(payload)
 
     logger.info(f"📃 CV: {cv}")
-
-    await state["instance"].send_message(
-        {
-            "characterId": state["userid"],
-            "messageName": "cv_submission",
-            "messageCode": 9,
-            "data": {"jobId": cv.job_id, "cv": cv.cv},
-        }
-    )
     return {"decision": {"cv": cv.cv, "newJobId": cv.job_id}}
 
 
@@ -349,17 +343,6 @@ async def generate_mayor_decision(state: RunningState):
     logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
     logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
 
-    await state["instance"].send_message(
-        {
-            "characterId": state["userid"],
-            "messageName": "mayor_decision",
-            "messageCode": 10,
-            "data": {
-                "decision": mayor_decision.decision,
-                "comments": mayor_decision.comments,
-            },
-        }
-    )
     return {
         "decision": {
             "mayor_decision": mayor_decision.decision,

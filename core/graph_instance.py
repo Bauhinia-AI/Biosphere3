@@ -41,13 +41,11 @@ class LangGraphInstance:
         websocket (WebSocket, optional): The WebSocket connection for communication.
     """
 
-    async def init_character(self):
-        state = RunningState(
-            **await get_initial_state_from_db(self.user_id, self.websocket)
-        )
-        return state
+    def init_character(self):
+        state = asyncio.run(get_initial_state_from_db(self.user_id, self.websocket))
+        return RunningState(**state)
 
-    async def __init__(self, user_id, websocket=None):
+    def __init__(self, user_id, websocket=None):
         self.user_id = user_id
         self.websocket = websocket
         self.signal = None
@@ -56,7 +54,7 @@ class LangGraphInstance:
         # self.state = RunningState(
         #     **generate_initial_state_hardcoded(self.user_id, self.websocket)
         # )
-        self.state = await self.init_character()
+        self.state = self.init_character()
 
         self.state["instance"] = self
         pprint(self.state)

@@ -35,6 +35,7 @@ class CharacterStats(TypedDict):
     education: str
 
 
+
 class Decision(TypedDict):
     need_replan: bool
     action_description: List[str]
@@ -135,3 +136,4 @@ if __name__ == "__main__":
     run = RunningState()
 
     pprint(run)
+

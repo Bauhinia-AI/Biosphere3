@@ -16,6 +16,7 @@ GAME_BACKEND_TIMEOUT = int(os.getenv("GAME_BACKEND_TIMEOUT"))
 AGENT_BACKEND_URL = os.getenv("AGENT_BACKEND_URL")
 
 
+
 # BETTER WAY？
 def check_termination(coro):
     @functools.wraps(coro)
@@ -31,6 +32,7 @@ def check_termination(coro):
         return await coro(self, *args, **kwargs)
 
     return wrapper
+
 
 
 def fetch_api_data(
@@ -466,6 +468,33 @@ def generate_initial_state_hardcoded(userid, websocket):
         logger.error(f"Failed to get market data from {AMM_POOL_GET_AVG_PRICE}")
         market_data_dict = {}
 
+# =======
+# def get_inventory(userid) -> dict:
+#     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+#     response = requests.get(f"http://47.95.21.135:8082/bag/getByCharacterId/{userid}")
+#     # 只保留ore, apple, wheat, fish
+#     inventory_dict = {}
+#     for x in response.json()["data"]:
+#         if x["itemName"].lower() in ["apple", "wheat", "fish"]:
+#             inventory_dict[x["itemName"]] = x["itemQuantity"]
+#         if x["itemName"].lower() == "iron_ore":
+#             inventory_dict["ore"] = x["itemQuantity"]
+
+#     return inventory_dict
+
+
+# def generate_initial_state_hardcoded(userid, websocket):
+#     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+#     price_response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
+#     market_data = price_response.json()["data"]
+#     market_data_dict = dict(
+#         {
+#             x["name"]: x["averagePrice"]
+#             for x in market_data
+#             if x["name"] in ["ore", "apple", "wheat", "fish"]
+#         }
+#     )
+# >>>>>>> dev
     initial_state = {
         "userid": userid,
         "character_stats": {
@@ -568,3 +597,4 @@ Constraints: Must be in school and have enough money.\n
 
 if __name__ == "__main__":
     print(asyncio.run(get_initial_state_from_db(432, None)))
+

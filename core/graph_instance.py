@@ -1,7 +1,11 @@
+import sys
+sys.path.append(".")
+
 import asyncio
 import json
 import time
 from datetime import datetime
+
 from pprint import pprint
 
 from loguru import logger
@@ -18,6 +22,7 @@ from core.agent_srv.node_engines import (
 )
 from core.agent_srv.node_model import RunningState
 from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict, get_initial_state_from_db
+
 
 
 class LangGraphInstance:
@@ -42,6 +47,7 @@ class LangGraphInstance:
         #     **generate_initial_state_hardcoded(self.user_id, self.websocket)
         # )
         self.state = RunningState(**asyncio.run(get_initial_state_from_db(self.user_id, self.websocket)))
+
         self.state["instance"] = self
         pprint(self.state)
         self.connection_stats = {}

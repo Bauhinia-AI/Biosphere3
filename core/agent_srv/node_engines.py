@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from loguru import logger
 import websockets
 
+
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph
 
@@ -17,6 +18,8 @@ from core.agent_srv.node_model import (
     DetailedPlan,
     MayorDecision,
     MetaActionSequence,
+    CV,
+    MayorDecision,
     RunningState,
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
@@ -339,6 +342,7 @@ async def generate_mayor_decision(state: RunningState):
     mayor_decision = await mayor_decision_generator.ainvoke(payload)
     logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
     logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
+
     return {
         "decision": {
             "mayor_decision": mayor_decision.decision,

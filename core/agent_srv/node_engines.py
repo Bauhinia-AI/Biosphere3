@@ -289,13 +289,22 @@ async def generate_change_job_cv(state: RunningState):
 
     payload = {
         "character_stats": state["character_stats"],
-        "reflection": state["decision"]["reflection"][-5:],
         "character_info": character_info,
         "available_public_jobs": available_public_jobs,
     }
     cv = await cv_generator.ainvoke(payload)
 
     logger.info(f"📃 CV: {cv}")
+
+    if 'instance' in state and state['instance']:
+        await state["instance"].send_message(
+            {
+                "characterId": state["userid"],
+                "messageName": "cv_submission",
+                "messageCode": 9,
+                "data": {"jobId": cv.job_id, "cv": cv.cv},
+            }
+        )
     return {"decision": {"cv": cv.cv, "newJobId": cv.job_id}}
 
 
@@ -343,6 +352,18 @@ async def generate_mayor_decision(state: RunningState):
     logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
     logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
 
+    if 'instance' in state and state['instance']:
+        await state["instance"].send_message(
+            {
+                "characterId": state["userid"],
+                "messageName": "mayor_decision",
+                "messageCode": 10,
+                "data": {
+                    "decision": mayor_decision.decision,
+                    "comments": mayor_decision.comments,
+                },
+            }
+        )
     return {
         "decision": {
             "mayor_decision": mayor_decision.decision,

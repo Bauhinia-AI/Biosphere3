@@ -70,6 +70,14 @@ mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
 async def generate_daily_objective(state: RunningState):
     # BUG 这里如果检验失败会报错，需要重试
     # 重试一次
+    # 获取最新的prompt数据
+    try:
+        prompt = await make_api_request_async("GET", f"/agent_prompt/?characterId={state['userid']}")
+        prompt_data = prompt.get("data", [{}])[0]  # 如果data为空，返回一个空字典
+        state["prompts"] = {key: prompt_data[key] for key in prompt_data if key not in ["characterId", "created_at", "updated_at"]}
+    except (IndexError, KeyError) as e:
+        logger.error(f"⛔ Error retrieving prompt data: {e}")
+        state["prompts"] = {}  # 设置一个默认值或处理逻辑
     retry_count = 0
     payload = {
         "character_stats": state["character_stats"],

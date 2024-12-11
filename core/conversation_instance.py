@@ -44,7 +44,7 @@ class ConversationInstance:
                 "characterId": self.user_id,
                 "day": current_day
             }
-            check_response = make_api_request_sync("POST", "/conversations/get_by_id_and_day", data=check_data)
+            check_response = make_api_request_sync("GET", "/conversations/by_id_and_day", params=check_data)
             if not check_response["data"]:
                 self.plan_signal = True
             self.is_initial = False
@@ -93,7 +93,7 @@ class ConversationInstance:
                     "start_day": current_time[0],
                     "start_time": msg["data"]["start_time"]
                 }
-                readonly_response = make_api_request_sync("POST", "/conversations/store", data=readonly_data)
+                readonly_response = make_api_request_sync("POST", "/conversations/", data=readonly_data)
                 logger.info(f"A read-only conversation is saved to database: {readonly_response['message']}")
 
                 # 检查列表中是否有同一个对话条目，有则更新，没有则添加

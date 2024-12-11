@@ -16,7 +16,7 @@ import random
 import numpy as np
 
 
-os.environ["OPENAI_API_KEY"] = "sk-VTpN30Day8RP7IDVVRVWx4vquVhGViKftikJw82WIr94DaiC"
+os.environ["OPENAI_API_KEY"] = "sk-7MoETArh2eJxUpCQjEzX2jEyq5nOoo2N61ppykI9NHRc4wKE"
 
 conversation_topic_planner = conversation_topic_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
@@ -59,7 +59,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
     # 更新当前用户的profile，从数据库获取
     userid = state["userid"]
     character_data = {"characterId": userid}
-    profile = make_api_request_sync("POST", "/characters/get", data=character_data)
+    profile = make_api_request_sync("GET", "/characters/", params=character_data)
     state["character_stats"] = profile["data"][0]
     logger.info(f"User {state['userid']}: {profile['message']}")
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
@@ -69,19 +69,26 @@ async def generate_daily_conversation_plan(state: ConversationState):
         "characterId": state["userid"],
         "k": 1
     }
-    objective_response = make_api_request_sync("POST", "/daily_objectives/get", data=get_daily_objectives_data)
+    objective_response = make_api_request_sync("GET", "/daily_objectives/", params=get_daily_objectives_data)
     if objective_response["data"] is not None:
         memory = objective_response["data"]
     else:
         memory = []
 
     # 获取角色弧光
-    arc_response = make_api_request_sync("POST", "/character_arc/get_with_changes", data={"characterId": state["userid"], "k": 1})
-    if not arc_response:
+    arc_response = make_api_request_sync("GET", "/character_arc/changes", params={"characterId": state["userid"], "k": 1})
+    if not arc_response["data"]:
         arc_data = []
     else:
         arc_data = arc_response["data"]
     logger.info(f"User {state['userid']} current character arc is {arc_data}")
+
+    #获取对话prompt: topic
+    topic_response = make_api_request_sync("GET", "/conversation_prompt/", params={"characterId": state["userid"]})
+    if not topic_response["data"]:
+        topic_requirement = ""
+    else:
+        topic_requirement = topic_response["data"]["topic_requirements"]
 
     # 生成对话主题列表
     retry_count = 0
@@ -92,7 +99,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
                     "character_stats": state["character_stats"],
                     "memory": memory,
                     "personality": arc_data,
-                    "requirements": state["prompt"]["topic_requirements"]
+                    "requirements": topic_requirement
                 }
             )
             break
@@ -189,7 +196,7 @@ async def start_conversation(state: ConversationState):
     # 从数据库获取当前用户的最新状态
     userid = state["userid"]
     character_data = {"characterId": userid}
-    profile = make_api_request_sync("POST", "/characters/get", data=character_data)
+    profile = make_api_request_sync("GET", "/characters/", params=character_data)
     state["character_stats"] = profile["data"][0]
     logger.info(f"User {state['userid']}: {profile['message']}")
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
@@ -199,7 +206,7 @@ async def start_conversation(state: ConversationState):
         "characterId": state["userid"],
         "day": current_time[0]
     }
-    talked_response = make_api_request_sync("POST", "/conversations/get_by_id_and_day", data=talked_data)
+    talked_response = make_api_request_sync("GET", "/conversations/by_id_and_day", params=talked_data)
     talked = talked_response["data"]
 
     logger.info(f"🧠 CHECKING WHETHER TO START THE CONVERSATION ...")
@@ -226,22 +233,22 @@ async def start_conversation(state: ConversationState):
         # rag 对话对象
         encounter_data = {
                     "from_id": state["userid"],
-                    "k": 10
+                    "k": 3
                 }
-        encounter_response = make_api_request_sync("POST", "/encounter_count/get_by_from_id", data=encounter_data)
+        encounter_response = make_api_request_sync("GET", "/encounter_count/by_from_id", params=encounter_data)
 
         candidate_list = []
         for item in encounter_response["data"]:
             if item["count"] != 0:
                 candidate_list.append(item['to_id'])
-                
+
         if not candidate_list:
             character_rag_data = {
                 "characterId": state["userid"],
                 "topic": current_talk["topic"],
                 "k": 2
             }
-            rag_response = make_api_request_sync("POST", "/characters/get_rag", data=character_rag_data)
+            rag_response = make_api_request_sync("GET", "/characters/rag", params=character_rag_data)
         else:
             character_rag_data = {
                 "characterId": state["userid"],
@@ -249,7 +256,7 @@ async def start_conversation(state: ConversationState):
                 "topic": current_talk["topic"],
                 "k": 2
             }
-            rag_response = make_api_request_sync("POST", "/characters/get_rag_in_list", data=character_rag_data)
+            rag_response = make_api_request_sync("POST", "/characters/rag_in_list", data=character_rag_data)
 
         current_topic_list = {}
         if len(rag_response['data']) == 0:
@@ -280,7 +287,7 @@ async def start_conversation(state: ConversationState):
                     "to_id": to_id,
                     "k": 1
                 }
-                impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
+                impression_response = make_api_request_sync("GET", "/impressions/", params=impression_query_data)
 
                 # impression为空报错机制
                 if impression_response["data"]:
@@ -296,8 +303,8 @@ async def start_conversation(state: ConversationState):
                 break
 
         # 获取角色弧光
-        arc_response = make_api_request_sync("POST", "/character_arc/get_with_changes", data={"characterId": state["userid"], "k": 1})
-        if not arc_response:
+        arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
+        if not arc_response["data"]:
             arc_data = []
         else:
             arc_data = arc_response["data"]
@@ -359,7 +366,7 @@ async def generate_response(state: ConversationState):
     # 更新当前用户的profile，从数据库获取
     userid = state["userid"]
     character_data = {"characterId": userid}
-    profile = make_api_request_sync("POST", "/characters/get", data=character_data)
+    profile = make_api_request_sync("GET", "/characters/", params=character_data)
     state["character_stats"] = profile["data"][0]
     logger.info(f"User {state['userid']}: {profile['message']}")
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
@@ -373,7 +380,7 @@ async def generate_response(state: ConversationState):
         "to_id": question_item["from_id"],
         "k": 1
     }
-    impression_response = make_api_request_sync("POST", "/impressions/get", data=impression_query_data)
+    impression_response = make_api_request_sync("GET", "/impressions/", params=impression_query_data)
 
     if impression_response["data"]:
         current_impression = impression_response["data"][0]
@@ -382,12 +389,19 @@ async def generate_response(state: ConversationState):
     logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {current_impression}")
 
     # 获取角色弧光
-    arc_response = make_api_request_sync("POST", "/character_arc/get_with_changes", data={"characterId": state["userid"], "k": 1})
-    if not arc_response:
+    arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
+    if not arc_response["data"]:
         arc_data = []
     else:
         arc_data = arc_response["data"]
     logger.info(f"User {state['userid']} current character arc is {arc_data}")
+
+    # 获取对话prompt
+    prompt_response = make_api_request_sync("GET", "/conversation_prompt/", params={"characterId": state["userid"]})
+    if not prompt_response:
+        prompt = {}
+    else:
+        prompt = prompt_response["data"]
 
     retry_count = 0
     while retry_count < 3:
@@ -399,7 +413,8 @@ async def generate_response(state: ConversationState):
                     "question": question,
                     "history": history,
                     "impact": state["prompt"]["impression_impact"],
-                    "personality": arc_data
+                    "personality": arc_data,
+                    "others": prompt
                 }
             )
             break
@@ -467,7 +482,7 @@ async def check_conversation_state(state: ConversationState, message: RunningCon
 # 处理已经结束的对话，包括生成印象，储存到数据库
 async def handling_finished_conversation(conversation):  # conversation = character_ids[], dialogue, start_time
     # 储存对话到数据库
-    stored_conversation_response = make_api_request_sync("POST", "/conversations/store", data=conversation)
+    stored_conversation_response = make_api_request_sync("POST", "/conversations/", data=conversation)
     logger.info(f"Conversation between Users {conversation['characterIds']} started at {conversation['start_time']} is finished.")
     logger.info(conversation["dialogue"])
     logger.info(stored_conversation_response["message"])
@@ -523,7 +538,7 @@ async def update_impression(id1: int, id2: int, conversation):
         "to_id": id2,
         "impression": impression.impression1
     }
-    store_impression1_response = make_api_request_sync("POST", "/impressions/store", data=document1)
+    store_impression1_response = make_api_request_sync("POST", "/impressions/", data=document1)
     logger.info(f"From User {id1} to User {id2}: {store_impression1_response['message']}.")
 
     document2 = {
@@ -531,7 +546,7 @@ async def update_impression(id1: int, id2: int, conversation):
         "to_id": id1,
         "impression": impression.impression2
     }
-    store_impression2_response = make_api_request_sync("POST", "/impressions/store", data=document2)
+    store_impression2_response = make_api_request_sync("POST", "/impressions/", data=document2)
     logger.info(f"From User {id2} to User {id1}: {store_impression2_response['message']}.")
     return {"new impressions": [impression.impression1, impression.impression2]}
 
@@ -592,7 +607,7 @@ async def handling_readonly_conversation(state: ConversationState):
 def initialize_conversation_state(userid, websocket) -> ConversationState:
     # 获取用户的profile，从数据库获取
     character_data = {"characterId": userid}
-    profile = make_api_request_sync("POST", "/characters/get", data=character_data)
+    profile = make_api_request_sync("GET", "/characters/", params=character_data)
     character_stats = profile["data"][0]
     logger.info(f"User {userid}: {profile['message']}")
     logger.info(f"User {userid} current state is: {character_stats}")
@@ -635,10 +650,10 @@ async def update_intimacy(id1: int, id2: int, conversation):
     logger.info(f"🧠 MARKING THE CONVERSATION...")
 
     character_data = {"characterId": id1}
-    profile1 = make_api_request_sync("POST", "/characters/get", data=character_data)
+    profile1 = make_api_request_sync("GET", "/characters/", data=character_data)
 
     character_data = {"characterId": id2}
-    profile2 = make_api_request_sync("POST", "/characters/get", data=character_data)
+    profile2 = make_api_request_sync("GET", "/characters/", data=character_data)
 
     retry_count = 0
     while retry_count < 3:
@@ -668,12 +683,12 @@ async def update_intimacy(id1: int, id2: int, conversation):
         "to_id": id2
     }
 
-    response = make_api_request_sync("POST", "/intimacy/get", data=intimacy_query_data)
+    response = make_api_request_sync("GET", "/intimacy/", params=intimacy_query_data)
     if response["data"] is None:
         current_intimacy_1 = 50
-        type_1 = "store"
+        type_1 = "POST"
     else:
-        type_1 = "update"
+        type_1 = "PUT"
         current_intimacy_1 = response["data"][0]["intimacy_level"]
 
     intimacy_query_data = {
@@ -681,12 +696,12 @@ async def update_intimacy(id1: int, id2: int, conversation):
         "to_id": id1
     }
 
-    response = make_api_request_sync("POST", "/intimacy/get", data=intimacy_query_data)
+    response = make_api_request_sync("GET", "/intimacy/", params=intimacy_query_data)
     if response["data"] is None:
         current_intimacy_2 = 50
-        type_2 = "store"
+        type_2 = "POST"
     else:
-        type_2 = "update"
+        type_2 = "PUT"
         current_intimacy_2 = response["data"][0]["intimacy_level"]
 
     logger.info(f"Past intimacy mark from User {id1} to User {id2} is {current_intimacy_1}.")
@@ -705,32 +720,32 @@ async def update_intimacy(id1: int, id2: int, conversation):
 
     # 更新亲密度，区分新增和更新数据库命令的不同
     name = "intimacy_level"
-    if type_1 == "update":
+    if type_1 == "PUT":
         name = "new_" + name
     update_intimacy_data = {
         "from_id": id1,
         "to_id": id2,
         name: current_intimacy_1
     }
-    endpoint = "/intimacy/" + type_1
-    response = make_api_request_sync("POST", endpoint, data=update_intimacy_data)
+    endpoint = "/intimacy/"
+    response = make_api_request_sync(type_1, endpoint, data=update_intimacy_data)
     logger.info(f"From User {id1} to User {id2}: {response['message']}.")
 
     name = "intimacy_level"
-    if type_2 == "update":
+    if type_2 == "PUT":
         name = "new_" + name
     update_intimacy_data = {
         "from_id": id2,
         "to_id": id1,
         name: current_intimacy_2
     }
-    endpoint = "/intimacy/" + type_2
-    response = make_api_request_sync("POST", endpoint, data=update_intimacy_data)
+    endpoint = "/intimacy/"
+    response = make_api_request_sync(type_2, endpoint, data=update_intimacy_data)
     logger.info(f"From User {id2} to User {id1}: {response['message']}.")
 
 
 # 现实时间到游戏时间转换器
-def calculate_game_time(real_time=datetime.now(), day1_str='2024-12-1 10:00'):  # 暂时设置的day1，real_time=datetime.now()
+def calculate_game_time(real_time=datetime.now(), day1_str='2024-12-1 8:00'):  # 暂时设置的day1，real_time=datetime.now()
     # 解析现实时间
     day1 = datetime.strptime(day1_str, "%Y-%m-%d %H:%M")
     # 第1天的开始时间

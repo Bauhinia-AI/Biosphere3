@@ -75,6 +75,14 @@ conversation_responser_prompt = ChatPromptTemplate.from_template(
     Your profile is: {profile}.
     Your current personality is {personality}. 
     Your impression towards the other speaker is: {impression}.
+    
+    There are some other requirements of conversation {others}.
+    The relation influence how you treat others.
+    The emotion influence your tone.
+    The personality determines whether you are willing to talk.
+    Habits and preferences are information and topics you want to include in the conversation.
+    Ignore other items.
+     
     The conversation history between you and the other speaker is: {history}.
     
     You have received the message: {question}.

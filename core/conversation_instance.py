@@ -39,7 +39,15 @@ class ConversationInstance:
     async def listener(self, message):
         # print("Listener started!")
         if self.is_initial:
-            self.plan_signal = True
+            # 进一步检查今天是否已经进行过对话，避免对话过多
+            current_time = calculate_game_time()
+            current_day = current_time[0]
+            check_data = {"characterId": self.user_id, "day": current_day}
+            check_response = make_api_request_sync(
+                "GET", "/conversations/by_id_and_day", params=check_data
+            )
+            if not check_response["data"]:
+                self.plan_signal = True
             self.is_initial = False
         websocket = self.state["websocket"]
         message_queue = self.state["message_queue"]
@@ -89,7 +97,7 @@ class ConversationInstance:
                 )
                 current_time = calculate_game_time()
 
-                # 存储对话到数据库，先查询是否有同一条
+                # 存储对话到数据库
                 readonly_data = {
                     "characterIds": [msg["data"]["from_id"], msg["data"]["to_id"]],
                     "dialogue": msg["data"]["dialogue"],
@@ -97,7 +105,7 @@ class ConversationInstance:
                     "start_time": msg["data"]["start_time"],
                 }
                 readonly_response = make_api_request_sync(
-                    "POST", "/conversations/store", data=readonly_data
+                    "POST", "/conversations/", data=readonly_data
                 )
                 logger.info(
                     f"A read-only conversation is saved to database: {readonly_response['message']}"
@@ -154,10 +162,14 @@ class ConversationInstance:
             elif message_name == "prompt_modification":  # 改prompt
                 new_prompt_data = msg.get("data")
                 logger.info(f"User {self.user_id}: new prompts received.")
-                new_topic_prompt = new_prompt_data["topic_planner_prompt"]
-                new_impression_prompt = new_prompt_data["responser_prompt"]
-                self.state["prompt"]["topic_requirements"] = new_topic_prompt
-                self.state["prompt"]["impression_impact"].update(new_impression_prompt)
+                if "topic_planner_prompt" in new_prompt_data:
+                    new_topic_prompt = new_prompt_data["topic_planner_prompt"]
+                    self.state["prompt"]["topic_requirements"] = new_topic_prompt
+                if "responser_prompt" in new_prompt_data:
+                    new_impression_prompt = new_prompt_data["responser_prompt"]
+                    self.state["prompt"]["impression_impact"].update(
+                        new_impression_prompt
+                    )
                 logger.info(
                     f"User {self.user_id}'s new prompts are: {self.state['prompt']}"
                 )

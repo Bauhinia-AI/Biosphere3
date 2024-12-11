@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from loguru import logger
 import websockets
 
+
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph
 
@@ -155,6 +156,8 @@ async def adjust_meta_action_sequence(state: RunningState):
             "meta_seq": state["decision"]["meta_seq"][-1],
             "tool_functions": state["meta"]["tool_functions"],
             "locations": state["meta"]["available_locations"],
+            "failed_action": "",
+            "error_message": "",
             "replan_time_limit": state["prompts"]["replan_time_limit"],
             "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
         }
@@ -342,6 +345,7 @@ async def generate_mayor_decision(state: RunningState):
     mayor_decision = await mayor_decision_generator.ainvoke(payload)
     logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
     logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
+
     return {
         "decision": {
             "mayor_decision": mayor_decision.decision,

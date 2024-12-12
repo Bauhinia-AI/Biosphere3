@@ -4,13 +4,15 @@ sys.path.append("..")
 import time
 import asyncio
 from typing import Dict, Optional, Callable, Coroutine, Any
-from graph_instance import LangGraphInstance
+from core.graph_instance import LangGraphInstance
+from core.conversation_instance import ConversationInstance
 from loguru import logger
 
 
 class Character:
-    def __init__(self, instance: LangGraphInstance):
-        self.instance = instance
+    def __init__(self, agent_instance, conversation_instance: ConversationInstance):
+        self.agent_instance = agent_instance
+        self.conversation_instance = conversation_instance
         self.last_heartbeat = time.time()
         self.heartbeat_count = 1
         self.callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None
@@ -42,10 +44,11 @@ class CharacterManager:
     def add_character(
         self,
         character_id: int,
-        agent_instance: LangGraphInstance,
+        agent_instance:LangGraphInstance,
+        conversation_instance: ConversationInstance,
         callback: Optional[Callable[[], Coroutine[Any, Any, None]]] = None,
     ) -> None:
-        self._characters[character_id] = Character(agent_instance)
+        self._characters[character_id] = Character(agent_instance, conversation_instance)
         if callback:
             self._characters[character_id].callback = callback
 

@@ -1,150 +1,140 @@
-# database_api_utils.py
 import httpx
-import asyncio
 import os
-import logging
-import time
+import dotenv
 
-# 在项目根目录下创建 logs 文件夹
-log_directory = "logs"
-if not os.path.exists(log_directory):
-    os.makedirs(log_directory)
+dotenv.load_dotenv()
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s:%(message)s",
-    handlers=[
-        logging.FileHandler(os.path.join(log_directory, "database_api_utils.log")),
-        logging.StreamHandler(),
-    ],
-)
-
-BASE_URL = "http://47.95.21.135:8085"
+BASE_URL = os.getenv("AGENT_BACKEND_URL")
 # BASE_URL = "http://localhost:8085"
 
 
+# 异步函数
 async def make_api_request_async(
-    method: str, endpoint: str, data: dict = None, retries: int = 3, delay: int = 2
+    method: str,
+    endpoint: str,
+    params: dict = None,
+    _logger=None,
+    userid: int = None,
+    timeout: int = 8,
 ):
     url = f"{BASE_URL}{endpoint}"
     method = method.upper()
 
-    for attempt in range(retries):
-        async with httpx.AsyncClient(
-            timeout=30.0
-        ) as client:  # Set timeout to 30 seconds
-            try:
-                if method == "GET":
-                    response = await client.get(url, params=data)
-                else:
-                    response = await client.request(method, url, json=data)
-
-                response.raise_for_status()
-                response_data = response.json()
-
-                # Check if `code` is not 1
-                if response_data["code"] != 1:
-                    logging.warning(
-                        "Error detected in response from endpoint %s: %s",
-                        endpoint,
-                        response_data["message"],
-                    )
-                else:
-                    logging.info(response_data["message"])
-
-                return response_data
-
-            except httpx.TimeoutException as e:
-                logging.warning(
-                    f"Attempt {attempt + 1}/{retries} failed: Request timed out"
-                )
-                logging.error(f"Error details: {str(e)}")
-                if attempt < retries - 1:
-                    logging.info(f"Retrying in {delay} seconds...")
-                    await asyncio.sleep(delay)
-                else:
-                    raise Exception(
-                        f"API request to {url} failed after {retries} attempts due to timeout. Error details: {str(e)}"
-                    )
-
-            except httpx.RequestError as e:
-                logging.warning(
-                    f"Attempt {attempt + 1}/{retries} failed: Request error"
-                )
-                logging.error(f"Error details: {str(e)}")
-                if attempt < retries - 1:
-                    logging.info(f"Retrying in {delay} seconds...")
-                    await asyncio.sleep(delay)
-                else:
-                    raise Exception(
-                        f"API request to {url} failed after {retries} attempts. Error details: {str(e)}"
-                    )
-
-            except httpx.HTTPStatusError as e:
-                logging.warning(
-                    f"Attempt {attempt + 1}/{retries} failed: HTTP status error"
-                )
-                logging.error(f"Status code: {e.response.status_code}")
-                logging.error(f"Response content: {e.response.text}")
-                if attempt < retries - 1:
-                    logging.info(f"Retrying in {delay} seconds...")
-                    await asyncio.sleep(delay)
-                else:
-                    raise Exception(
-                        f"API request to {url} failed after {retries} attempts, status code: {e.response.status_code}. Response content: {e.response.text}"
-                    )
-
-
-# Synchronous function
-def make_api_request_sync(
-    method: str, endpoint: str, data: dict = None, retries: int = 3, delay: int = 2
-):
-    url = f"{BASE_URL}{endpoint}"
-    method = method.upper()
-
-    for attempt in range(retries):
+    async with httpx.AsyncClient() as client:
         try:
-            with httpx.Client(timeout=30) as client:  # Set timeout
-                if method == "GET":
-                    response = client.get(url, params=data)
-                else:
-                    response = client.request(method, url, json=data)
+            if method == "GET":
+                response = await client.get(
+                    url, params=params, timeout=timeout
+                )
+            else:
+                response = await client.request(
+                    method, url, json={"characterId": userid}, timeout=timeout
+                )
 
             response.raise_for_status()
-            response_data = response.json()
-
-            # Check if `code` is not 1
-            if response_data["code"] != 1:
-                logging.warning(
-                    "Error detected in response from endpoint %s: %s",
-                    endpoint,
-                    response_data["message"],
-                )
-            else:
-                logging.info(response_data["message"])
-
-            return response_data
-
+            return response.json()
         except httpx.RequestError as e:
-            logging.warning(f"Attempt {attempt + 1}/{retries} failed: {e}")
-            logging.error(f"Error type: {type(e).__name__}")
-            logging.error(f"Error details: {str(e)}")
-            if attempt < retries - 1:
-                logging.info(f"Retrying in {delay} seconds...")
-                time.sleep(delay)
-            else:
-                raise Exception(
-                    f"API request to {url} failed after {retries} attempts. Error type: {type(e).__name__}, Error details: {str(e)}"
-                )
-
+            raise Exception(f"API request to {url} failed: {e}")
         except httpx.HTTPStatusError as e:
-            logging.warning(f"Attempt {attempt + 1}/{retries} failed: {e}")
-            logging.error(f"Status code: {e.response.status_code}")
-            logging.error(f"Response content: {e.response.text}")
-            if attempt < retries - 1:
-                logging.info(f"Retrying in {delay} seconds...")
-                time.sleep(delay)
+            raise Exception(
+                f"API request to {url} failed with status code {e.response.status_code}"
+            )
+
+
+# 同步函数
+def make_api_request_sync(
+    method: str,
+    endpoint: str,
+    params: dict = None,
+    data: dict = None,
+    timeout: int = 8,
+):
+    """
+       sample response:
+       {'code': 1,
+    'data': [{'biography': None,
+              'characterId': 42,
+              'characterName': 'ricky5\u200b',
+              'created_at': '2024-11-19 23:41:17',
+              'full_profile': 'ricky5\u200b; Female',
+              'gender': 'Female',
+              'language_style': None,
+              'long_term_goal': None,
+              'personality': None,
+              'relationship': None,
+              'short_term_goal': None,
+              'updated_at': '2024-11-19 23:41:17'}],
+    'message': 'Characters retrieved successfully.'}
+    """
+    url = f"{BASE_URL}{endpoint}"
+    method = method.upper()
+
+    try:
+        with httpx.Client() as client:
+            if method == "GET":
+                response = client.get(url, params=params)
             else:
-                raise Exception(
-                    f"API request to {url} failed after {retries} attempts, status code: {e.response.status_code}. Response content: {e.response.text}"
-                )
+                response = client.request(method, url, json=data, timeout=timeout)
+
+        response.raise_for_status()  # 如果状态码不是 2xx，会抛出异常
+
+        return response.json()  # 返回 JSON 响应
+    except httpx.RequestError as e:
+        raise Exception(f"API request to {url} failed: {e}")
+    except httpx.HTTPStatusError as e:
+        raise Exception(
+            f"API request to {url} failed with status code {e.response.status_code}"
+        )
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    sample_state = {
+        "userid": 102,
+        "input": "Sample input for the daily objective.",
+        "plan": ["Step 1", "Step 2"],
+        "past_steps": [("step1", "result1")],
+        "response": "Sample response",
+        "daily_objective": ["Objective 1", "Objective 2"],
+        "meta_seq": ["Action 1", "Action 2"],
+        "tool_functions": "function1",
+        "locations": "location1",
+        "past_objectives": [["Objective A"], ["Objective B"]],
+        "execution_results": [{"result": "success"}],
+        "reflection": "Reflection text",
+        "messages": ["Message 1", "Message 2"],
+    }
+    data = {
+        "userid": sample_state["userid"],
+        "meta_sequence": sample_state["meta_seq"],
+    }
+
+    # # 使用同步函数
+    # endpoint = "/update_meta_seq"
+    # print(make_api_request_sync("POST", endpoint, data=data))
+
+    # # 使用异步函数
+    # async def test_async():
+    #     print(await make_api_request_async("POST", endpoint, data=data))
+
+    # asyncio.run(test_async())
+
+    # 测试存储和检索印象
+
+    # 存储印象
+    impression_data = {"from_id": 1, "to_id": 2, "impression": "Seems friendly."}
+    endpoint = "/store_impression"
+    response = make_api_request_sync("POST", endpoint, data=impression_data)
+    print("Storing Impression:", response)
+
+    # 检索印象
+    get_impression_data = {
+        "from_id": 1,
+        "to_id": 2,
+        "k": 1,
+    }
+
+    endpoint = "/get_impression"
+    response = make_api_request_sync("POST", endpoint, data=get_impression_data)
+    print("Retrieving Impression:", response)

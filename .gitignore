@@ -5,3 +5,4 @@ agent_reflections.jsonl
 *.log
 *.log
 *.ipynb
+.env

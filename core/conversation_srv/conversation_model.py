@@ -39,6 +39,7 @@ class ConversationState(TypedDict):
     message_queue: asyncio.Queue  # 接收消息的队列，需要包含用于判断只读或回复模式的字段
     waiting_response: asyncio.Queue  # 储存等待生成回复的消息， 每个条目格式为RunningConversation
     websocket: Any
+    prompt: Dict[str, Any]   # 用于存放prompt,"topic_requirements", "impression_impact"两个字段
 
 
 # 正在进行中的对话

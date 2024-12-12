@@ -4,11 +4,18 @@ conversation_topic_planner_prompt = ChatPromptTemplate.from_template(
     """
     You are a daily conversation planner in a RPG game.
     Your personal profile is: {character_stats}.
-    This is your memory: {memory}.
+    This is your daily objectives: {memory}.
+    Your current personality is: {personality}.
     Based on your profile, generate 5 topics for today's conversation.
+    The topics should be related to the daily objectives and profile.
+    There are more requirements. Consider all these requirements carefully.
+    1.Randomly add at most one casual topics. Try to combine the casual topic with the profile and personality.
+    The casual topics could be, for example, weather, food, emotion, clothing, health condition, education, product prize.
+    2.Randomly insult, attack or criticize others on at most one topic. The topic can be determined by your profile and personality.
+    For example, insult someone on his lifestyle, emotion, habit, poor education, taste, criticize others attitude towards something.
+    3.Also take these additional requirements into account: {requirements}.
     
     The output should be a list. And it should be in time order. 
-    In detail, the conversation about the first topic should happen first. Then the second.
     Consider the time factor of each topic and reorganize the topics in time order.
     Here is an example.
     "Talk to classmates about learning plans", "Talk to friends about the heavy work load", "Talk to classmates about how to relax when you are tired."
@@ -18,19 +25,22 @@ conversation_topic_planner_prompt = ChatPromptTemplate.from_template(
 
 conversation_planner_prompt = ChatPromptTemplate.from_template(
     """
-    You are a daily conversation planner in a RPG game. Your job is to design a detail daily conversation plan.
+    You are a daily conversation planner in a RPG game. Your job is to start a conversation.
     Your personal profile is: {character_stats}.
-    Now you are provided a list of conversation topic candidates: {topic_list}.
+    Your current personality is: {personality}.
+    Now you are provided a conversation topic: {topic_list}.
     
-    Every conversation candidate includes three items:
+    Every conversation event includes three items:
     topic: This is the topic of conversation.
     userid: This is the player's id that you are intended to talk to.
-    impression: This is your impression towards the player.
+    impression: This is your impression towards the one you are going to talk to.
     
-    Now based on the impressions and topics, generate a detail daily conversation plan.
-    The topic of the conversation should be the same as you recieved.
+    Now based on the impressions and topic, generate your first sentence about this conversation.
+    The first sentence MUST be closely related to the topic you received.
+    Also consider the impression and your personality. Determine your tone and style based on both factors.
+    Since this is to start a conversation, add some greeting words if needed.
+    
     Each conversation should be a dictionary in the following form:
-    First_sentence: The first sentence that you are going to send to the other player. It should be determined by your personal profile, your impression towards the other player and the topic.
     Here is an example:
     first_sentence: Hi! How are you today? Have you had breakfast yet? 
     
@@ -42,12 +52,19 @@ conversation_planner_prompt = ChatPromptTemplate.from_template(
 conversation_check_prompt = ChatPromptTemplate.from_template(
     """
     You are required to check whether it is needed to start a conversation.
+   
     Your profile is: {profile}.
-    You have finished some conversations today. These conversations are here: {finished_talk}.
-    
+    You have finished some conversations today. These conversations are here: {finished_talk}. 
     Now you need to determine whether you need to start this conversation: {current_talk}.
+    
+    You need to check the following two things:
     First summarize the topics of finished conversations.
-    Then if you have talked with the same person about some similar topics, return FALSE.
+    Then if you have talked about some similar topics, you should not start this conversation.
+    
+    Do not cancel the conversation unless you have talked about the same topic.
+    Do not cancel any criticizing or insulting conversations. 
+     
+    After check, if your decision is this conversation is no longer needed, return FALSE.
     Otherwise, return TRUE. 
     """
 )
@@ -56,26 +73,32 @@ conversation_responser_prompt = ChatPromptTemplate.from_template(
     """
     You are a conversation responser in a RPG game.
     Your profile is: {profile}.
+    Your current personality is {personality}. 
     Your impression towards the other speaker is: {impression}.
-    The conversation history between you is: {history}.
+    
+    There are some other requirements of conversation {others}.
+    The relation influence how you treat others.
+    The emotion influence your tone.
+    The personality determines whether you are willing to talk.
+    Habits and preferences are information and topics you want to include in the conversation.
+    Ignore other items.
+     
+    The conversation history between you and the other speaker is: {history}.
     
     You have received the message: {question}.
-    Generate a short response message based on your profile, the impression and the conversation history.
+    Generate a short response message based on your profile, personality, the impression and the conversation history.
     Your response must closely related to the history.
     You must consider both positive and negative effects of each impression item on the conversation response.
     In each impression, there are four items: relation, emotion, personality, habits and preferences.
-    Relation influences the length of conversation and how much information from player profiles should be included.
-    Emotion determines the tone of the players.
-    Personality influence the length of each player's answer and their willingness towards conversation.
-    Habits and preferences are something that one player thinks the other could be interested in and can also be mentioned in the conversation.
+    The impact of these items on the response content is: {impact}.
+    You do not need to always agree with others. When others are criticizing, challenging or insulting you, stick to your point and also criticize them. 
     
-    Besides, also based on your profile, the impression and the conversation history, determine whether the conversation shoud end.
-    AThe relation in impression can influence the overall round of the conversation.
+    Besides, also based on your profile, personality, the impression and the conversation history, determine whether the conversation shoud end.
+    The relation in impression can influence the overall round of the conversation.
     For example, if two speakers are close friends, they may talk until the 4th round.
     If they not friends, the conversation may end very soon, say after 2 rounds.
     If there are already 5 rounds of conversation in the history, then end the conversation regardless of other conditioins.
     
-        
     Now generate your short response in English and decide whether to end the conversation.
     Response:
     Finish: 
@@ -94,20 +117,20 @@ impression_update_prompt = ChatPromptTemplate.from_template(
     eg: Alice is exhausted due to her bad study habit. / Jack is angry because we don't agree with each other.
     3.personality: based on openness to experience, conscientiousness, extraversion, agreeableness, and neuroticism.
     eg: Ivy is open and likes to talk with others./ Amy is a lonely person. She likes to stay alone.
-    4.habits and preferences: the other player's habit, taste and things he like to do.
+    4.habits and preferences: the other player's habit and taste. Also include things he dislike.
     eg: David really likes travelling. He prefers to traveling everyday./ Alice do not have a good relaxation schedule and she is too devoted to studing.  
     
-    Base on the given conversation content:{conversation}, update the impressions from player1 to player2 and from player2 to player1.
+    Base on the given conversation content:{conversation}, update the impressions from player1 to player2 and from player2 to player1, respectively.
     
     Here is an example. 
-    impression1: "relation": "Eva is my friend",
+    impression1: "relation": "Eva is my classmate",
     "emotion": "Eva is happy because she has enough sleep",
     "personality": "Eva is extrovant and willing to share her habits with others",
     "habits and preferences": "Eva has a balanced lifestyle and prefer to having enough sleep"
-    impression2: "relation": "I know Alice but we are not close friends.",
+    impression2: "relation": "I know Alice but we are enemies.",
     "emotion": "Alice is exhausting because she spent too much time on study.",
-    "personality": "Alice is always willing to chat with others and learn from others.",
-    "habits and preferences": "Alice is keen on study and sometimes neglect her health condition." 
+    "personality": "Alice is always talking with others and she is really noisy and self-centered.",
+    "habits and preferences": "Alice put too much emphasis on study and neglect others' feeling." 
     
     Now generate the two impressions in English.
     The impression1 from player1 to player2:

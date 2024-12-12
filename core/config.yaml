@@ -1,10 +1,13 @@
 development:
   http_monitor_host: "localhost"
-  http_monitor_port: 8097
+  http_monitor_port: 8098
   websocket_host: "localhost"
   websocket_port: 6789
   ssl_certfile: ""
   ssl_keyfile: ""
+  monitor_trigger: False
+  dashboard_trigger: False
+  ssl_trigger: False
 
 production:
   http_monitor_host: "0.0.0.0"
@@ -12,4 +15,7 @@ production:
   websocket_host: "0.0.0.0"
   websocket_port: 8080
   ssl_certfile: "/etc/ssl/certs/bio3.crt"
-  ssl_keyfile: "/etc/ssl/certs/bio3.key" 
+  ssl_keyfile: "/etc/ssl/certs/bio3.key"
+  monitor_trigger: True
+  dashboard_trigger: True
+  ssl_trigger: True

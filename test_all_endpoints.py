@@ -813,14 +813,33 @@ def test_conversation_prompt_delete():
     print(json.dumps(response, indent=4))
 
 
-def test():
-    userid = 1
-    response = make_api_request_sync("GET", f"/agent_prompt/?characterId={userid}")
-    print(response)
+def test_decision_store():
+    print("Testing Decision Store...")
+    store_decision_data = {
+        "characterId": 101,
+        "need_replan": True,
+        "action_description": ["desc1", "desc2"],
+        "action_result": ["result1"],
+        "new_plan": ["plan1"],
+        "daily_objective": ["objective1"],
+        "meta_seq": ["meta1"],
+        "reflection": ["reflection1"],
+    }
+    response = make_api_request_sync("POST", "/decision/", data=store_decision_data)
+    print(json.dumps(response, indent=4))
+
+
+def test_decision_get():
+    print("Testing Decision Get...")
+    get_decision_params = {"characterId": 2, "count": 3}
+    response = make_api_request_sync("GET", "/decision/", params=get_decision_params)
+    print(json.dumps(response, indent=4))
 
 
 def main():
-    test()
+    # test_decision_store()
+    # time.sleep(1)  # Adding delay to ensure data is stored before retrieval
+    test_decision_get()
 
     # # CRUD Operations
     # test_crud_insert()

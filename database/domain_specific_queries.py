@@ -12,6 +12,7 @@ from pymongo.errors import DuplicateKeyError
 from database.mongo_utils import MongoDBUtils
 import random
 import bisect
+import time
 
 
 class DomainSpecificQueries:
@@ -1199,34 +1200,174 @@ class DomainSpecificQueries:
         )
         return result
 
+    def store_decision(
+        self,
+        characterId,
+        need_replan=None,
+        action_description=None,
+        action_result=None,
+        new_plan=None,
+        daily_objective=None,
+        meta_seq=None,
+        reflection=None,
+    ):
+        document = {
+            "characterId": characterId,
+            "need_replan": need_replan,
+            "action_description": action_description,
+            "action_result": action_result,
+            "new_plan": new_plan,
+            "daily_objective": daily_objective,
+            "meta_seq": meta_seq,
+            "reflection": reflection,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        inserted_id = self.db_utils.insert_document(
+            config.decision_collection_name, document
+        )
+        return inserted_id
+
+    def get_decision(self, characterId, count=None):
+        query = {"characterId": characterId}
+        documents = self.db_utils.find_documents(
+            collection_name=config.decision_collection_name,
+            query=query,
+            sort=[("updated_at", -1)],
+        )
+
+        if not documents:
+            return []
+
+        if count is None or not isinstance(count, int) or count <= 0:
+            return [documents[0]]
+
+        list_fields = [
+            "action_description",
+            "action_result",
+            "new_plan",
+            "daily_objective",
+            "meta_seq",
+            "reflection",
+        ]
+
+        latest_doc = documents[0].copy()
+
+        for field in list_fields:
+            merged_list = []
+            needed = count
+            for doc in documents:
+                current_list = doc.get(field, [])
+                if not current_list:
+                    continue
+                to_take = min(needed, len(current_list))
+                # 从列表末尾取 to_take 个元素，这些元素已经是老->新顺序
+                sublist = current_list[-to_take:]
+                needed -= to_take
+                if not merged_list:
+                    # 第一次直接赋值
+                    merged_list = sublist
+                else:
+                    # 老的文档数据应该放在前面
+                    merged_list = sublist + merged_list
+
+                if needed <= 0:
+                    break
+
+            latest_doc[field] = merged_list
+
+        return [latest_doc]
+
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 存储多个简历，包含不同的 election_status
-    print("存储简历...")
-    statuses = ["not_yet", "failed", "succeeded"]
-    job_names = ["工程师", "设计师", "产品经理"]  # 新增的 jobName 列表
-    for i, (status, job_name) in enumerate(zip(statuses, job_names), start=1):
-        inserted_id = queries.store_cv(
-            jobid=100 + i,
-            characterId=1,
-            CV_content=f"这是简历内容示例 {i}",
-            week=12 + i,
-            health=80 + i * 5,
-            studyxp=150 + i * 10,
-            date=20231015 + i,
-            election_status=status,
-            jobName=job_name,  # 传递 jobName
-        )
-        print(f"插入成功，文档 ID：{inserted_id}")
+    print("存储决策数据...")
 
-    # 测试获取简历
-    print("获取简历...")
-    documents = queries.get_cv(characterId=1)
-    for doc in documents:
+    characterId = 2
+    # # 创建多条测试文档，使其有不同的列表数量和时间戳
+    # # doc1: 较早的文档
+    # queries.store_decision(
+    #     characterId=characterId,
+    #     need_replan=True,
+    #     action_description=["desc1_1", "desc1_2"],
+    #     action_result=["res1_1"],
+    #     new_plan=["plan1_1", "plan1_2", "plan1_3"],
+    #     daily_objective=["obj1_1"],
+    #     meta_seq=["meta1_1", "meta1_2"],
+    #     reflection=["ref1_1", "ref1_2", "ref1_3"],
+    # )
+    # time.sleep(1)
+
+    # # doc2: 较新的文档，增加更多元素
+    # queries.store_decision(
+    #     characterId=characterId,
+    #     need_replan=False,
+    #     action_description=["desc2_1", "desc2_2", "desc2_3"],
+    #     action_result=["res2_1", "res2_2"],
+    #     new_plan=["plan2_1"],
+    #     daily_objective=["obj2_1", "obj2_2"],
+    #     meta_seq=["meta2_1"],
+    #     reflection=["ref2_1"],
+    # )
+    # time.sleep(1)
+
+    # # doc3: 最新的文档
+    # queries.store_decision(
+    #     characterId=characterId,
+    #     need_replan=True,
+    #     action_description=["desc3_1"],
+    #     action_result=["res3_1", "res3_2", "res3_3"],
+    #     new_plan=["plan3_1", "plan3_2"],
+    #     daily_objective=["obj3_1", "obj3_2", "obj3_3"],
+    #     meta_seq=["meta3_1", "meta3_2", "meta3_3", "meta3_4"],
+    #     reflection=["ref3_1"],
+    # )
+    # time.sleep(1)
+
+    print("测试 get_decision 不带 count 参数（返回最新文档）...")
+    latest_docs = queries.get_decision(characterId=characterId)
+    for doc in latest_docs:
+        print("---- 最新文档(不带count) ----")
         print(doc)
+
+    print("\n测试 get_decision 带 count 参数 = 3 ...")
+    # 我们要求每个列表字段都至少返回3个，如果最新文档不够，则从历史文档补充
+    limited_docs = queries.get_decision(characterId=characterId, count=10)
+    for doc in limited_docs:
+        print("---- 限定数量的最新文档 ----")
+        print("action_description:", doc["action_description"])
+        print("action_result:", doc["action_result"])
+        print("new_plan:", doc["new_plan"])
+        print("daily_objective:", doc["daily_objective"])
+        print("meta_seq:", doc["meta_seq"])
+        print("reflection:", doc["reflection"])
+        print(doc)
+
+    # # 存储多个简历，包含不同的 election_status
+    # print("存储简历...")
+    # statuses = ["not_yet", "failed", "succeeded"]
+    # job_names = ["工程师", "设计师", "产品经理"]  # 新增的 jobName 列表
+    # for i, (status, job_name) in enumerate(zip(statuses, job_names), start=1):
+    #     inserted_id = queries.store_cv(
+    #         jobid=100 + i,
+    #         characterId=1,
+    #         CV_content=f"这是简历内容示例 {i}",
+    #         week=12 + i,
+    #         health=80 + i * 5,
+    #         studyxp=150 + i * 10,
+    #         date=20231015 + i,
+    #         election_status=status,
+    #         jobName=job_name,  # 传递 jobName
+    #     )
+    #     print(f"插入成功，文档 ID：{inserted_id}")
+
+    # # 测试获取简历
+    # print("获取简历...")
+    # documents = queries.get_cv(characterId=1)
+    # for doc in documents:
+    #     print(doc)
 
     # # 测试 store_conversation_prompt 方法
     # print("存储对话提示...")

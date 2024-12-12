@@ -529,6 +529,22 @@ class DeleteConversationPromptRequest(BaseModel):
     characterId: int
 
 
+class StoreDecisionRequest(BaseModel):
+    characterId: int
+    need_replan: Optional[bool] = None
+    action_description: Optional[List[str]] = None
+    action_result: Optional[List[str]] = None
+    new_plan: Optional[List[str]] = None
+    daily_objective: Optional[List[str]] = None
+    meta_seq: Optional[List[str]] = None
+    reflection: Optional[List[str]] = None
+
+
+class GetDecisionRequest(BaseModel):
+    characterId: int
+    count: Optional[int] = None
+
+
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
     # for attempt in range(1, retries + 1):
     #     try:
@@ -1889,7 +1905,50 @@ def delete_conversation_prompt_api(request: DeleteConversationPromptRequest):
         )
 
 
-app.include_router(crud_router)
+# 创建新的路由
+decision_router = APIRouter(prefix="/decision", tags=["Decision"])
+
+
+@decision_router.post("/", response_model=StandardResponse)
+def store_decision_api(request: StoreDecisionRequest):
+    inserted_id = retry_operation(
+        domain_queries.store_decision,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        need_replan=request.need_replan,
+        action_description=request.action_description,
+        action_result=request.action_result,
+        new_plan=request.new_plan,
+        daily_objective=request.daily_objective,
+        meta_seq=request.meta_seq,
+        reflection=request.reflection,
+    )
+    if inserted_id:
+        return success_response(
+            data=str(inserted_id), message="Decision stored successfully."
+        )
+    else:
+        raise HTTPException(status_code=500, detail="Failed to store decision.")
+
+
+@decision_router.get("/", response_model=StandardResponse)
+def get_decision_api(characterId: int, count: Optional[int] = None):
+    decisions = retry_operation(
+        domain_queries.get_decision,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+        count=count,
+    )
+    if decisions:
+        return success_response(
+            data=decisions, message="Decisions retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No decisions found.")
+
+
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
 app.include_router(conversations_router)
@@ -1908,6 +1967,8 @@ app.include_router(character_arc_router)
 app.include_router(sample_router)
 app.include_router(agent_prompt_router)
 app.include_router(conversation_prompt_router)
+app.include_router(decision_router)
+app.include_router(crud_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

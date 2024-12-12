@@ -690,4 +690,73 @@ validators = {
             },
         }
     },
+    "decision": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["characterId"],
+            "properties": {
+                "characterId": {
+                    "bsonType": "int",
+                    "description": "角色ID, 必须为整数且为必填项",
+                },
+                "need_replan": {"bsonType": "bool", "description": "是否需要重新规划"},
+                "action_description": {
+                    "bsonType": "array",
+                    "description": "动作描述列表",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "动作描述, 必须为字符串",
+                    },
+                },
+                "action_result": {
+                    "bsonType": "array",
+                    "description": "动作结果列表",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "动作结果, 必须为字符串",
+                    },
+                },
+                "new_plan": {
+                    "bsonType": "array",
+                    "description": "新计划列表",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "计划内容, 必须为字符串",
+                    },
+                },
+                "daily_objective": {
+                    "bsonType": "array",
+                    "description": "每日目标列表",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "目标内容, 必须为字符串",
+                    },
+                },
+                "meta_seq": {
+                    "bsonType": "array",
+                    "description": "元动作序列",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "元动作, 必须为字符串",
+                    },
+                },
+                "reflection": {
+                    "bsonType": "array",
+                    "description": "反思列表",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "反思内容, 必须为字符串",
+                    },
+                },
+                "created_at": {
+                    "bsonType": "string",
+                    "description": "创建时间, 必须为字符串且为必填项",
+                },
+                "updated_at": {
+                    "bsonType": "string",
+                    "description": "最后更新时间, 必须为字符串且为必填项",
+                },
+            },
+        },
+    },
 }

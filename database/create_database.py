@@ -177,7 +177,7 @@ if __name__ == "__main__":
     app = DatabaseSetupApp()
 
     # # Setup collections
-    app.setup_database(config.cv_collection_name)
+    # app.setup_database(config.cv_collection_name)
     # app.setup_database(
     #     config.agent_profile_collection_name, unique_index_fields=["characterId"]
     # )
@@ -209,6 +209,7 @@ if __name__ == "__main__":
     # app.setup_database(
     #     config.conversation_prompt_collection_name, unique_index_fields=["characterId"]
     # )
+    app.setup_database(config.decision_collection_name)
 
     # # Import data
     # app.import_data_into_collection(

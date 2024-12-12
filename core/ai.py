@@ -1,7 +1,4 @@
 import sys
-
-sys.path.append(".")
-
 import yaml
 import asyncio
 import websockets
@@ -25,16 +22,6 @@ class ConfigLoader:
         return self.config.get(key)
 
 
-class ConfigLoader:
-    def __init__(self, environment):
-        config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
-        with open(config_path, "r") as file:
-            self.config = yaml.safe_load(file)[environment]
-
-    def get(self, key):
-        return self.config.get(key)
-
-
 class AI_WS_Server:
     def __init__(self, config):
         self.character_manager = CharacterManager(timeout=60)
@@ -44,9 +31,7 @@ class AI_WS_Server:
     async def handler(self, websocket, path):
         character_id = None
         try:
-            success, character_id, response = await self.initialize_connection(
-                websocket
-            )
+            success, character_id, response = await self.initialize_connection(websocket)
             await websocket.send(response)
             if not success:
                 logger.warning(
@@ -60,8 +45,6 @@ class AI_WS_Server:
             character = self.character_manager.get_character(character_id)
             agent_instance = character.agent_instance
             # conversation_instance = character.conversation_instance
-
-            character.log_message("received", response)
 
             character.log_message("received", response)
 
@@ -86,13 +69,6 @@ class AI_WS_Server:
                     else:  # 处理其他消息：放到对应agent和conversation agent的消息队列
                         message_queue = agent_instance.state["message_queue"]
                         await message_queue.put(data)
-
-                    # logger.info(
-                    #     f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
-                    # )
-
-                    # # 处理消息：对话系统
-                    # await conversation_instance.listener(message)
 
                 except websockets.ConnectionClosed as e:
                     logger.warning(f"🔗 Connection closed from {character_id}")
@@ -138,7 +114,8 @@ class AI_WS_Server:
         if self.character_manager.has_hosted_character(character_id):
             self.character_manager.unhost_character(character_id)
 
-        agent_instance = LangGraphInstance(character_id, websocket)
+        # 使用异步工厂方法创建 LangGraphInstance 实例
+        agent_instance = await LangGraphInstance.create(character_id, websocket)
         conversation_instance = None  # ConversationInstance(character_id, websocket)
 
         self.character_manager.add_character(

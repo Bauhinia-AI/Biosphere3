@@ -7,7 +7,7 @@ from pprint import pprint
 from dotenv import load_dotenv
 import aiohttp
 from loguru import logger
-from core.db.database_api_utils import make_api_request_sync
+# from core.db.database_api_utils import make_api_request_sync
 
 load_dotenv()
 GAME_BACKEND_URL = os.getenv("GAME_BACKEND_URL")
@@ -15,23 +15,6 @@ AMM_POOL_GET_AVG_PRICE = os.getenv("AMM_POOL_GET_AVG_PRICE")
 GAME_BACKEND_TIMEOUT = int(os.getenv("GAME_BACKEND_TIMEOUT"))
 AGENT_BACKEND_URL = os.getenv("AGENT_BACKEND_URL")
 
-
-
-# BETTER WAY？
-def check_termination(coro):
-    @functools.wraps(coro)
-    async def wrapper(self, *args, **kwargs):
-        # 检查 self.signal 是否为 TERMINATE
-        if getattr(self, "signal", None) == "TERMINATE":
-            # 可以选择直接返回，或者抛出异常
-            print(f"⛔ Task {coro.__name__} terminated due to termination signal.")
-            return  # 直接返回，终止协程
-            # 或者抛出异常
-            # raise asyncio.CancelledError("Task terminated due to termination signal.")
-        # 否则，继续执行协程
-        return await coro(self, *args, **kwargs)
-
-    return wrapper
 
 
 
@@ -88,12 +71,20 @@ async def fetch_api_data_async(
     """
     url = f"{AGENT_BACKEND_URL}{endpoint}"
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.request(
-                method, url, json={"characterId": userid}, timeout=timeout
-            ) as response:
-                response.raise_for_status()
-                return await response.json()
+        if method == "GET":
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    url, params={"characterId": userid}, timeout=timeout
+                ) as response:
+                    response.raise_for_status()
+                    return await response.json()
+        else:
+            async with aiohttp.ClientSession() as session:
+                async with session.request(
+                    method, url, json={"characterId": userid}, timeout=timeout
+                ) as response:
+                    response.raise_for_status()
+                    return await response.json()
     except asyncio.TimeoutError:
         _logger.error(f"Timeout while accessing {endpoint}")
     except aiohttp.ClientError as e:
@@ -261,8 +252,8 @@ async def fetch_agent_db_response_async(userid: int) -> dict:
         dict: The agent database response.
     """
     response = await fetch_api_data_async(
-        "POST",
-        endpoint="/characters/get",
+        "GET",
+        endpoint="/characters/",
         userid=userid,
         _logger=logger,
         timeout=GAME_BACKEND_TIMEOUT,
@@ -288,6 +279,7 @@ async def get_character_data_async(userid: int) -> dict:
     # Fetch data concurrently using asyncio.gather
     game_db_task = asyncio.create_task(fetch_game_db_character_response_async(userid))
     agent_db_task = asyncio.create_task(fetch_agent_db_response_async(userid))
+    
 
     game_db_character_response, agent_db_response = await asyncio.gather(
         game_db_task, agent_db_task
@@ -594,7 +586,6 @@ Constraints: Must be in school and have enough money.\n
 
 # 9. seedoctor [hours:int]: Visit a doctor, costing money.
 # Constraints: Must have enough money and be in the hospital.\n
-
 if __name__ == "__main__":
-    print(asyncio.run(get_initial_state_from_db(43, None)))
+    print(asyncio.run(get_character_data_async(42)))
 

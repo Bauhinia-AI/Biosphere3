@@ -41,39 +41,64 @@ class LangGraphInstance:
         websocket (WebSocket, optional): The WebSocket connection for communication.
     """
 
-    def init_character(self):
-        state = asyncio.run(get_initial_state_from_db(self.user_id, self.websocket))
-        return RunningState(**state)
-
     def __init__(self, user_id, websocket=None):
         self.user_id = user_id
         self.websocket = websocket
         self.signal = None
-        # 初始化 langgraph 实例
-        # TODO We should 根据user_id 检索数据库中的信息，更新stat
-        # self.state = RunningState(
-        #     **generate_initial_state_hardcoded(self.user_id, self.websocket)
-        # )
-        self.state = self.init_character()
+        self.state = {}  # 初始化为空字典
 
-        self.state["instance"] = self
-        pprint(self.state)
         self.connection_stats = {}
         # 数据竞争时，锁住state
         self.websocket_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
         self.graph_config = {"recursion_limit": 1e10}
-        # 三个协程
-        # self.listener_task = asyncio.create_task(self.listener())
+        self.action_result = []
+
+        # 初始化任务为 None，稍后在异步工厂方法中创建
+        self.msg_processor_task = None
+        self.event_scheduler_task = None
+        self.queue_visualizer_task = None
+        self.task = None
+
+    @classmethod
+    async def create(cls, user_id, websocket=None):
+        """
+        异步工厂方法，用于创建并初始化 LangGraphInstance 的实例。
+
+        Args:
+            user_id (str): 用户的唯一标识符。
+            websocket (WebSocket, optional): 用于通信的 WebSocket 连接。
+
+        Returns:
+            LangGraphInstance: 初始化完成的类实例。
+        """
+        self = cls(user_id, websocket)
+        # 异步获取初始状态
+        initial_state = await get_initial_state_from_db(user_id, websocket)
+        if not initial_state:
+            initial_state = {}
+        self.state = initial_state
+
+        logger.info(f"🔍 User {self.user_id} state: {self.state}")
+
+        self.state["instance"] = self
+        self.connection_stats = {}
+        self.websocket_lock = asyncio.Lock()
+        self.graph = self._get_workflow_with_listener()
+        self.graph_config = {"recursion_limit": 1e10}
+        self.action_result = []
+
+        # 初始化异步任务
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
         self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
-        # self.schedule_task = asyncio.create_task(self.schedule_messages())
         self.state["event_queue"].put_nowait("PLAN")
         logger.info(f"User {self.user_id} workflow initialized")
-        self.action_result = []
         self.task = asyncio.create_task(self.a_run())
 
+        return self
+    
+    
     async def msg_processor(self):
         """
         Continuously processes incoming messages from the message queue.
@@ -348,4 +373,4 @@ class LangGraphInstance:
 
 
 if __name__ == "__main__":
-    a = LangGraphInstance(42)
+    pass

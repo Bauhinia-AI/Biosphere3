@@ -259,8 +259,8 @@ async def fetch_agent_db_response_async(userid: int) -> dict:
         dict: The agent database response.
     """
     response = await fetch_api_data_async(
-        "POST",
-        endpoint="/characters/get",
+        "GET",
+        endpoint="/characters/",
         userid=userid,
         _logger=logger,
         timeout=GAME_BACKEND_TIMEOUT,

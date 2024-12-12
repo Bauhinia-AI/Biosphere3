@@ -759,4 +759,28 @@ validators = {
             },
         },
     },
+    "current_pointer": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["characterId", "current_pointer"],
+            "properties": {
+                "characterId": {
+                    "bsonType": "int",
+                    "description": "角色ID, 必须为整数且为必填项",
+                },
+                "current_pointer": {
+                    "bsonType": "string",
+                    "description": "当前指针, 必须为字符串",
+                },
+                "created_at": {
+                    "bsonType": "string",
+                    "description": "创建时间, 必须为字符串且为必填项",
+                },
+                "updated_at": {
+                    "bsonType": "string",
+                    "description": "最后更新时间, 必须为字符串且为必填项",
+                },
+            },
+        }
+    },
 }

@@ -209,7 +209,9 @@ if __name__ == "__main__":
     # app.setup_database(
     #     config.conversation_prompt_collection_name, unique_index_fields=["characterId"]
     # )
-    app.setup_database(config.decision_collection_name)
+    # app.setup_database(config.decision_collection_name)
+    app.setup_database(config.current_pointer_collection_name)
+
 
     # # Import data
     # app.import_data_into_collection(

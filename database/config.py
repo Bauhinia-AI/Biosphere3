@@ -26,7 +26,7 @@ profile_sample_collection_name = "profile_sample"
 agent_prompt_collection_name = "agent_prompt"
 conversation_prompt_collection_name = "conversation_prompt"
 decision_collection_name = "decision"
-
+current_pointer_collection_name = "current_pointer"
 
 mongo_uri = os.getenv("MONGO_URI")
 index_name = "vector_index"

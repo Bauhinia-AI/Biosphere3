@@ -815,31 +815,145 @@ def test_conversation_prompt_delete():
 
 def test_decision_store():
     print("Testing Decision Store...")
-    store_decision_data = {
+    # 第一条决策数据
+    store_decision_data_1 = {
         "characterId": 101,
         "need_replan": True,
-        "action_description": ["desc1", "desc2"],
-        "action_result": ["result1"],
-        "new_plan": ["plan1"],
-        "daily_objective": ["objective1"],
-        "meta_seq": ["meta1"],
-        "reflection": ["reflection1"],
+        "action_description": [
+            "Going to mine to gather resources",
+            "Selling ore at the market for profit",
+            "Heading to school for education upgrade",
+            "Taking a rest at home to recover energy",
+        ],
+        "action_result": [
+            "Action 'goto mine' succeeded: Successfully reached the mine at 10:30",
+            "Action 'gomining 2' succeeded: Obtained 20 ore, energy decreased by 20",
+            "Action 'sell ore 15' failed: Not in the market location",
+            "Action 'goto market' succeeded: Arrived at market, ready for trading",
+        ],
+        "new_plan": [
+            "goto market -> sell ore 15 -> goto school",
+            "goto mine -> gomining 3 -> goto home",
+            "goto school -> study 2 -> goto home",
+        ],
+        "daily_objective": [
+            "Earn 200 coins through mining and trading",
+            "Upgrade education level to college",
+            "Maintain health above 80%",
+            "Build relationships at the square",
+        ],
+        "meta_seq": [
+            "goto mine; gomining 2; goto market; sell ore 30; goto school; study 2",
+            "goto home; sleep 6; goto mine; gomining 3; goto market; sell ore 40",
+            "goto square; socialize 2; goto mine; gomining 2; goto market",
+        ],
+        "reflection": [
+            "Day 1 Review: Successfully mined 20 ore and earned 150 coins. Failed one market transaction due to location error. Need to check location before transactions.",
+            "Day 2 Review: Reached education milestone and built new relationships. Market prices were lower than expected. Should check prices before selling.",
+            "Day 3 Review: Maintained good health but spent too much time traveling. Need to optimize route planning and group activities by location.",
+        ],
     }
-    response = make_api_request_sync("POST", "/decision/", data=store_decision_data)
-    print(json.dumps(response, indent=4))
+
+    response_1 = make_api_request_sync("POST", "/decision/", data=store_decision_data_1)
+    print("Store Decision Response 1:")
+    print(json.dumps(response_1, indent=4))
+
+    time.sleep(1)  # 确保有时间戳差异
+
+    # 第二条决策数据（与第一条相同角色ID，但稍作修改）
+    store_decision_data_2 = {
+        "characterId": 101,
+        "need_replan": False,
+        "action_description": [
+            "Going to school for advanced study",
+            "Heading to market to buy tools",
+        ],
+        "action_result": [
+            "Action 'goto school' succeeded: Reached school at 9:00",
+            "Action 'study 2' succeeded: Gained 10 knowledge points",
+        ],
+        "new_plan": ["goto school -> study 2 -> goto home"],
+        "daily_objective": [
+            "Upgrade education level to university",
+            "Earn 300 coins through trading",
+        ],
+        "meta_seq": ["goto school; study 2; goto market; buy tools; goto home"],
+        "reflection": [
+            "Day 4 Review: Improved educational status and purchased necessary tools. Next step is to increase earnings.",
+            "Day 5 Review: balabalabala",
+        ],
+    }
+
+    response_2 = make_api_request_sync("POST", "/decision/", data=store_decision_data_2)
+    print("Store Decision Response 2:")
+    print(json.dumps(response_2, indent=4))
 
 
 def test_decision_get():
     print("Testing Decision Get...")
-    get_decision_params = {"characterId": 2, "count": 3}
+    # 假设需要合并结果并取最新的5条内容（如果不需要合并，就不传count）
+    # get_decision_params = {"characterId": 101, "count": 4}
+    get_decision_params = {"characterId": 101}
     response = make_api_request_sync("GET", "/decision/", params=get_decision_params)
+    print(json.dumps(response, indent=4))
+
+def test_current_pointer_store():
+    print("Testing Current Pointer Store...")
+    store_current_pointer_data = {
+        "characterId": 101,
+        "current_pointer": "pointer_1"
+    }
+    response = make_api_request_sync(
+        "POST", "/current_pointer/", data=store_current_pointer_data
+    )
+    print(json.dumps(response, indent=4))
+
+def test_current_pointer_get():
+    print("Testing Current Pointer Get...")
+    get_current_pointer_params = {"characterId": 101}
+    response = make_api_request_sync(
+        "GET", f"/current_pointer/{get_current_pointer_params['characterId']}", params={}
+    )
+    print(json.dumps(response, indent=4))
+
+def test_current_pointer_update():
+    print("Testing Current Pointer Update...")
+    update_current_pointer_data = {
+        "characterId": 101,
+        "current_pointer": "pointer_2"
+    }
+    response = make_api_request_sync(
+        "PUT", "/current_pointer/", data=update_current_pointer_data
+    )
+    print(json.dumps(response, indent=4))
+
+def test_current_pointer_delete():
+    print("Testing Current Pointer Delete...")
+    delete_current_pointer_params = {"characterId": 101}
+    response = make_api_request_sync(
+        "DELETE", f"/current_pointer/{delete_current_pointer_params['characterId']}", params={}
+    )
     print(json.dumps(response, indent=4))
 
 
 def main():
+    # 测试 current_pointer 的增删查改
+    test_current_pointer_store()
+    time.sleep(1)
+    test_current_pointer_get()
+    time.sleep(1)
+    test_current_pointer_update()
+    time.sleep(1)
+    test_current_pointer_get()  # 验证更新
+    time.sleep(1)
+    test_current_pointer_delete()
+    time.sleep(1)
+    test_current_pointer_get()  # 验证删除
+
+
     # test_decision_store()
-    # time.sleep(1)  # Adding delay to ensure data is stored before retrieval
-    test_decision_get()
+    # time.sleep(1)  # 等待数据写入
+    # test_decision_get()
 
     # # CRUD Operations
     # test_crud_insert()

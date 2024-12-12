@@ -1,0 +1,1 @@
+current_pointer_collection_name

@@ -545,6 +545,11 @@ class GetDecisionRequest(BaseModel):
     count: Optional[int] = None
 
 
+class CurrentPointerRequest(BaseModel):
+    characterId: int
+    current_pointer: str
+
+
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
     # for attempt in range(1, retries + 1):
     #     try:
@@ -1949,6 +1954,77 @@ def get_decision_api(characterId: int, count: Optional[int] = None):
         raise HTTPException(status_code=404, detail="No decisions found.")
 
 
+# 创建新的路由
+current_pointer_router = APIRouter(prefix="/current_pointer", tags=["Current Pointer"])
+
+
+@current_pointer_router.post("/", response_model=StandardResponse)
+def store_current_pointer_api(request: CurrentPointerRequest):
+    inserted_id = retry_operation(
+        domain_queries.store_current_pointer,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        current_pointer=request.current_pointer,
+    )
+    if inserted_id:
+        return success_response(
+            data=str(inserted_id), message="Current pointer stored successfully."
+        )
+    else:
+        raise HTTPException(status_code=500, detail="Failed to store current pointer.")
+
+
+@current_pointer_router.get("/{characterId}", response_model=StandardResponse)
+def get_current_pointer_api(characterId: int):
+    documents = retry_operation(
+        domain_queries.get_current_pointer, retries=3, delay=2, characterId=characterId
+    )
+    if documents:
+        return success_response(
+            data=documents, message="Current pointer retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No current pointer found.")
+
+
+@current_pointer_router.put("/", response_model=StandardResponse)
+def update_current_pointer_api(request: CurrentPointerRequest):
+    result = retry_operation(
+        domain_queries.update_current_pointer,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        new_pointer=request.current_pointer,
+    )
+    if result:
+        return success_response(
+            data=result, message="Current pointer updated successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=404, detail="No current pointer found to update."
+        )
+
+
+@current_pointer_router.delete("/{characterId}", response_model=StandardResponse)
+def delete_current_pointer_api(characterId: int):
+    result = retry_operation(
+        domain_queries.delete_current_pointer,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+    )
+    if result:
+        return success_response(
+            data=result, message="Current pointer deleted successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=404, detail="No current pointer found to delete."
+        )
+
+
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
 app.include_router(conversations_router)
@@ -1969,6 +2045,7 @@ app.include_router(agent_prompt_router)
 app.include_router(conversation_prompt_router)
 app.include_router(decision_router)
 app.include_router(crud_router)
+app.include_router(current_pointer_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

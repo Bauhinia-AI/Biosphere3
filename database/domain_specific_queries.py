@@ -1277,15 +1277,92 @@ class DomainSpecificQueries:
             latest_doc[field] = merged_list
 
         return [latest_doc]
+    def store_current_pointer(self, characterId, current_pointer):
+        document = {
+            "characterId": characterId,
+            "current_pointer": current_pointer,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        inserted_id = self.db_utils.insert_document(
+            config.current_pointer_collection_name, document
+        )
+        return inserted_id
 
+    def get_current_pointer(self, characterId):
+        query = {"characterId": characterId}
+        documents = self.db_utils.find_documents(
+            collection_name=config.current_pointer_collection_name,
+            query=query,
+        )
+        return documents
+
+    def update_current_pointer(self, characterId, new_pointer):
+        query = {"characterId": characterId}
+        update_data = {
+            "$set": {
+                "current_pointer": new_pointer,
+                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        }
+        result = self.db_utils.update_documents(
+            collection_name=config.current_pointer_collection_name,
+            query=query,
+            update=update_data,
+            upsert=False,
+            multi=False,
+        )
+        return result
+
+    def delete_current_pointer(self, characterId):
+        query = {"characterId": characterId}
+        result = self.db_utils.delete_documents(
+            collection_name=config.current_pointer_collection_name,
+            query=query,
+        )
+        return result
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    print("存储决策数据...")
+    # 测试存储 current_pointer
+    print("存储 current_pointer...")
+    characterId = 1
+    current_pointer = "pointer_1"
+    inserted_id = queries.store_current_pointer(characterId, current_pointer)
+    print(f"插入成功，文档 ID：{inserted_id}")
 
-    characterId = 2
+    # 测试获取 current_pointer
+    print("\n获取 current_pointer...")
+    documents = queries.get_current_pointer(characterId)
+    print("获取的 current_pointer 文档：", documents)
+
+    # 测试更新 current_pointer
+    print("\n更新 current_pointer...")
+    new_pointer = "pointer_2"
+    update_result = queries.update_current_pointer(characterId, new_pointer)
+    print(f"更新成功，修改了 {update_result} 个文档。")
+
+    # 再次获取以验证更新
+    print("\n更新后的 current_pointer...")
+    updated_documents = queries.get_current_pointer(characterId)
+    print("更新后的 current_pointer 文档：", updated_documents)
+
+    # 测试删除 current_pointer
+    print("\n删除 current_pointer...")
+    delete_result = queries.delete_current_pointer(characterId)
+    print(f"删除成功，删除了 {delete_result} 个文档。")
+
+    # 验证删除
+    print("\n验证删除后的 current_pointer...")
+    deleted_documents = queries.get_current_pointer(characterId)
+    print("删除后的 current_pointer 文档：", deleted_documents)
+
+
+    # print("存储决策数据...")
+
+    # characterId = 2
     # # 创建多条测试文档，使其有不同的列表数量和时间戳
     # # doc1: 较早的文档
     # queries.store_decision(
@@ -1326,24 +1403,24 @@ if __name__ == "__main__":
     # )
     # time.sleep(1)
 
-    print("测试 get_decision 不带 count 参数（返回最新文档）...")
-    latest_docs = queries.get_decision(characterId=characterId)
-    for doc in latest_docs:
-        print("---- 最新文档(不带count) ----")
-        print(doc)
+    # print("测试 get_decision 不带 count 参数（返回最新文档）...")
+    # latest_docs = queries.get_decision(characterId=characterId)
+    # for doc in latest_docs:
+    #     print("---- 最新文档(不带count) ----")
+    #     print(doc)
 
-    print("\n测试 get_decision 带 count 参数 = 3 ...")
-    # 我们要求每个列表字段都至少返回3个，如果最新文档不够，则从历史文档补充
-    limited_docs = queries.get_decision(characterId=characterId, count=10)
-    for doc in limited_docs:
-        print("---- 限定数量的最新文档 ----")
-        print("action_description:", doc["action_description"])
-        print("action_result:", doc["action_result"])
-        print("new_plan:", doc["new_plan"])
-        print("daily_objective:", doc["daily_objective"])
-        print("meta_seq:", doc["meta_seq"])
-        print("reflection:", doc["reflection"])
-        print(doc)
+    # print("\n测试 get_decision 带 count 参数 = 3 ...")
+    # # 我们要求每个列表字段都至少返回3个，如果最新文档不够，则从历史文档补充
+    # limited_docs = queries.get_decision(characterId=characterId, count=10)
+    # for doc in limited_docs:
+    #     print("---- 限定数量的最新文档 ----")
+    #     print("action_description:", doc["action_description"])
+    #     print("action_result:", doc["action_result"])
+    #     print("new_plan:", doc["new_plan"])
+    #     print("daily_objective:", doc["daily_objective"])
+    #     print("meta_seq:", doc["meta_seq"])
+    #     print("reflection:", doc["reflection"])
+    #     print(doc)
 
     # # 存储多个简历，包含不同的 election_status
     # print("存储简历...")

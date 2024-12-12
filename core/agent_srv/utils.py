@@ -560,7 +560,7 @@ def generate_initial_state_hardcoded(userid, websocket):
         "current_pointer": "Sensing_Route",
     }
     character_data = {"characterId": userid}
-    response_txt = make_api_request_sync("POST", "/characters/get", data=character_data)
+    response_txt = make_api_request_sync("GET", "/characters/", params=character_data)
     response_num = requests.get(
         f"http://47.95.21.135:8082/characters/getById/{userid}"
     ).json()
@@ -608,7 +608,7 @@ def generate_initial_state_hardcoded(userid, websocket):
             "language_style": initial_state["character_stats"]["language_style"],
             "biography": initial_state["character_stats"]["biography"],
         }
-        make_api_request_sync("POST", "/characters/store", character_data)
+        make_api_request_sync("POST", "/characters/", character_data)
         logger.info(f"Storing character: {userid}")
     else:
         logger.error(f"Unexpected response: {response_txt}")

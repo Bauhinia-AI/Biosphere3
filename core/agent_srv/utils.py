@@ -259,8 +259,8 @@ async def fetch_agent_db_response_async(userid: int) -> dict:
         dict: The agent database response.
     """
     response = await fetch_api_data_async(
-        "POST",
-        endpoint="/characters/get",
+        "GET",
+        endpoint="/characters/",
         userid=userid,
         _logger=logger,
         timeout=GAME_BACKEND_TIMEOUT,
@@ -466,17 +466,46 @@ def generate_initial_state_hardcoded(userid, websocket):
         logger.error(f"Failed to get market data from {AMM_POOL_GET_AVG_PRICE}")
         market_data_dict = {}
 
+    # =======
+    # def get_inventory(userid) -> dict:
+    #     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+    #     response = requests.get(f"http://47.95.21.135:8082/bag/getByCharacterId/{userid}")
+    #     # 只保留ore, apple, wheat, fish
+    #     inventory_dict = {}
+    #     for x in response.json()["data"]:
+    #         if x["itemName"].lower() in ["apple", "wheat", "fish"]:
+    #             inventory_dict[x["itemName"]] = x["itemQuantity"]
+    #         if x["itemName"].lower() == "iron_ore":
+    #             inventory_dict["ore"] = x["itemQuantity"]
+
+    #     return inventory_dict
+
+    # def generate_initial_state_hardcoded(userid, websocket):
+    #     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+    #     price_response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
+    #     market_data = price_response.json()["data"]
+    #     market_data_dict = dict(
+    #         {
+    #             x["name"]: x["averagePrice"]
+    #             for x in market_data
+    #             if x["name"] in ["ore", "apple", "wheat", "fish"]
+    #         }
+    #     )
+    # >>>>>>> dev
     initial_state = {
         "userid": userid,
         "character_stats": {
             "name": "Alice",
             "gender": "Female",
-            "slogan": "Need to be rich!Need to be educated!",
-            "description": "A risk lover. Always looking for the next big thing.",
-            "role": "Investor",
-            "inventory": get_inventory(userid),
+            "relationship": "Friend",
+            "personality": "Adventurous",
+            "long_term_goal": "Explore the unknown",
+            "short_term_goal": "Find a hidden path",
+            "language_style": "Enthusiastic and bold",
+            "biography": "A brave explorer with a thirst for adventure.",
             "health": 100,
             "energy": 100,
+            "hungry": 100,
         },
         "decision": {
             "need_replan": False,
@@ -530,6 +559,73 @@ def generate_initial_state_hardcoded(userid, websocket):
         "websocket": websocket,
         "current_pointer": "Sensing_Route",
     }
+    character_data = {"characterId": userid}
+    response_txt = make_api_request_sync("GET", "/characters/", params=character_data)
+    response_num = requests.get(
+        f"http://47.95.21.135:8082/characters/getById/{userid}"
+    ).json()
+    if response_txt["code"] == 1:
+        data_text = response_txt["data"][0]  # Assuming first NPC entry is used
+        initial_state["character_stats"].update(
+            {
+                "name": data_text.get(
+                    "characterName", initial_state["character_stats"]["name"]
+                ),
+                "gender": data_text.get(
+                    "gender", initial_state["character_stats"]["gender"]
+                ),
+                "relationship": data_text.get(
+                    "relationship", initial_state["character_stats"]["relationship"]
+                ),
+                "personality": data_text.get(
+                    "personality", initial_state["character_stats"]["personality"]
+                ),
+                "long_term_goal": data_text.get(
+                    "long_term_goal", initial_state["character_stats"]["long_term_goal"]
+                ),
+                "short_term_goal": data_text.get(
+                    "short_term_goal",
+                    initial_state["character_stats"]["short_term_goal"],
+                ),
+                "language_style": data_text.get(
+                    "language_style", initial_state["character_stats"]["language_style"]
+                ),
+                "biography": data_text.get(
+                    "biography", initial_state["character_stats"]["biography"]
+                ),
+            }
+        )
+    elif response_txt["code"] == 0:
+        # 如果 code 为 0，存储角色信息
+        character_data = {
+            "characterId": userid,
+            "characterName": initial_state["character_stats"]["name"],
+            "gender": initial_state["character_stats"]["gender"],
+            "relationship": initial_state["character_stats"]["relationship"],
+            "personality": initial_state["character_stats"]["personality"],
+            "long_term_goal": initial_state["character_stats"]["long_term_goal"],
+            "short_term_goal": initial_state["character_stats"]["short_term_goal"],
+            "language_style": initial_state["character_stats"]["language_style"],
+            "biography": initial_state["character_stats"]["biography"],
+        }
+        make_api_request_sync("POST", "/characters/", character_data)
+        logger.info(f"Storing character: {userid}")
+    else:
+        logger.error(f"Unexpected response: {response_txt}")
+
+    if response_num.get("code") == 1:
+        data_num = response_num["data"]  # Assuming first NPC entry is used
+        print(data_num)
+        initial_state["character_stats"].update(
+            {
+                "health": data_num.get("health"),
+                "energy": data_num.get("energy"),
+                "hungry": data_num.get("hungry"),
+            }
+        )
+    else:
+        logger.error(f"Unexpected response: {response_num}")
+
     return initial_state
 
 
@@ -567,4 +663,4 @@ Constraints: Must be in school and have enough money.\n
 # Constraints: Must have enough money and be in the hospital.\n
 
 if __name__ == "__main__":
-    print(asyncio.run(get_initial_state_from_db(432, None)))
+    print(asyncio.run(get_initial_state_from_db(43, None)))

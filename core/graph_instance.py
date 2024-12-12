@@ -1,3 +1,7 @@
+import sys
+
+sys.path.append(".")
+
 import asyncio
 import json
 import time
@@ -15,9 +19,14 @@ from core.agent_srv.node_engines import (
     sensing_environment,
     generate_change_job_cv,
     generate_mayor_decision,
+    generate_accommodation_decision,
 )
 from core.agent_srv.node_model import RunningState
-from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict, get_initial_state_from_db
+from core.agent_srv.utils import (
+    generate_initial_state_hardcoded,
+    update_dict,
+    get_initial_state_from_db,
+)
 
 
 class LangGraphInstance:
@@ -32,6 +41,10 @@ class LangGraphInstance:
         websocket (WebSocket, optional): The WebSocket connection for communication.
     """
 
+    def init_character(self):
+        state = asyncio.run(get_initial_state_from_db(self.user_id, self.websocket))
+        return RunningState(**state)
+
     def __init__(self, user_id, websocket=None):
         self.user_id = user_id
         self.websocket = websocket
@@ -41,7 +54,8 @@ class LangGraphInstance:
         # self.state = RunningState(
         #     **generate_initial_state_hardcoded(self.user_id, self.websocket)
         # )
-        self.state = RunningState(**asyncio.run(get_initial_state_from_db(self.user_id, self.websocket)))
+        self.state = self.init_character()
+
         self.state["instance"] = self
         pprint(self.state)
         self.connection_stats = {}
@@ -98,15 +112,17 @@ class LangGraphInstance:
                 self.action_result.append(
                     {"action_result": msg["data"], "timestamp": datetime.now()}
                 )
-            elif message_name == "prompt_modification":
-                update_dict(self.state["prompts"], msg["data"])
-                logger.info(
-                    f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
-                )
+            # elif message_name == "prompt_modification":
+            #     update_dict(self.state["prompts"], msg["data"])
+            #     logger.info(
+            #         f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
+            #     )
             elif message_name == "new_day":
                 self.state["event_queue"].put_nowait("JOB_HUNTING")
             elif message_name == "onestep":
                 self.state["event_queue"].put_nowait("PLAN")
+            elif message_name == "accommodation_event":
+                self.state["event_queue"].put_nowait("ACCOMMODATION_EVENT")
 
             elif message_name == "check":
                 pprint(self.state["decision"]["action_result"])
@@ -207,6 +223,9 @@ class LangGraphInstance:
             elif event == "JOB_HUNTING":
                 return "Change_Job"
 
+            elif event == "ACCOMMODATION_EVENT":
+                return "Accommodation_Decision"
+
             elif event == "gameevent":
                 pass
 
@@ -227,6 +246,7 @@ class LangGraphInstance:
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
         workflow.add_node("Change_Job", generate_change_job_cv)
         workflow.add_node("Mayor_Decision", generate_mayor_decision)
+        workflow.add_node("Accommodation_Decision", generate_accommodation_decision)
         # workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
 
         workflow.add_node("Replan_Action", replan_action)
@@ -242,6 +262,7 @@ class LangGraphInstance:
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
         workflow.add_edge("Change_Job", "Mayor_Decision")
         workflow.add_edge("Mayor_Decision", "Sensing_Route")
+        workflow.add_edge("Accommodation_Decision", "Sensing_Route")
         # workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
         # 循环回消息处理
         # workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
@@ -331,6 +352,7 @@ class LangGraphInstance:
                 pass
             except Exception as e:
                 logger.error(f"User {self.user_id}: Error sending message: {e}")
+
 
 if __name__ == "__main__":
     a = LangGraphInstance(42)

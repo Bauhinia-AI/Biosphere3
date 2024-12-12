@@ -26,10 +26,12 @@ def generic_reducer(a, b):
 class CharacterStats(TypedDict):
     name: str
     gender: str
-    slogan: str
-    description: str
-    role: str
-    inventory: Dict[str, Any]
+    relationship: str
+    personality: str
+    long_term_goal: str
+    short_term_goal: str
+    language_style: str
+    biography: str
     health: int
     energy: int
     education: str
@@ -120,6 +122,14 @@ class MayorDecision(BaseModel):
     comments: str = Field(description="comments")
 
 
+class AccommodationDecision(BaseModel):
+    """Accommodation decision including accommodation_id and lease_weeks."""
+
+    accommodation_id: int = Field(description="ID of the chosen accommodation")
+    lease_weeks: int = Field(description="Number of weeks to lease (1-12)")
+    comments: str = Field(description="comments")
+
+
 class Reflection(BaseModel):
     reflection: str
 
@@ -132,6 +142,7 @@ class Response(BaseModel):
 
 if __name__ == "__main__":
     import pprint
+
     run = RunningState()
 
     pprint(run)

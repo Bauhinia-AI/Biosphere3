@@ -4,7 +4,6 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-
             """You are the daily objectives planner in a RPG game. Come up with a general daily objectives. 
             
             The user profile is:{character_stats}. 
@@ -240,5 +239,117 @@ mayor_decision_prompt = ChatPromptTemplate.from_template(
         "comments": "This job is not suitable for this player because there is too big a gap in education level."
     }}
     Decision:
+    """
+)
+
+
+generate_cv_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, decide if a job change is necessary.
+    User State:
+    {character_stats}
+    Character Info:
+    {character_info}
+    Available Jobs:
+    {available_public_jobs}
+
+    You should carefully analyze the user's current job(if any), current daily wages, education, experience, work hours, wagePerHours to decide whether the user should change the job.
+    You should also consider the character's status, such as health, energy, and money.
+
+    If the decision is NOT to change job, your output should be like this:
+    {{
+        "jobId": 0,
+        "cv": ""
+    }}
+    If the decision is to change job, you should choose a job from the available job list with the jobId and generate a professional CV based on the detail of the job.
+    If you choose the job with jobId 1, Here is an example to follow (don't copy it):
+    {{
+        "jobId": 1,
+        "cv": "I think my knowledge level is good enough to be a student helper and I love this job"
+    }}
+
+    Remind: user can apply for a job even when he/she doesn't meet all the requirements.
+    A general rule of changing job is the desire to make more money or do something he/she loves, or just less working hours.
+    
+    CV:
+    """
+)
+
+mayor_decision_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, make a decision regarding the user's job application.
+    
+    User State:
+    {character_stats}
+    CV:
+    {cv}
+    Details of the job:
+    {public_work_info}
+    From the perspective of the job criteria:
+    {meet_requirements}
+
+    You should carefully analyze the user's qualifications, the job requirements, and any other relevant factors to decide if the user should be offered the job.
+    Sometimes you don’t have to meet all the hard conditions. You can add some randomness to your decision-making process to make the decision results more flexible and random.
+    You should give the comments for your decision, explaining your decision in a reasonable way:
+    If the decision is to offer the job, here is an example to follow (don't copy it):
+    {{
+        "decision": "yes",
+        "comments": "The player's previous experience and education level meet the requirements, so he can be given a chance to do this job."
+    }}
+    If the decision is not to offer the job, here is an example to follow (don't copy it):
+    {{
+        "decision": "no",
+        "comments": "This job is not suitable for this player because there is too big a gap in education level."
+    }}
+    Decision:
+    """
+)
+
+accommodation_decision_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, decide which accommodation the user should rent next and for how many weeks (1-12).
+# Basic Information:
+    User State:
+    {character_stats}
+    Financial Status:
+    {financial_status}
+    Current Accommodation:
+    {current_accommodation}
+    Available Accommodations:
+    {available_accommodations}
+
+    Previous failed attempts:
+    {failure_reasons}
+
+# Output Format
+    Your output should be a JSON object like:
+    {{
+        "accommodation_id": <int>,  # ID of the chosen accommodation
+        "lease_weeks": <int>,       # Number of weeks to lease (1-12)
+        "comments": "<Your comments>"
+    }}
+    For example:
+    {{
+        "accommodation_id": 8,
+        "lease_weeks": 8,
+        "comments": "I can afford a Villa now, which would improve my quality of life and help me to get respect from others."
+    {{
+
+# Key Considerations for Your Decision:
+
+    Production Efficiency:
+        Production Efficiency = Health × Hunger × Energy × Wisdom.
+        Better accommodations improve maxHealth, maxEnergy, and maxHunger, boosting overall efficiency and ComputeCoin generation.
+
+    Cost-effectiveness:
+        Investing in better accommodations can prevent costly health setbacks and reduce time spent on recovery.
+        Improved recovery rates from premium accommodations allow for sustained productivity.
+
+    Risk Management:
+        Poor accommodations increase the risk of health deterioration, leading to frequent doctor visits and downtime.
+        Ensure the user has sufficient reserves for living expenses and emergencies.
+
+    Game Progress:
+        If financially stable, prioritize accommodations that maximize efficiency and align with the ultimate goal of generating ComputeCoins.
+        For tight budgets, recommend the best option within financial constraints.
+    
+# Decision:
     """
 )

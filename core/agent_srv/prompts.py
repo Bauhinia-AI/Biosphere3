@@ -4,7 +4,6 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-
             """You are the daily objectives planner in a RPG game. Come up with a general daily objectives. 
             
             The user profile is:{character_stats}. 
@@ -306,54 +305,51 @@ mayor_decision_prompt = ChatPromptTemplate.from_template(
 
 accommodation_decision_prompt = ChatPromptTemplate.from_template(
     """Based on the following information, decide which accommodation the user should rent next and for how many weeks (1-12).
-
+# Basic Information:
     User State:
     {character_stats}
+    Financial Status:
+    {financial_status}
     Current Accommodation:
     {current_accommodation}
     Available Accommodations:
     {available_accommodations}
-    Financial Status:
-    {financial_status}
 
     Previous failed attempts:
     {failure_reasons}
 
-    Consider the following explanations about the game systems:
-
-    **Health System:**
-    - Each day, there is a chance to get sick, reducing health by varying amounts depending on the illness.
-    - Visiting a doctor restores +10 health but costs 100 coins.
-    - No illness will occur in the first 14 game days.
-    - The health efficiency multiplier is min(100, health)/100.
-
-    **Hunger System:**
-    - Hunger decreases over time, reducing by 10% of the maximum hunger every hour.
-    - When absolute hunger is below 50, production efficiency = hunger/100.
-
-    **Energy System:**
-    - Energy decreases when performing various activities.
-    - Sleeping restores 10% of energy per hour.
-    - During production activities, efficiency multiplier = max(energy, 100)/100.
-
-    Different accommodations affect maximum energy, health, hunger, and energy recovery rates.
-
-    Considering the user's financial status, needs, these game mechanics, and the previous failed attempts, decide on the accommodation and lease duration.
-
+# Output Format
     Your output should be a JSON object like:
     {{
         "accommodation_id": <int>,  # ID of the chosen accommodation
         "lease_weeks": <int>,       # Number of weeks to lease (1-12)
         "comments": "<Your comments>"
     }}
-
     For example:
     {{
-        "accommodation_id": 3,
-        "lease_weeks": 4,
-        "comments": "I can afford a better apartment now, which would improve my quality of life."
-    }}
+        "accommodation_id": 8,
+        "lease_weeks": 8,
+        "comments": "I can afford a Villa now, which would improve my quality of life and help me to get respect from others."
+    {{
 
-    Decision:
+# Key Considerations for Your Decision:
+
+    Production Efficiency:
+        Production Efficiency = Health × Hunger × Energy × Wisdom.
+        Better accommodations improve maxHealth, maxEnergy, and maxHunger, boosting overall efficiency and ComputeCoin generation.
+
+    Cost-effectiveness:
+        Investing in better accommodations can prevent costly health setbacks and reduce time spent on recovery.
+        Improved recovery rates from premium accommodations allow for sustained productivity.
+
+    Risk Management:
+        Poor accommodations increase the risk of health deterioration, leading to frequent doctor visits and downtime.
+        Ensure the user has sufficient reserves for living expenses and emergencies.
+
+    Game Progress:
+        If financially stable, prioritize accommodations that maximize efficiency and align with the ultimate goal of generating ComputeCoins.
+        For tight budgets, recommend the best option within financial constraints.
+    
+# Decision:
     """
 )

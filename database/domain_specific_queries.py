@@ -355,20 +355,41 @@ class DomainSpecificQueries:
         )
         return documents
 
-    def store_cv(self, jobid, characterId, CV_content, week, election_result="not_yet"):
+    def store_cv(
+        self,
+        jobid,
+        characterId,
+        CV_content,
+        week,
+        health,
+        studyxp,
+        date,
+        jobName,
+        election_status="not_yet",
+    ):
+        # 查找符合条件的文档并提取去重后的 jobName 列表
+        query = {"characterId": characterId, "election_status": "succeeded"}
+        documents = self.db_utils.find_documents(config.cv_collection_name, query)
+        experience = list({doc["jobName"] for doc in documents})
+
         document = {
             "jobid": jobid,
             "characterId": characterId,
             "CV_content": CV_content,
-            "week": week,  # 新增字段
-            "election_result": election_result,  # 参数新增 election_result
+            "week": week,
+            "health": health,
+            "studyxp": studyxp,
+            "date": date,
+            "experience": experience,  # 更新后的 experience
+            "jobName": jobName,  # 新增的 jobName 字段
+            "election_status": election_status,
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
         inserted_id = self.db_utils.insert_document(config.cv_collection_name, document)
         return inserted_id
 
-    def update_election_result(
-        self, characterId, election_result, jobid=None, week=None
+    def update_election_status(
+        self, characterId, election_status, jobid=None, week=None
     ):
         # 构建查询条件
         query = {"characterId": characterId}
@@ -390,8 +411,8 @@ class DomainSpecificQueries:
             else:
                 raise ValueError("No CV found for the given characterId and jobid.")
 
-        # 更新 election_result
-        update_data = {"$set": {"election_result": election_result}}
+        # 更新 election_status
+        update_data = {"$set": {"election_status": election_status}}
         result = self.db_utils.update_documents(
             collection_name=config.cv_collection_name,
             query=query,
@@ -401,7 +422,7 @@ class DomainSpecificQueries:
         )
         return result
 
-    def get_cv(self, jobid=None, characterId=None, week=None, election_result=None):
+    def get_cv(self, jobid=None, characterId=None, week=None, election_status=None):
         query = {}
         if jobid is not None:
             query["jobid"] = jobid
@@ -409,8 +430,8 @@ class DomainSpecificQueries:
             query["characterId"] = characterId
         if week is not None:
             query["week"] = week
-        if election_result is not None:
-            query["election_result"] = election_result
+        if election_status is not None:
+            query["election_status"] = election_status
 
         # 查找符合条件的文档
         documents = self.db_utils.find_documents(
@@ -619,31 +640,6 @@ class DomainSpecificQueries:
             multi=False,
         )
         return result
-
-    def store_tool(self, API, text, code):
-        document = {
-            "API": API,
-            "text": text,
-            "code": code,
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        inserted_id = self.db_utils.insert_document(
-            config.tool_collection_name, document
-        )
-        return inserted_id
-
-    def get_tools(self, API, k):
-        query = {}
-        if API:
-            query["API"] = API
-        documents = self.db_utils.find_documents(
-            collection_name=config.tool_collection_name,
-            query=query,
-            projection={"created_at": 0, "_id": 0},
-            limit=k,
-            sort=[("created_at", DESCENDING)],
-        )
-        return documents
 
     def store_diary(self, characterId, diary_content):
         document = {
@@ -1150,10 +1146,127 @@ class DomainSpecificQueries:
         )
         return result
 
+    def store_conversation_prompt(
+        self,
+        characterId,
+        topic_requirements=None,
+        relation=None,
+        emotion=None,
+        personality=None,
+        habits_and_preferences=None,
+    ):
+        document = {
+            "characterId": characterId,
+            "topic_requirements": topic_requirements,
+            "relation": relation,
+            "emotion": emotion,
+            "personality": personality,
+            "habits_and_preferences": habits_and_preferences,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        inserted_id = self.db_utils.insert_document(
+            config.conversation_prompt_collection_name, document
+        )
+        return inserted_id
+
+    def get_conversation_prompt(self, characterId):
+        query = {"characterId": characterId}
+        documents = self.db_utils.find_documents(
+            collection_name=config.conversation_prompt_collection_name,
+            query=query,
+        )
+        return documents
+
+    def update_conversation_prompt(self, characterId, update_fields):
+        query = {"characterId": characterId}
+        update_data = {"$set": update_fields}
+        update_data["$set"]["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        result = self.db_utils.update_documents(
+            collection_name=config.conversation_prompt_collection_name,
+            query=query,
+            update=update_data,
+            upsert=False,
+            multi=False,
+        )
+        return result
+
+    def delete_conversation_prompt(self, characterId):
+        query = {"characterId": characterId}
+        result = self.db_utils.delete_documents(
+            collection_name=config.conversation_prompt_collection_name,
+            query=query,
+        )
+        return result
+
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
+
+    # 存储多个简历，包含不同的 election_status
+    print("存储简历...")
+    statuses = ["not_yet", "failed", "succeeded"]
+    job_names = ["工程师", "设计师", "产品经理"]  # 新增的 jobName 列表
+    for i, (status, job_name) in enumerate(zip(statuses, job_names), start=1):
+        inserted_id = queries.store_cv(
+            jobid=100 + i,
+            characterId=1,
+            CV_content=f"这是简历内容示例 {i}",
+            week=12 + i,
+            health=80 + i * 5,
+            studyxp=150 + i * 10,
+            date=20231015 + i,
+            election_status=status,
+            jobName=job_name,  # 传递 jobName
+        )
+        print(f"插入成功，文档 ID：{inserted_id}")
+
+    # 测试获取简历
+    print("获取简历...")
+    documents = queries.get_cv(characterId=1)
+    for doc in documents:
+        print(doc)
+
+    # # 测试 store_conversation_prompt 方法
+    # print("存储对话提示...")
+    # inserted_id = queries.store_conversation_prompt(
+    #     characterId=1,
+    #     topic_requirements="Discuss future plans",
+    #     relation="Friend",
+    #     emotion="Happy",
+    #     personality="Introversion",
+    #     habits_and_preferences="Likes to talk about technology"
+    # )
+    # print(f"插入成功，文档 ID：{inserted_id}")
+
+    # # 测试 get_conversation_prompt 方法
+    # print("\n获取对话提示...")
+    # conversation_prompts = queries.get_conversation_prompt(characterId=1)
+    # print("获取的对话提示：", conversation_prompts)
+
+    # # 测试 update_conversation_prompt 方法
+    # print("\n更新对话提示...")
+    # update_result = queries.update_conversation_prompt(
+    #     characterId=1,
+    #     update_fields={"emotion": "Excited", "relation": "Best Friend"}
+    # )
+    # print(f"更新成功，修改了 {update_result} 个文档。")
+
+    # # 再次获取以验证更新
+    # print("\n更新后的对话提示...")
+    # updated_conversation_prompts = queries.get_conversation_prompt(characterId=1)
+    # print("更新后的对话提示：", updated_conversation_prompts)
+
+    # # 测试 delete_conversation_prompt 方法
+    # print("\n删除对话提示...")
+    # delete_result = queries.delete_conversation_prompt(characterId=1)
+    # print(f"删除成功，删除了 {delete_result} 个文档。")
+
+    # # 验证删除
+    # print("\n验证删除后的对话提示...")
+    # deleted_conversation_prompts = queries.get_conversation_prompt(characterId=1)
+    # print("删除后的对话提示：", deleted_conversation_prompts)
 
     # # 测试 get_intimacy 函数
     # print("查询 from_id=1 的所有对话记录:")
@@ -1349,12 +1462,12 @@ if __name__ == "__main__":
 
     # # 更新选举状态
     # print("\n更新选举状态:")
-    # queries.update_election_result(
-    #     characterId=101, election_result="succeeded", jobid=1, week=1
+    # queries.update_election_status(
+    #     characterId=101, election_status="succeeded", jobid=1, week=1
     # )
-    # queries.update_election_result(characterId=102, election_result="failed", jobid=1)
-    # queries.update_election_result(
-    #     characterId=103, election_result="succeeded", jobid=2
+    # queries.update_election_status(characterId=102, election_status="failed", jobid=1)
+    # queries.update_election_status(
+    #     characterId=103, election_status="succeeded", jobid=2
     # )
 
     # # 测试 get_cv 方法
@@ -1378,11 +1491,11 @@ if __name__ == "__main__":
 
     # # 查询特定选举状态的数据
     # print("\n查询选举状态为 'succeeded' 的数据:")
-    # print(queries.get_cv(election_result="succeeded"))
+    # print(queries.get_cv(election_status="succeeded"))
 
     # # 查询特定 jobid 和选举状态的数据
     # print("\n查询 jobid=1 且选举状态为 'failed' 的数据:")
-    # print(queries.get_cv(jobid=1, election_result="failed"))
+    # print(queries.get_cv(jobid=1, election_status="failed"))
 
     # # 查询特定 characterId 和 week 的数据
     # print("\n查询 characterId=101 且 week=1 的数据:")

@@ -177,7 +177,7 @@ if __name__ == "__main__":
     app = DatabaseSetupApp()
 
     # # Setup collections
-    # app.setup_database(config.cv_collection_name)
+    app.setup_database(config.cv_collection_name)
     # app.setup_database(
     #     config.agent_profile_collection_name, unique_index_fields=["characterId"]
     # )
@@ -187,7 +187,6 @@ if __name__ == "__main__":
     # app.setup_database(config.daily_objective_collection_name)
     # app.setup_database(config.plan_collection_name)
     # app.setup_database(config.meta_seq_collection_name)
-    # app.setup_database(config.tool_collection_name)
     # app.setup_database(config.conversation_collection_name)
     # app.setup_database(config.diary_collection_name)
     # app.setup_database(
@@ -204,9 +203,12 @@ if __name__ == "__main__":
     #     config.character_arc_change_collection_name,
     # )
     # app.setup_database(config.profile_sample_collection_name)
-    app.setup_database(
-        config.agent_prompt_collection_name, unique_index_fields=["characterId"]
-    )
+    # app.setup_database(
+    #     config.agent_prompt_collection_name, unique_index_fields=["characterId"]
+    # )
+    # app.setup_database(
+    #     config.conversation_prompt_collection_name, unique_index_fields=["characterId"]
+    # )
 
     # # Import data
     # app.import_data_into_collection(
@@ -216,10 +218,6 @@ if __name__ == "__main__":
     # app.import_data_into_collection(
     #     config.agent_profile_collection_name,
     #     "AGENT_PROFILE.json",
-    # )
-    # app.import_data_into_collection(
-    #     config.tool_collection_name,
-    #     "API.json",
     # )
     # app.import_data_into_collection(
     #     config.conversation_collection_name,

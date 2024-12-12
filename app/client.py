@@ -7,14 +7,10 @@ import json
 import time
 from datetime import datetime
 
-# 添加项目根目录到 sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database import config  # 如果需要使用 config
 
-# 获取项目根目录
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# 在项目根目录下创建 logs 文件夹
 log_directory = os.path.join(project_root, "logs")
 if not os.path.exists(log_directory):
     os.makedirs(log_directory)
@@ -35,16 +31,27 @@ class APIClient:
         self.retries = retries
         self.delay = delay
 
-    def _make_request(self, method, url, json_data=None):
+    def _make_request(self, method, url, json_data=None, params=None):
+        """
+        新增对GET、PUT、DELETE等请求的支持:
+        - GET请求使用params传递查询参数
+        - PUT、PATCH、DELETE请求支持通过json_data传递请求体
+        """
         for attempt in range(1, self.retries + 1):
             try:
                 logging.debug(
-                    f"Making {method} request to {url} with data: {json_data}"
+                    f"Making {method} request to {url} with data: {json_data} params: {params}"
                 )
                 if method == "POST":
                     response = requests.post(url, json=json_data, timeout=20)
                 elif method == "GET":
-                    response = requests.get(url, timeout=20)
+                    response = requests.get(url, params=params, timeout=20)
+                elif method == "PUT":
+                    response = requests.put(url, json=json_data, timeout=20)
+                elif method == "PATCH":
+                    response = requests.patch(url, json=json_data, timeout=20)
+                elif method == "DELETE":
+                    response = requests.delete(url, json=json_data, timeout=20)
                 else:
                     raise ValueError("Unsupported HTTP method")
 
@@ -79,8 +86,6 @@ class APIClient:
                         "data": None,
                     }
 
-    # API调用方法，使用新的分路由
-
     # CRUD操作
     def insert_data(self, collection_name, document):
         return self._make_request(
@@ -91,7 +96,7 @@ class APIClient:
 
     def update_data(self, collection_name, query, update, upsert=False, multi=False):
         return self._make_request(
-            "POST",
+            "PUT",
             f"{self.base_url}/crud/update",
             {
                 "collection_name": collection_name,
@@ -104,145 +109,169 @@ class APIClient:
 
     def delete_data(self, collection_name, query, multi=False):
         return self._make_request(
-            "POST",
+            "DELETE",
             f"{self.base_url}/crud/delete",
             {"collection_name": collection_name, "query": query, "multi": multi},
         )
 
     def find_data(self, collection_name, query={}, projection=None, limit=0, sort=None):
-        return self._make_request(
-            "POST",
-            f"{self.base_url}/crud/find",
-            {
-                "collection_name": collection_name,
-                "query": query,
-                "projection": projection,
-                "limit": limit,
-                "sort": sort,
-            },
-        )
+        # 需要将 query, projection, sort 转为字符串或符合URL的形式
+        # 以下是示例，请根据实际实现进行序列化
+        params = {
+            "collection_name": collection_name,
+            # 您需要根据实际情况将query,projection,sort序列化为字符串或其他可在URL上传递的形式
+            # 这里假设仅传collection_name进行测试，如需传query则需要json.dumps(query)
+            # "query": json.dumps(query),
+            # "projection": json.dumps(projection) if projection else None,
+            # "limit": limit,
+            # "sort": json.dumps(sort) if sort else None
+        }
+        return self._make_request("GET", f"{self.base_url}/crud/find", params=params)
 
     # Vector Search
     def vector_search(self, query_text, fields_to_return, collection_name, k=1):
+        # fields_to_return 应转为字符串，如 'field1,field2'
+        fields_str = ",".join(fields_to_return)
+        params = {
+            "collection_name": collection_name,
+            "query_text": query_text,
+            "fields_to_return": fields_str,
+            "k": k,
+        }
         return self._make_request(
-            "POST",
+            "GET",
             f"{self.base_url}/vector_search",
-            {
-                "query_text": query_text,
-                "fields_to_return": fields_to_return,
-                "collection_name": collection_name,
-                "k": k,
-            },
+            params=params,
         )
 
     # Impressions
     def store_impression(self, from_id, to_id, impression):
         return self._make_request(
             "POST",
-            f"{self.base_url}/impressions/store",
+            f"{self.base_url}/impressions",
             {"from_id": from_id, "to_id": to_id, "impression": impression},
         )
 
     def get_impression(self, from_id, to_id, k=1):
+        params = {"from_id": from_id, "to_id": to_id, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/impressions/get",
-            {"from_id": from_id, "to_id": to_id, "k": k},
+            "GET",
+            f"{self.base_url}/impressions",
+            params=params,
         )
 
     # Conversations
     def store_conversation(self, characterIds, dialogue, start_day, start_time):
         return self._make_request(
             "POST",
-            f"{self.base_url}/conversations/store",
+            f"{self.base_url}/conversations",
             {
                 "characterIds": characterIds,
                 "dialogue": dialogue,
-                "start_day": start_day,  # 新增字段
-                "start_time": start_time,  # 新增字段
+                "start_day": start_day,
+                "start_time": start_time,
             },
         )
 
     def get_conversation_by_id_day_time(self, characterIds_list, day, time):
+        # characterIds_list 用逗号分隔
+        ids_str = ",".join(str(i) for i in characterIds_list)
+        params = {"characterIds_list": ids_str, "day": day, "time": time}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/conversations/get_by_id_day_time",
-            {
-                "characterIds_list": characterIds_list,  # 更新为 characterIds_list
-                "day": day,
-                "time": time,
-            },
+            "GET",
+            f"{self.base_url}/conversations/by_id_day_time",
+            params=params,
         )
 
     def get_conversations_by_id_and_day(self, characterId, day):
+        params = {"characterId": characterId, "day": day}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/conversations/get_by_id_and_day",
-            {
-                "characterId": characterId,
-                "day": day,
-            },
+            "GET",
+            f"{self.base_url}/conversations/by_id_and_day",
+            params=params,
         )
 
     def get_conversations_with_characterIds(self, characterIds_list, k=1):
+        ids_str = ",".join(str(i) for i in characterIds_list)
+        params = {"characterIds_list": ids_str, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/conversations/get_with_characterIds",
-            {"characterIds_list": characterIds_list, "k": k},
+            "GET",
+            f"{self.base_url}/conversations/with_character_ids",
+            params=params,
         )
 
     def get_conversations_containing_characterId(self, characterId, k=0):
+        params = {"characterId": characterId, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/conversations/get_containing_characterId",
-            {"characterId": characterId, "k": k},
+            "GET",
+            f"{self.base_url}/conversations/containing_character_id",
+            params=params,
         )
 
     # CVs
-    def store_cv(self, jobid, characterId, CV_content, week, election_result="not_yet"):
+    def store_cv(
+        self,
+        jobid,
+        characterId,
+        CV_content,
+        week,
+        health,
+        studyxp,
+        date,
+        jobName,  # 新增字段
+        election_status="not_yet",  # 更新字段名
+    ):
         return self._make_request(
             "POST",
-            f"{self.base_url}/cv/store",
+            f"{self.base_url}/cv",
             {
                 "jobid": jobid,
                 "characterId": characterId,
                 "CV_content": CV_content,
-                "week": week,  # 新增字段
-                "election_result": election_result,  # 新增字段
+                "week": week,
+                "health": health,  # 新增字段
+                "studyxp": studyxp,  # 新增字段
+                "date": date,  # 新增字段
+                "jobName": jobName,  # 新增字段
+                "election_status": election_status,  # 更新字段名
             },
         )
 
-    def update_election_result(
-        self, characterId, election_result, jobid=None, week=None
+    def update_election_status(
+        self, characterId, election_status, jobid=None, week=None
     ):
         return self._make_request(
-            "POST",
-            f"{self.base_url}/cv/update_election_result",
+            "PUT",
+            f"{self.base_url}/cv/election_status",
             {
                 "characterId": characterId,
-                "election_result": election_result,
+                "election_status": election_status,
                 "jobid": jobid,
                 "week": week,
             },
         )
 
-    def get_cv(self, jobid=None, characterId=None, week=None, election_result=None):
+    def get_cv(self, jobid=None, characterId=None, week=None, election_status=None):
+        params = {}
+        if jobid is not None:
+            params["jobid"] = jobid
+        if characterId is not None:
+            params["characterId"] = characterId
+        if week is not None:
+            params["week"] = week
+        if election_status is not None:
+            params["election_status"] = election_status
         return self._make_request(
-            "POST",
-            f"{self.base_url}/cv/get",
-            {
-                "jobid": jobid,
-                "characterId": characterId,
-                "week": week,  # 新增字段
-                "election_result": election_result,  # 新增字段
-            },
+            "GET",
+            f"{self.base_url}/cv",
+            params=params,
         )
 
     # Actions
     def store_action(self, characterId, action, result, description):
         return self._make_request(
             "POST",
-            f"{self.base_url}/actions/store",
+            f"{self.base_url}/actions",
             {
                 "characterId": characterId,
                 "action": action,
@@ -252,17 +281,18 @@ class APIClient:
         )
 
     def get_action(self, characterId, action, k=1):
+        params = {"characterId": characterId, "action": action, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/actions/get",
-            {"characterId": characterId, "action": action, "k": k},
+            "GET",
+            f"{self.base_url}/actions",
+            params=params,
         )
 
     # Descriptors
     def store_descriptor(self, failed_action, action_id, characterId, reflection):
         return self._make_request(
             "POST",
-            f"{self.base_url}/descriptors/store",
+            f"{self.base_url}/descriptors",
             {
                 "failed_action": failed_action,
                 "action_id": action_id,
@@ -272,86 +302,79 @@ class APIClient:
         )
 
     def get_descriptor(self, action_id, characterId, k=1):
+        params = {"action_id": action_id, "characterId": characterId, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/descriptors/get",
-            {"action_id": action_id, "characterId": characterId, "k": k},
+            "GET",
+            f"{self.base_url}/descriptors",
+            params=params,
         )
 
     # Daily Objectives
     def store_daily_objective(self, characterId, objectives):
         return self._make_request(
             "POST",
-            f"{self.base_url}/daily_objectives/store",
+            f"{self.base_url}/daily_objectives",
             {"characterId": characterId, "objectives": objectives},
         )
 
     def get_daily_objectives(self, characterId, k=1):
+        params = {"characterId": characterId, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/daily_objectives/get",
-            {"characterId": characterId, "k": k},
+            "GET",
+            f"{self.base_url}/daily_objectives",
+            params=params,
         )
 
     # Plans
     def store_plan(self, characterId, detailed_plan):
         return self._make_request(
             "POST",
-            f"{self.base_url}/plans/store",
+            f"{self.base_url}/plans",
             {"characterId": characterId, "detailed_plan": detailed_plan},
         )
 
     def get_plans(self, characterId, k=1):
+        params = {"characterId": characterId, "k": k}
         return self._make_request(
-            "POST", f"{self.base_url}/plans/get", {"characterId": characterId, "k": k}
+            "GET",
+            f"{self.base_url}/plans",
+            params=params,
         )
 
     # Meta Sequences
     def store_meta_seq(self, characterId, meta_sequence):
         return self._make_request(
             "POST",
-            f"{self.base_url}/meta_sequences/store",
+            f"{self.base_url}/meta_sequences",
             {"characterId": characterId, "meta_sequence": meta_sequence},
         )
 
     def get_meta_sequences(self, characterId, k=1):
+        params = {"characterId": characterId, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/meta_sequences/get",
-            {"characterId": characterId, "k": k},
+            "GET",
+            f"{self.base_url}/meta_sequences",
+            params=params,
         )
 
     def update_meta_seq(self, characterId, meta_sequence):
         return self._make_request(
-            "POST",
-            f"{self.base_url}/meta_sequences/update",
+            "PUT",
+            f"{self.base_url}/meta_sequences",
             {"characterId": characterId, "meta_sequence": meta_sequence},
         )
-
-    # Tools
-    def store_tool(self, API, text, code):
-        return self._make_request(
-            "POST",
-            f"{self.base_url}/tools/store",
-            {"API": API, "text": text, "code": code},
-        )
-
-    def get_tools(self, API=None, k=1):
-        data = {"API": API, "k": k} if API else {"k": k}
-        return self._make_request("POST", f"{self.base_url}/tools/get", data)
 
     # Diaries
     def store_diary(self, characterId, diary_content):
         return self._make_request(
             "POST",
-            f"{self.base_url}/diaries/store",
+            f"{self.base_url}/diaries",
             {"characterId": characterId, "diary_content": diary_content},
         )
 
     def get_diaries(self, characterId, k=1):
-        return self._make_request(
-            "POST", f"{self.base_url}/diaries/get", {"characterId": characterId, "k": k}
-        )
+        params = {"characterId": characterId, "k": k}
+        return self._make_request("GET", f"{self.base_url}/diaries", params=params)
 
     # Characters
     def store_character(
@@ -369,7 +392,7 @@ class APIClient:
     ):
         return self._make_request(
             "POST",
-            f"{self.base_url}/characters/store",
+            f"{self.base_url}/characters",
             {
                 "characterId": characterId,
                 "characterName": characterName,
@@ -385,71 +408,75 @@ class APIClient:
         )
 
     def get_character(self, characterId=None):
-        data = {}
+        params = {}
         if characterId is not None:
-            data["characterId"] = characterId
-
-        return self._make_request("POST", f"{self.base_url}/characters/get", data)
+            params["characterId"] = characterId
+        return self._make_request("GET", f"{self.base_url}/characters", params=params)
 
     def get_character_rag(self, characterId, topic, k):
+        params = {"characterId": characterId, "topic": topic, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/characters/get_rag",
-            {"characterId": characterId, "topic": topic, "k": k},
+            "GET",
+            f"{self.base_url}/characters/rag",
+            params=params,
         )
 
     def get_character_rag_in_list(self, characterId, characterList, topic, k):
+        params = {
+            "characterId": characterId,
+            "topic": topic,
+            "k": k,
+            "characterList": characterList,
+        }
         return self._make_request(
-            "POST",
-            f"{self.base_url}/characters/get_rag_in_list",
-            {
-                "characterId": characterId,
-                "characterList": characterList,
-                "topic": topic,
-                "k": k,
-            },
+            "GET",
+            f"{self.base_url}/characters/rag_in_list",
+            params=params,
         )
 
     def update_character(self, characterId, update_fields):
         return self._make_request(
-            "POST",
-            f"{self.base_url}/characters/update",
+            "PUT",
+            f"{self.base_url}/characters",
             {"characterId": characterId, "update_fields": update_fields},
         )
 
     # Encounter Count
     def get_encounter_count(self, from_id, to_id):
+        params = {"from_id": from_id, "to_id": to_id}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/encounter_count/get",
-            {"from_id": from_id, "to_id": to_id},
+            "GET",
+            f"{self.base_url}/encounter_count",
+            params=params,
         )
 
     def get_encounters_by_from_id(self, from_id, k=1):
+        params = {"from_id": from_id, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/encounter_count/get_by_from_id",
-            {"from_id": from_id, "k": k},
+            "GET",
+            f"{self.base_url}/encounter_count/by_from_id",
+            params=params,
         )
 
     def store_encounter_count(self, from_id, to_id, count=1):
         return self._make_request(
             "POST",
-            f"{self.base_url}/encounter_count/store",
+            f"{self.base_url}/encounter_count",
             {"from_id": from_id, "to_id": to_id, "count": count},
         )
 
     def increment_encounter_count(self, from_id, to_id):
+        params = {"from_id": from_id, "to_id": to_id}
         return self._make_request(
-            "POST",
+            "PUT",
             f"{self.base_url}/encounter_count/increment",
-            {"from_id": from_id, "to_id": to_id},
+            params=params,
         )
 
     def update_encounter_count(self, from_id, to_id, count):
         return self._make_request(
-            "POST",
-            f"{self.base_url}/encounter_count/update",
+            "PUT",
+            f"{self.base_url}/encounter_count",
             {"from_id": from_id, "to_id": to_id, "count": count},
         )
 
@@ -462,33 +489,35 @@ class APIClient:
         intimacy_level_max=None,
         have_conversation=False,
     ):
-        request_data = {
-            "from_id": from_id,
-            "to_id": to_id,
-            "intimacy_level_min": intimacy_level_min,  # 新增参数
-            "intimacy_level_max": intimacy_level_max,  # 新增参数
-            "have_conversation": have_conversation,  # 新增参数
-        }
-        # 过滤掉值为 None 的参数
-        request_data = {k: v for k, v in request_data.items() if v is not None}
+        params = {}
+        if from_id is not None:
+            params["from_id"] = from_id
+        if to_id is not None:
+            params["to_id"] = to_id
+        if intimacy_level_min is not None:
+            params["intimacy_level_min"] = intimacy_level_min
+        if intimacy_level_max is not None:
+            params["intimacy_level_max"] = intimacy_level_max
+        if have_conversation:
+            params["have_conversation"] = "true"
 
         return self._make_request(
-            "POST",
-            f"{self.base_url}/intimacy/get",
-            request_data,
+            "GET",
+            f"{self.base_url}/intimacy",
+            params=params,
         )
 
     def store_intimacy(self, from_id, to_id, intimacy_level):
         return self._make_request(
             "POST",
-            f"{self.base_url}/intimacy/store",
+            f"{self.base_url}/intimacy",
             {"from_id": from_id, "to_id": to_id, "intimacy_level": intimacy_level},
         )
 
     def update_intimacy(self, from_id, to_id, new_intimacy_level):
         return self._make_request(
-            "POST",
-            f"{self.base_url}/intimacy/update",
+            "PUT",
+            f"{self.base_url}/intimacy",
             {
                 "from_id": from_id,
                 "to_id": to_id,
@@ -497,7 +526,7 @@ class APIClient:
         )
 
     def decrease_all_intimacy_levels(self):
-        return self._make_request("POST", f"{self.base_url}/intimacy/decrease_all", {})
+        return self._make_request("PATCH", f"{self.base_url}/intimacy/decrease_all")
 
     # Knowledge
     def store_knowledge(
@@ -505,7 +534,7 @@ class APIClient:
     ):
         return self._make_request(
             "POST",
-            f"{self.base_url}/knowledge/store",
+            f"{self.base_url}/knowledge",
             {
                 "characterId": characterId,
                 "day": day,
@@ -515,67 +544,74 @@ class APIClient:
         )
 
     def get_knowledge(self, characterId, day):
+        params = {"characterId": characterId, "day": day}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/knowledge/get",
-            {"characterId": characterId, "day": day},
+            "GET",
+            f"{self.base_url}/knowledge",
+            params=params,
         )
 
     def get_latest_knowledge(self, characterId, k=1):
+        params = {"characterId": characterId, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/knowledge/get_latest",
-            {"characterId": characterId, "k": k},
+            "GET",
+            f"{self.base_url}/knowledge/latest",
+            params=params,
         )
 
     def update_knowledge(
         self, characterId, day, environment_information=None, personal_information=None
     ):
+        data = {
+            "characterId": characterId,
+            "day": day,
+        }
+        if environment_information is not None:
+            data["environment_information"] = environment_information
+        if personal_information is not None:
+            data["personal_information"] = personal_information
+
         return self._make_request(
-            "POST",
-            f"{self.base_url}/knowledge/update",
-            {
-                "characterId": characterId,
-                "day": day,
-                "environment_information": environment_information,
-                "personal_information": personal_information,
-            },
+            "PUT",
+            f"{self.base_url}/knowledge",
+            data,
         )
 
     # Character Arc
     def store_character_arc(self, characterId, category):
         return self._make_request(
             "POST",
-            f"{self.base_url}/character_arc/store",
+            f"{self.base_url}/character_arc",
             {"characterId": characterId, "category": category},
         )
 
     def get_character_arc(self, characterId):
+        params = {"characterId": characterId}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/character_arc/get",
-            {"characterId": characterId},
+            "GET",
+            f"{self.base_url}/character_arc",
+            params=params,
         )
 
     def get_character_arc_with_changes(self, characterId, k=1):
+        params = {"characterId": characterId, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/character_arc/get_with_changes",
-            {"characterId": characterId, "k": k},
+            "GET",
+            f"{self.base_url}/character_arc/with_changes",
+            params=params,
         )
 
     def update_character_arc(self, characterId, category):
         return self._make_request(
-            "POST",
-            f"{self.base_url}/character_arc/update",
+            "PUT",
+            f"{self.base_url}/character_arc",
             {"characterId": characterId, "category": category},
         )
 
-    # Character Arc Change
     def store_character_arc_change(self, characterId, item, cause, context, change):
         return self._make_request(
             "POST",
-            f"{self.base_url}/character_arc/store_change",
+            f"{self.base_url}/character_arc/change",
             {
                 "characterId": characterId,
                 "item": item,
@@ -586,21 +622,25 @@ class APIClient:
         )
 
     def get_character_arc_changes(self, characterId, item, k=1):
+        params = {"characterId": characterId, "item": item, "k": k}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/character_arc/get_changes",
-            {"characterId": characterId, "item": item, "k": k},
+            "GET",
+            f"{self.base_url}/character_arc/changes",
+            params=params,
         )
 
-    # 新增获取样本的方法
+    # Sample
     def get_sample(self, item_name=None):
+        params = {}
+        if item_name is not None:
+            params["item_name"] = item_name
         return self._make_request(
-            "POST",
-            f"{self.base_url}/sample/get",
-            {"item_name": item_name},
+            "GET",
+            f"{self.base_url}/sample",
+            params=params,
         )
 
-    # Agent Prompt 操作
+    # Agent Prompt
     def store_agent_prompt(
         self,
         characterId,
@@ -621,7 +661,7 @@ class APIClient:
     ):
         return self._make_request(
             "POST",
-            f"{self.base_url}/agent_prompt/store",
+            f"{self.base_url}/agent_prompt",
             {
                 "characterId": characterId,
                 "daily_goal": daily_goal,
@@ -642,555 +682,75 @@ class APIClient:
         )
 
     def get_agent_prompt(self, characterId):
+        params = {"characterId": characterId}
         return self._make_request(
-            "POST",
-            f"{self.base_url}/agent_prompt/get",
-            {"characterId": characterId},
+            "GET",
+            f"{self.base_url}/agent_prompt",
+            params=params,
         )
 
     def update_agent_prompt(self, characterId, update_fields):
         return self._make_request(
-            "POST",
-            f"{self.base_url}/agent_prompt/update",
+            "PUT",
+            f"{self.base_url}/agent_prompt",
             {"characterId": characterId, "update_fields": update_fields},
         )
 
     def delete_agent_prompt(self, characterId):
+        params = {"characterId": characterId}
+        return self._make_request(
+            "DELETE",
+            f"{self.base_url}/agent_prompt",
+            params=params,
+        )
+
+    # Conversation Prompt
+    def store_conversation_prompt(
+        self,
+        characterId,
+        topic_requirements=None,
+        relation=None,
+        emotion=None,
+        personality=None,
+        habits_and_preferences=None,
+    ):
         return self._make_request(
             "POST",
-            f"{self.base_url}/agent_prompt/delete",
-            {"characterId": characterId},
+            f"{self.base_url}/conversation_prompt",
+            {
+                "characterId": characterId,
+                "topic_requirements": topic_requirements,
+                "relation": relation,
+                "emotion": emotion,
+                "personality": personality,
+                "habits_and_preferences": habits_and_preferences,
+            },
+        )
+
+    def get_conversation_prompt(self, characterId):
+        params = {"characterId": characterId}
+        return self._make_request(
+            "GET",
+            f"{self.base_url}/conversation_prompt",
+            params=params,
+        )
+
+    def update_conversation_prompt(self, characterId, update_fields):
+        return self._make_request(
+            "PUT",
+            f"{self.base_url}/conversation_prompt",
+            {"characterId": characterId, "update_fields": update_fields},
+        )
+
+    def delete_conversation_prompt(self, characterId):
+        params = {"characterId": characterId}
+        return self._make_request(
+            "DELETE",
+            f"{self.base_url}/conversation_prompt",
+            params=params,
         )
 
 
 if __name__ == "__main__":
     client = APIClient(base_url="http://localhost:8085")
-
-    # # 测试存储和检索 character
-    # character_data = {
-    #     "characterId": 102,
-    #     "characterName": "Diana",
-    #     "gender": "Female",
-    #     "slogan": "Swift and silent.",
-    #     "description": "An agile ranger with unparalleled archery skills.",
-    #     "role": "Ranger",
-    #     "task": "Scout and protect the realm",
-    # }
-    # print("Storing character:", client.store_character(**character_data))
-    # # Storing character: {'code': 1, 'message': 'character stored successfully.', 'data': '67222a374106d9bcf5176448'}
-    # print("Storing character:", client.store_character(**character_data))
-    # # 若characterId已存在
-    # # Storing character: {'code': 2, 'message': 'Character with characterId 102 already exists.', 'data': None}
-
-    # print("Retrieving character:", client.get_character())
-
-    # print("Retrieving character:", client.get_character(102))
-    # # Retrieving character: {'code': 1, 'message': 'characters retrieved successfully.', 'data': [{'characterId': 102, 'characterName': 'Diana', 'gender': 'Female', 'slogan': 'Swift and silent.', 'description': 'An agile ranger with unparalleled archery skills.', 'role': 'Ranger', 'task': 'Scout and protect the realm', 'created_at': '2024-10-30 20:23:39', 'full_profile': 'Diana; Female; Swift and silent.; An agile ranger with unparalleled archery skills.; Ranger; Scout and protect the realm'}]}
-    # print(
-    #     "Retrieving character RAG:",
-    #     client.get_character_rag(characterId=1, topic="探索森林", k=3),
-    # )
-    # # Retrieving character RAG: {'code': 1, 'message': 'character RAG results retrieved successfully.', 'data': [{'characterId': 7, 'characterName': 'Grace', 'score': 0.48345035314559937}, {'characterId': 102, 'characterName': 'Diana', 'score': 0.4771277904510498}, {'characterId': 9, 'characterName': 'Ivy', 'score': 0.4691719114780426}]}
-
-    # # 测试获取角色RAG
-    # character_list = [2, 3, 4]  # 假设这是您要查询的角色ID列表
-    # print(
-    #     "Retrieving character RAG in list:",
-    #     client.get_character_rag_in_list(
-    #         characterId=1, characterList=character_list, topic="探索森林", k=2
-    #     ),
-    # )
-    # # Retrieving character RAG in list: {'code': 1, 'message': 'Character RAG in list results retrieved successfully.', 'data': [{'characterId': 3, 'characterName': 'Charlie', 'score': 0.45353084802627563}, {'characterId': 4, 'characterName': 'David', 'score': 0.43324798345565796}]}
-
-    # # 测试更新 character
-    # character_update_data = {"slogan": "Silent but deadly."}
-    # print("Updating character:", client.update_character(102, character_update_data))
-    # # Updating character: {'code': 1, 'message': 'character updated successfully.', 'data': 1}
-    # print("Retrieving Updated character:", client.get_character(102))
-    # # Retrieving Updated character: {'code': 1, 'message': 'characters retrieved successfully.', 'data': [{'characterId': 102, 'characterName': 'Diana', 'gender': 'Female', 'slogan': 'Silent but deadly.', 'description': 'An agile ranger with unparalleled archery skills.', 'role': 'Ranger', 'task': 'Scout and protect the realm', 'created_at': '2024-10-30 20:24:16', 'full_profile': 'Diana; Female; Silent but deadly.; An agile ranger with unparalleled archery skills.; Ranger; Scout and protect the realm'}]}
-
-    # # 测试存储和检索对话
-    # conversation_data = {
-    #     "characterIds": [2, 3],
-    #     "dialogue": [
-    #         {"Bob": "XXXX"},
-    #         {"sdjf": "HJFHFDKSD"},
-    #         {"Bob": "JFLKFJDL"},
-    #     ],
-    #     "start_day": 2,  # 更新字段
-    #     "start_time": "9:00:00",  # 更新字段
-    # }
-    # print("Storing Conversation:", client.store_conversation(**conversation_data))
-    # # Storing Conversation: {'code': 1, 'message': 'Conversation stored successfully.', 'data': '672225794a336f6004966cd2'}
-
-    # print(
-    #     "Retrieving Conversation by ID, Day, and Time:",
-    #     client.get_conversation_by_id_day_time(
-    #         characterIds_list=[2, 1], day=2, time="9:00:00"
-    #     ),
-    # )
-    # # Retrieving Conversation by ID, Day, and Time: {'code': 1, 'message': 'Conversation retrieved successfully.', 'data': [{'characterIds': [2, 1], 'start_day': 2, 'start_time': '9:00:00', 'dialogue': [{'Bob': 'Hello Alice! Why do you look so tired?'}, {'Alice': "Hello Bob! I'm preparing for the final exams. I've been staying up late for days."}, {'Bob': 'Although final exams are very important, you still need to have enough sleep.'}], 'created_at': '2024-11-07 19:02:50'}]}
-
-    # print(
-    #     "Retrieving Conversations by ID and Day:",
-    #     client.get_conversations_by_id_and_day(characterId=2, day=2),
-    # )
-    # # Retrieving Conversations by ID and Day: {'code': 1, 'message': 'Conversations retrieved successfully.', 'data': [{'characterIds': [2, 3], 'start_day': 2, 'start_time': '9:00:00', 'dialogue': [{'Bob': 'XXXX'}, {'sdjf': 'HJFHFDKSD'}, {'Bob': 'JFLKFJDL'}], 'created_at': '2024-11-07 19:05:10'}, {'characterIds': [2, 1], 'start_day': 2, 'start_time': '9:00:00', 'dialogue': [{'Bob': 'Hello Alice! Why do you look so tired?'}, {'Alice': "Hello Bob! I'm preparing for the final exams. I've been staying up late for days."}, {'Bob': 'Although final exams are very important, you still need to have enough sleep.'}], 'created_at': '2024-11-07 19:02:50'}]}
-
-    # print(
-    #     "Retrieving Conversation:",
-    #     client.get_conversations_with_characterIds([2, 1], k=1),
-    # )
-    # # Retrieving Conversation: {'code': 1, 'message': 'Conversations retrieved successfully.', 'data': [{'characterIds': [2, 1], 'start_day': 2, 'start_time': '9:00:00', 'dialogue': [{'Bob': 'Hello Alice! Why do you look so tired?'}, {'Alice': "Hello Bob! I'm preparing for the final exams. I've been staying up late for days."}, {'Bob': 'Although final exams are very important, you still need to have enough sleep.'}], 'created_at': '2024-11-07 19:02:50'}]}
-
-    # print(
-    #     "Retrieving Conversation:",
-    #     client.get_conversations_containing_characterId(2, k=1),
-    # )
-    # # Retrieving Conversation: {'code': 1, 'message': 'Conversations retrieved successfully.', 'data': [{'characterIds': [2, 1], 'start_day': 2, 'start_time': '9:00:00', 'dialogue': [{'Bob': 'Hello Alice! Why do you look so tired?'}, {'Alice': "Hello Bob! I'm preparing for the final exams. I've been staying up late for days."}, {'Bob': 'Although final exams are very important, you still need to have enough sleep.'}], 'created_at': '2024-11-07 19:02:50'}]}
-
-    # # 测试存储和检索印象
-    # impression_data = {"from_id": 1, "to_id": 2, "impression": "lalalala"}
-    # print("Storing Impression:", client.store_impression(**impression_data))
-    # # Storing Impression: {'code': 1, 'message': 'Impression stored successfully.', 'data': '672225814a336f6004966cd3'}
-
-    # print("Retrieving Impression:", client.get_impression(1, 2, k=1))
-    # # Retrieving Impression: {'code': 1, 'message': 'Impressions retrieved successfully.', 'data': ['lalalala']}
-    # # 测试存储和检索行动
-    # action_data = {
-    #     "characterId": 30021,
-    #     "action": "nav",
-    #     "result": {
-    #         "characterId": 1,
-    #         "messageCode": 3,
-    #         "messageName": "actionresult",
-    #         "data": {
-    #             "actionName": "nav",
-    #             "actionCode": 1,
-    #             "result": True,
-    #             "gameTime": "12:23:10",
-    #             "msg": "Navigated to None navigated to None successfully.",
-    #         },
-    #     },
-    #     "description": "I successfully navigated to the destination.",
-    # }
-    # print("Storing Action:", client.store_action(**action_data))
-    # # Storing Action: {'code': 1, 'message': 'Action stored successfully.', 'data': '672225854a336f6004966cd4'}
-
-    # print("Retrieving Action:", client.get_action(characterId=30021, action="nav", k=1))
-    # # Retrieving Action: {'code': 1, 'message': 'Actions retrieved successfully.', 'data': [{'characterId': 30021, 'action': 'nav', 'result': {'characterId': 1, 'messageCode': 3, 'messageName': 'actionresult', 'data': {'actionName': 'nav', 'actionCode': 1, 'result': True, 'gameTime': '12:23:10', 'msg': 'Navigated to None navigated to None successfully.'}}, 'description': 'I successfully navigated to the destination.', 'created_at': '2024-10-30 20:24:37'}]}
-
-    # # 测试存储和检索失败描述
-    # descriptor_data = {
-    #     "failed_action": "Find the hidden path",
-    #     "action_id": 6,
-    #     "characterId": 102,
-    #     "reflection": "Should have looked at the map first.",
-    # }
-    # print("Storing Descriptor:", client.store_descriptor(**descriptor_data))
-    # # Storing Descriptor: {'code': 1, 'message': 'Descriptor stored successfully.', 'data': '6722258a4a336f6004966cd5'}
-
-    # print("Retrieving Descriptor:", client.get_descriptor(action_id=6, characterId=102))
-    # # Retrieving Descriptor: {'code': 1, 'message': 'Descriptors retrieved successfully.', 'data': [{'failed_action': 'Find the hidden path', 'action_id': 6, 'characterId': 102, 'reflection': 'Should have looked at the map first.'}]}
-
-    # # 测试存储和检索每日目标
-    # daily_objective_data = {
-    #     "characterId": 102,
-    #     "objectives": ["Scout the northern woods", "Gather herbs", "Set up camp"],
-    # }
-    # print(
-    #     "Storing Daily Objective:", client.store_daily_objective(**daily_objective_data)
-    # )
-    # # Storing Daily Objective: {'code': 1, 'message': 'Daily objectives stored successfully.', 'data': '6722258f4a336f6004966cd6'}
-
-    # print(
-    #     "Retrieving Daily Objectives:",
-    #     client.get_daily_objectives(characterId=102, k=1),
-    # )
-    # # Retrieving Daily Objectives: {'code': 1, 'message': 'Daily objectives retrieved successfully.', 'data': [['Scout the northern woods', 'Gather herbs', 'Set up camp']]}
-
-    # # 测试存储和检索计划
-    # plan_data = {
-    #     "characterId": 102,
-    #     "detailed_plan": "1. Scout woods at dawn. 2. Return to camp by dusk.",
-    # }
-    # print("Storing Plan:", client.store_plan(**plan_data))
-    # # Storing Plan: {'code': 1, 'message': 'Plan stored successfully.', 'data': '672225944a336f6004966cd7'}
-
-    # print("Retrieving Plans:", client.get_plans(characterId=102, k=1))
-    # # Retrieving Plans: {'code': 1, 'message': 'Plans retrieved successfully.', 'data': ['1. Scout woods at dawn. 2. Return to camp by dusk.']}
-
-    # # 测试存储和检索元序列
-    # meta_seq_data = {
-    #     "characterId": 102,
-    #     "meta_sequence": ["scout_area()", "gather_resources()", "set_up_camp()"],
-    # }
-    # print("Storing Meta Sequence:", client.store_meta_seq(**meta_seq_data))
-    # # Storing Meta Sequence: {'code': 1, 'message': 'Meta sequence stored successfully.', 'data': '672225984a336f6004966cd8'}
-
-    # print("Retrieving Meta Sequences:", client.get_meta_sequences(characterId=102, k=1))
-    # # Retrieving Meta Sequences: {'code': 1, 'message': 'Meta sequences retrieved successfully.', 'data': [['scout_area()', 'gather_resources()', 'set_up_camp()']]}
-
-    # # 更新元序列
-    # update_meta_seq_data = {
-    #     "characterId": 102,
-    #     "meta_sequence": [
-    #         "new_scout_area()",
-    #         "new_gather_resources()",
-    #         "new_set_up_camp()",
-    #     ],
-    # }
-    # print("Updating Meta Sequence:", client.update_meta_seq(**update_meta_seq_data))
-    # # Updating Meta Sequence: {'code': 1, 'message': 'Meta sequence updated successfully.', 'data': 1}
-
-    # print(
-    #     "Retrieving Updated Meta Sequences:",
-    #     client.get_meta_sequences(characterId=102, k=1),
-    # )
-    # # Retrieving Updated Meta Sequences: {'code': 1, 'message': 'Meta sequences retrieved successfully.', 'data': [['new_scout_area()', 'new_gather_resources()', 'new_set_up_camp()']]}
-
-    # # 测试存储和检索工具
-    # tool_data = {"API": "find-path", "text": "Pathfinding tool", "code": "find_path()"}
-    # print("Storing Tool:", client.store_tool(**tool_data))
-    # # Storing Tool: {'code': 1, 'message': 'Tool stored successfully.', 'data': '672225a54a336f6004966cd9'}
-
-    # print("Retrieving Tools:", client.get_tools(API="find-path"))
-    # # Retrieving Tools: {'code': 1, 'message': 'Tools retrieved successfully.', 'data': [{'API': 'find-path', 'text': 'Pathfinding tool', 'code': 'find_path()'}]}
-
-    # # 测试存储和检索日记
-    # diary_data = {
-    #     "characterId": 102,
-    #     "diary_content": "Today, I explored the forest and found new paths.",
-    # }
-    # print("Storing Diary:", client.store_diary(**diary_data))
-    # # Storing Diary: {'code': 1, 'message': 'Diary entry stored successfully.', 'data': '672225a94a336f6004966cda'}
-
-    # print("Retrieving Diaries:", client.get_diaries(characterId=102, k=0))
-    # # Retrieving Diaries: {'code': 1, 'message': 'Diaries retrieved successfully.', 'data': ['Today, I explored the forest and found new paths.']}
-
-    # # 使用向量搜索
-    # vector_search_data = {
-    #     "query_text": "学习",
-    #     "fields_to_return": ["characterId", "characterName"],
-    #     "collection_name": "agent_profile",
-    #     "k": 5,
-    # }
-    # print("Vector Search:", client.vector_search(**vector_search_data))
-    # # Vector Search: {'code': 1, 'message': 'Vector search completed successfully.', 'data': [{'characterId': 1, 'characterName': 'Alice', 'score': 0.4139921963214874}]}
-
-    # # 测试插入数据
-    # document = {
-    #     "characterId": 200,
-    #     "characterName": "Test User",
-    #     "gender": "Non-binary",
-    #     "slogan": "Testing insert_data",
-    #     "description": "This is a test character inserted via insert_data.",
-    #     "role": "Tester",
-    #     "task": "Testing API endpoints",
-    # }
-    # print("Inserting Data:", client.insert_data("character", document))
-    # # Inserting Data: {'code': 1, 'message': 'Document inserted successfully.', 'data': '672225b84a336f6004966cdc'}
-
-    # print("Finding Data:", client.find_data("character", {"characterId": 200}))
-    # # Finding Data: {'code': 1, 'message': 'Documents retrieved successfully.', 'data': [{'characterId': 200, 'characterName': 'Test User', 'gender': 'Non-binary', 'slogan': 'Testing insert_data', 'description': 'This is a test character inserted via insert_data.', 'role': 'Tester', 'task': 'Testing API endpoints'}]}
-
-    # # 测试更新数据
-    # update_query = {"characterId": 200}
-    # update_fields = {"$set": {"characterName": "Updated Test User"}}
-    # print(
-    #     "Updating Data:", client.update_data("character", update_query, update_fields)
-    # )
-    # # Updating Data: {'code': 1, 'message': 'Documents updated successfully.', 'data': 1}
-
-    # print("Finding Updated Data:", client.find_data("character", {"characterId": 200}))
-    # # Finding Updated Data: {'code': 1, 'message': 'Documents retrieved successfully.', 'data': [{'characterId': 200, 'characterName': 'Updated Test User', 'gender': 'Non-binary', 'slogan': 'Testing insert_data', 'description': 'This is a test character inserted via insert_data.', 'role': 'Tester', 'task': 'Testing API endpoints'}]}
-
-    # # 测试删除数据
-    # print("Deleting Data:", client.delete_data("character", {"characterId": 200}))
-    # # Deleting Data: {'code': 1, 'message': 'Document deleted successfully.', 'data': 1}
-
-    # print("Finding Deleted Data:", client.find_data("character", {"characterId": 200}))
-    # # Finding Deleted Data: {'code': 0, 'message': 'No documents found.', 'data': None}
-
-    # # 测试获取包含特定 character ID 的对话
-    # print(
-    #     "Retrieving Conversations Containing character ID 1:",
-    #     client.get_conversations_containing_characterId(1),
-    # )
-    # # Retrieving Conversations Containing character ID 1: {'code': 1, 'message': 'Conversations retrieved successfully.', 'data': [{'characterIds': [1, 5], 'dialogue': 'Alice: Hi Eva! You always seem so healthy and energetic. What’s your secret? ...', 'created_at': '2024-10-30 20:24:23'}]}
-
-    # # 存储一些测试数据
-    # print("存储测试数据:")
-    # print(client.store_cv(jobid=3, characterId=201, CV_content="CV内容5", week=1))
-    # print(client.store_cv(jobid=3, characterId=202, CV_content="CV内容6", week=2))
-    # print(client.store_cv(jobid=4, characterId=201, CV_content="CV内容7", week=1))
-    # print(client.store_cv(jobid=4, characterId=203, CV_content="CV内容8", week=3))
-
-    # # 更新选举状态
-    # print("\n更新选举状态:")
-    # print(
-    #     client.update_election_result(
-    #         characterId=201, election_result="succeeded", jobid=3, week=1
-    #     )
-    # )
-    # print(
-    #     client.update_election_result(
-    #         characterId=202, election_result="failed", jobid=3
-    #     )
-    # )
-    # print(
-    #     client.update_election_result(
-    #         characterId=203, election_result="succeeded", jobid=4
-    #     )
-    # )
-
-    # # 测试 get_cv 方法
-    # print("\n测试 get_cv 方法:")
-
-    # # 查询所有最新周的数据
-    # print("\n查询所有的数据:")
-    # print(client.get_cv())
-
-    # # 查询特定 jobid 的所有最新周的数据
-    # print("\n查询 jobid=3 的所有的数据:")
-    # print(client.get_cv(jobid=3))
-
-    # # 查询特定 characterId 的所有最新周的数据
-    # print("\n查询 characterId=201 的所有的数据:")
-    # print(client.get_cv(characterId=201))
-
-    # # 查询特定 week 的数据
-    # print("\n查询 week=1 的数据:")
-    # print(client.get_cv(week=1))
-
-    # # 查询特定选举状态的数据
-    # print("\n查询选举状态为 'succeeded' 的数据:")
-    # print(client.get_cv(election_result="succeeded"))
-
-    # # 查询特定 jobid 和选举状态的数据
-    # print("\n查询 jobid=3 且选举状态为 'failed' 的数据:")
-    # print(client.get_cv(jobid=3, election_result="failed"))
-
-    # # 查询特定 characterId 和 week 的数据
-    # print("\n查询 characterId=201 且 week=1 的数据:")
-    # print(client.get_cv(characterId=201, week=1))
-
-    # # Testing storing and retrieving encounter count
-    # encounter_data = {"from_id": 1, "to_id": 2, "count": 1}
-    # print("Storing Encounter Count:", client.store_encounter_count(**encounter_data))
-    # # Storing Encounter Count: {'code': 1, 'message': 'Encounter count stored successfully.', 'data': '672b2eb55a298eaf4d03e7c6'}
-
-    # print("Retrieving Encounter Count:", client.get_encounter_count(1, 2))
-    # # Retrieving Encounter Count: {'code': 1, 'message': 'Encounter count retrieved successfully.', 'data': [{'from_id': 1, 'to_id': 2, 'count': 1, 'created_at': '2024-11-06 16:54:13', 'updated_at': '2024-11-06 16:54:13'}]}
-
-    # # Incrementing encounter count
-    # print("Incrementing Encounter Count:", client.increment_encounter_count(2, 2))
-    # # Incrementing Encounter Count: {'code': 1, 'message': 'Encounter count incremented successfully.', 'data': 1}
-
-    # # Updating encounter count to a specific value
-    # print("Updating Encounter Count:", client.update_encounter_count(1, 2, 5))
-    # # Updating Encounter Count: {'code': 1, 'message': 'Encounter count updated successfully.', 'data': 1}
-
-    # print(
-    #     "Retrieving Encounters by From ID:",
-    #     client.get_encounters_by_from_id(1, k=3),
-    # )
-    # # Retrieving Encounters by From ID: {'code': 1, 'message': 'Encounters retrieved successfully.', 'data': [{'from_id': 1, 'to_id': 5, 'count': 1, 'created_at': '2024-11-06 16:56:16', 'updated_at': '2024-11-06 16:56:16'}, {'from_id': 1, 'to_id': 2, 'count': 5, 'created_at': '2024-11-06 16:54:13', 'updated_at': '2024-11-06 16:56:27'}]}
-
-    # # 测试存储和检索好感度
-    # intimacy_data = {"from_id": 1, "to_id": 3, "intimacy_level": 55}
-    # print("Storing Intimacy:", client.store_intimacy(**intimacy_data))
-    # # Storing Intimacy: {'code': 1, 'message': 'Intimacy level stored successfully.', 'data': 1}
-
-    # # 测试 get_intimacy 方法
-    # print("查询 from_id=10 和 to_id=20 的亲密度:")
-    # print(client.get_intimacy(from_id=1, to_id=3))
-    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
-
-    # print("\n查询 from_id=10 的所有记录:")
-    # print(client.get_intimacy(from_id=10))
-    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
-
-    # print("\n查询 to_id=20 的所有记录:")
-    # print(client.get_intimacy(to_id=20))
-    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
-
-    # print("\n查询 intimacy_level 在 50 到 80 之间的记录:")
-    # print(client.get_intimacy(intimacy_level_min=50, intimacy_level_max=80))
-    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 20, 'to_id': 10, 'intimacy_level': 60, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 30, 'to_id': 10, 'intimacy_level': 80, 'created_at': '2024-11-13 21:49:22', 'updated_at': '2024-11-13 21:49:22'}, {'from_id': 10, 'to_id': 30, 'intimacy_level': 50, 'created_at': '2024-11-13 21:49:21', 'updated_at': '2024-11-13 21:49:21'}, {'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
-
-    # print("\n查询 from_id=10 且 intimacy_level 在 60 到 80 之间的记录:")
-    # print(client.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80))
-    # # {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 10, 'to_id': 20, 'intimacy_level': 75, 'created_at': '2024-11-13 21:49:18', 'updated_at': '2024-11-13 21:49:18'}]}
-
-    # update_intimacy_data = {"from_id": 1, "to_id": 3, "new_intimacy_level": 77}
-    # print("Updating Intimacy:", client.update_intimacy(**update_intimacy_data))
-    # # Updating Intimacy: {'code': 1, 'message': 'Intimacy level updated successfully.', 'data': 1}
-
-    # # 测试将所有好感度等级下降 1
-    # print("Decreasing All Intimacy Levels:", client.decrease_all_intimacy_levels())
-    # # Decreasing All Intimacy Levels: {'code': 1, 'message': 'All intimacy levels decreased by 1 successfully.', 'data': 'Number of updated documents'}
-
-    # # 再次检索，验证好感度下降
-    # print("Retrieving Intimacy after Decrease:", client.get_intimacy(1, 3))
-    # # Retrieving Intimacy after Decrease: {'code': 1, 'message': 'Intimacy level retrieved successfully.', 'data': [{'from_id': 1, 'to_id': 3, 'intimacy_level': 76, 'created_at': '2024-11-01 02:57:19', 'updated_at': '2024-11-01 03:09:37'}]}
-
-    # # 测试存储知识
-    # knowledge_data = {
-    #     "characterId": 101,
-    #     "day": 1,
-    #     "environment_information": "Sunny day in the forest.",
-    #     "personal_information": "Learned new archery skills.",
-    # }
-    # print("Storing Knowledge:", client.store_knowledge(**knowledge_data))
-    # # 预期输出: {'code': 1, 'message': 'Knowledge stored successfully.', 'data': 'some_id'}
-
-    # # 测试获取知识
-    # print("Retrieving Knowledge:", client.get_knowledge(characterId=101, day=1))
-    # # 预期输出: {'code': 1, 'message': 'Knowledge retrieved successfully.', 'data': [{'characterId': 101, 'day': 1, 'environment_information': 'Sunny day in the forest.', 'personal_information': 'Learned new archery skills.', 'created_at': 'some_date'}]}
-
-    # # 测试获取最新知识
-    # print(
-    #     "Retrieving Latest Knowledge:",
-    #     client.get_latest_knowledge(characterId=101, k=1),
-    # )
-    # # 预期输出: {'code': 1, 'message': 'Latest knowledge retrieved successfully.', 'data': [{'characterId': 101, 'day': 1, 'environment_information': 'Sunny day in the forest.', 'personal_information': 'Learned new archery skills.', 'created_at': 'some_date'}]}
-
-    # # 测试更新知识
-    # updated_knowledge_data = {
-    #     "characterId": 101,
-    #     "day": 1,
-    #     "environment_information": "Cloudy day in the forest.",
-    #     "personal_information": "Practiced archery with new techniques.",
-    # }
-    # print("Updating Knowledge:", client.update_knowledge(**updated_knowledge_data))
-    # # Updating Knowledge: {'code': 1, 'message': 'Knowledge updated successfully.', 'data': 1}
-
-    # # 再次检索以验证更新
-    # print("Retrieving Updated Knowledge:", client.get_knowledge(characterId=101, day=1))
-    # # Retrieving Updated Knowledge: {'code': 1, 'message': 'Knowledge retrieved successfully.', 'data': [{'characterId': 101, 'day': 1, 'environment_information': 'Cloudy day in the forest.', 'personal_information': 'Practiced archery with new techniques.', 'created_at': '2024-11-07 17:19:11'}]}
-
-    # # 测试存储角色弧光
-    # character_id = 2
-    # category_data = [
-    #     {"item": "skill", "origin_value": "beginner"},
-    #     {"item": "emotion", "origin_value": "neutral"},
-    # ]
-    # print(
-    #     "Storing Character Arc:",
-    #     client.store_character_arc(character_id, category_data),
-    # )
-    # # Storing Character Arc: {'code': 1, 'message': 'Character arc stored successfully.', 'data': '672d2c5357974f093a92fd06'}
-
-    # # 测试存储角色弧光变化
-    # print(
-    #     "Storing Character Arc Change 1:",
-    #     client.store_character_arc_change(
-    #         characterId=character_id,
-    #         item="skill",
-    #         cause="参加职业培训",
-    #         context="在朋友的建议下参加了当地的职业技能培训班",
-    #         change="获得新技能",
-    #     ),
-    # )
-    # # Storing Character Arc Change 1: {'code': 1, 'message': 'Character arc change stored successfully.', 'data': '672d2c5757974f093a92fd07'}
-
-    # print(
-    #     "Storing Character Arc Change 2:",
-    #     client.store_character_arc_change(
-    #         characterId=character_id,
-    #         item="skill",
-    #         cause="完成高级课程",
-    #         context="通过在线学习平台完成了高级课程",
-    #         change="技能提升",
-    #     ),
-    # )
-
-    # print(
-    #     "Storing Character Arc Change 3:",
-    #     client.store_character_arc_change(
-    #         characterId=character_id,
-    #         item="emotion",
-    #         cause="收到好消息",
-    #         context="得知自己通过了考试",
-    #         change="略微积极",
-    #     ),
-    # )
-
-    # # 测试获取角色弧光
-    # print("Retrieving Character Arc:", client.get_character_arc(character_id))
-    # # Retrieving Character Arc: {'code': 1, 'message': 'Character arc retrieved successfully.', 'data': [{'characterId': 2, 'category': [{'item': 'skill', 'origin_value': 'beginner'}, {'item': 'emotion', 'origin_value': 'neutral'}], 'created_at': '2024-11-08 05:08:35'}]}
-
-    # # 测试获取角色弧光及其变化过程
-    # k = 2  # 选择变化过程的数量
-    # print(
-    #     "Retrieving Character Arc with Changes:",
-    #     client.get_character_arc_with_changes(character_id, k),
-    # )
-    # # Retrieving Character Arc with Changes: {'code': 1, 'message': 'Character arc with changes retrieved successfully.', 'data': {'characterId': 2, 'category': [{'item': 'skill', 'origin_value': 'beginner', 'change_process': [{'cause': '参加职业培训', 'context': '在朋友的建议下参加了当地的职业技能培训班', 'change': '获得新技能', 'created_at': '2024-11-08 05:08:39'}, {'cause': '完成高级课程', 'context': '通过在线学习平台完成了高级课程', 'change': '技能提升', 'created_at': '2024-11-08 05:08:41'}]}, {'item': 'emotion', 'origin_value': 'neutral', 'change_process': [{'cause': '收到好消息', 'context': '得知自己通过了考试', 'change': '略微积极', 'created_at': '2024-11-08 05:08:43'}]}]}}
-
-    # # 测试更新角色弧光
-    # updated_category_data = [
-    #     {"item": "skill", "origin_value": "intermediate"},
-    #     {"item": "emotion", "origin_value": "happy"},
-    # ]
-    # print(
-    #     "Updating Character Arc:",
-    #     client.update_character_arc(character_id, updated_category_data),
-    # )
-    # # Updating Character Arc: {'code': 1, 'message': 'Character arc updated successfully.', 'data': 1}
-
-    # # 测试获取样本数据的方法
-    # print("Testing get_sample with no specific item:")
-    # print(client.get_sample())
-
-    # print("Testing get_sample with 'personality' item:")
-    # print(client.get_sample(item_name="personality"))
-
-    # # 测试存储和检索 character
-    # character_data = {
-    #     "characterId": 887,
-    #     "characterName": "ZZ",
-    #     "gender": "Female",
-    #     "spriteId": 5,
-    # }
-    # print("Storing character:", client.store_character(**character_data))
-    # # Storing character: {'code': 1, 'message': 'Character stored successfully.', 'data': '67503299d96ea15c878e7ab9'}
-
-    # print("Retrieving character:", client.get_character(886))
-    # # {'code': 1, 'message': 'Characters retrieved successfully.', 'data': [{'characterId': 886, 'characterName': 'ZZ', 'gender': 'Female', 'spriteId': 0, 'relationship': 'Subordinate', 'personality': 'Tough, Talkative, Smart, Breezy', 'long_term_goal': 'Become a celebrity in the game world, Create popular items or services, Become the most knowledgeable agent', 'short_term_goal': 'Buy a basic apartment, Interact with three players of different professions', 'language_style': 'antithetical, unprintable, indirect, polished', 'biography': 'Born into a family that values education, I have always enjoyed learning new knowledge. I dream of becoming a teacher or educational scholar.', 'created_at': '2024-12-04 19:45:15', 'updated_at': '2024-12-04 19:45:15', 'full_profile': 'ZZ; Female; Subordinate; Tough, Talkative, Smart, Breezy; Born into a family that values education, I have always enjoyed learning new knowledge. I dream of becoming a teacher or educational scholar.; Become a celebrity in the game world, Create popular items or services, Become the most knowledgeable agent; Buy a basic apartment, Interact with three players of different professions; antithetical, unprintable, indirect, polished'}]}
-
-    # 测试存储 agent prompt
-    agent_prompt_data = {
-        "characterId": 101,
-        "daily_goal": "sleep well",
-        "refer_to_previous": "True",
-        "life_style": "Busy",
-        "daily_objective_ar": "",
-        "task_priority": [],
-        "max_actions": 10,
-        "meta_seq_ar": "",
-        "replan_time_limit": 1,
-        "meta_seq_adjuster_ar": "",
-        "focus_topic": [],
-        "depth_of_reflection": "Deep",
-        "reflection_ar": "",
-        "level_of_detail": "Shallow",
-        "tone_and_style": "Gentle",
-    }
-    print("Storing Agent Prompt:", client.store_agent_prompt(**agent_prompt_data))
-    # {'code': 1, 'message': 'Agent prompt stored successfully.', 'data': '6751da0a71394602eb0c3f39'}
-    # {'code': 2, 'message': 'Agent prompt for characterId 101 already exists.', 'data': None}
-
-    # 测试检索 agent prompt
-    print("Retrieving Agent Prompt:", client.get_agent_prompt(characterId=101))
-    # {'code': 1, 'message': 'Agent prompt retrieved successfully.', 'data': [{'characterId': 101, 'daily_goal': 'sleep well', 'refer_to_previous': True, 'life_style': 'Busy', 'daily_objective_ar': '', 'task_priority': [], 'max_actions': 10, 'meta_seq_ar': '', 'replan_time_limit': 1, 'meta_seq_adjuster_ar': '', 'focus_topic': [], 'depth_of_reflection': 'Deep', 'reflection_ar': '', 'level_of_detail': 'Shallow', 'tone_and_style': 'Gentle', 'created_at': '2024-12-06 00:51:22', 'updated_at': '2024-12-06 00:51:22'}]}
-
-    # 测试更新 agent prompt
-    update_fields = {"daily_goal": "Complete the updated mission"}
-    print("Updating Agent Prompt:", client.update_agent_prompt(101, update_fields))
-    # {'code': 1, 'message': 'Agent prompt updated successfully.', 'data': 1}
-
-    # 测试删除 agent prompt
-    print("Deleting Agent Prompt:", client.delete_agent_prompt(101))
-    # {'code': 1, 'message': 'Agent prompt deleted successfully.', 'data': 1}
+    # 在此进行测试

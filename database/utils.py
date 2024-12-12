@@ -102,7 +102,7 @@ def embed_text(text, model_name, base_url, api_key):
             embedding = model.encode(text)
             logging.debug("Generated embedding using SentenceTransformer.")
             return embedding.tolist()
-    except openai.error.OpenAIError as e:
+    except openai.OpenAIError as e:
         logging.error(f"OpenAI API error: {e}")
         raise
     except Exception as e:

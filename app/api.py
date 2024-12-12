@@ -10,7 +10,6 @@ import sys
 import os
 import time
 from enum import Enum
-
 from pymongo.errors import PyMongoError, DuplicateKeyError
 
 # Ensure the parent directory is in the Python path for module imports
@@ -18,11 +17,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database.mongo_utils import MongoDBUtils
 from database.domain_specific_queries import DomainSpecificQueries
+from fastapi.middleware.cors import CORSMiddleware
 
-# Get project root directory
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Create logs directory in project root
 log_directory = os.path.join(project_root, "logs")
 os.makedirs(log_directory, exist_ok=True)
 
@@ -37,15 +34,28 @@ logging.basicConfig(
 
 app = FastAPI()
 
+# 配置允许跨域的源
+origins = [
+    "https://bio3-roan.vercel.app",  # 允许的源，可以添加多个
+    "*",  # 如果需要允许所有来源
+]
 
-# Define the standard response model
+# 添加跨域中间件
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # 允许的 HTTP 方法
+    allow_headers=["*"],  # 允许的 HTTP 头部
+)
+
+
 class StandardResponse(BaseModel):
     code: int
     message: str
     data: Optional[Any] = None
 
 
-# Utility functions for standardized responses
 def success_response(data: Any, message: str = "Operation successful.") -> Dict:
     return {"code": 1, "message": message, "data": data}
 
@@ -54,17 +64,15 @@ def failure_response(message: str, data: Any = None) -> Dict:
     return {"code": 0, "message": message, "data": data}
 
 
-# Initialize the database utility classes
 try:
     db_utils = MongoDBUtils()
-    domain_queries = DomainSpecificQueries(db_utils=db_utils)  # Pass db_utils here
+    domain_queries = DomainSpecificQueries(db_utils=db_utils)
     logging.info("Successfully initialized database utilities.")
 except Exception as e:
     logging.critical(f"Failed to initialize database utilities: {e}")
-    sys.exit(1)  # Exit the application if initialization fails
+    sys.exit(1)
 
 
-# Exception Handlers
 @app.exception_handler(PyMongoError)
 async def pymongo_exception_handler(request: Request, exc: PyMongoError):
     logging.error(f"PyMongoError: {exc}")
@@ -85,25 +93,24 @@ async def duplicate_key_exception_handler(request: Request, exc: DuplicateKeyErr
 @app.exception_handler(HTTPException)
 async def custom_http_exception_handler(request: Request, exc: HTTPException):
     logging.error(f"HTTPException: {exc.detail}")
-    # Map HTTP status codes to custom messages
     status_messages = {
         400: "Bad request. The server could not understand the request due to invalid syntax.",
         401: "Unauthorized access. Authentication is required and has failed or has not been provided.",
         403: "Forbidden. You do not have permission to access this resource.",
         404: "Resource not found. The requested resource could not be found on the server.",
-        405: "Method not allowed. The request method is not supported for the requested resource.",
-        409: "Conflict error. The request could not be completed due to a conflict with the current state of the resource.",
-        410: "Gone. The resource requested is no longer available and will not be available again.",
-        413: "Payload too large. The request is larger than the server is willing or able to process.",
-        415: "Unsupported media type. The request entity has a media type that the server or resource does not support.",
-        422: "Unprocessable entity. The request was well-formed but was unable to be followed due to semantic errors.",
-        429: "Too many requests. You have sent too many requests in a given amount of time.",
-        500: "Internal server error. The server encountered an unexpected condition that prevented it from fulfilling the request.",
-        501: "Not implemented. The server does not support the functionality required to fulfill the request.",
-        502: "Bad gateway. The server received an invalid response from the upstream server.",
-        503: "Service unavailable. The server is currently unable to handle the request due to temporary overload or maintenance.",
-        504: "Gateway timeout. The server did not receive a timely response from the upstream server.",
-        307: "Temporary redirect. The requested resource is temporarily available at a different URI.",
+        405: "Method not allowed.",
+        409: "Conflict error.",
+        410: "Gone.",
+        413: "Payload too large.",
+        415: "Unsupported media type.",
+        422: "Unprocessable entity.",
+        429: "Too many requests.",
+        500: "Internal server error.",
+        501: "Not implemented.",
+        502: "Bad gateway.",
+        503: "Service unavailable.",
+        504: "Gateway timeout.",
+        307: "Temporary redirect.",
     }
 
     message = status_messages.get(
@@ -113,10 +120,12 @@ async def custom_http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=200, content=failure_response(message=message))
 
 
+from fastapi.exceptions import RequestValidationError
+
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     errors = exc.errors()
-    # Extract field names and error messages
     error_details = []
     for error in errors:
         loc = " -> ".join([str(loc) for loc in error["loc"]])
@@ -142,7 +151,6 @@ from typing import Optional, List, Dict
 from pydantic import BaseModel
 
 
-# Define Pydantic models for request validation
 class InsertRequest(BaseModel):
     collection_name: str
     document: dict
@@ -207,11 +215,11 @@ class UpdateEncounterCountRequest(BaseModel):
 
 
 class IntimacyRequest(BaseModel):
-    from_id: Optional[int] = None  # 将 from_id 设置为可选
-    to_id: Optional[int] = None  # 将 to_id 设置为可选
-    intimacy_level_min: Optional[int] = None  # 新增字段，用于指定亲密度的最小值
-    intimacy_level_max: Optional[int] = None  # 新增字段，用于指定亲密度的最大值
-    have_conversation: Optional[bool] = False  # 新增字段，用于指定是否考虑对话记录
+    from_id: Optional[int] = None
+    to_id: Optional[int] = None
+    intimacy_level_min: Optional[int] = None
+    intimacy_level_max: Optional[int] = None
+    have_conversation: Optional[bool] = False
 
 
 class StoreIntimacyRequest(BaseModel):
@@ -239,12 +247,12 @@ class ConversationsContainingcharacterRequest(BaseModel):
 class StoreConversationRequest(BaseModel):
     characterIds: List[int]
     dialogue: List[Dict[str, str]]
-    start_day: int  # 新增字段
-    start_time: str  # 新增字段
+    start_day: int
+    start_time: str
 
 
 class GetConversationByIdDayTimeRequest(BaseModel):
-    characterIds_list: List[int]  # 更新为角色ID列表
+    characterIds_list: List[int]
     day: int
     time: str
 
@@ -270,15 +278,17 @@ class StoreCVRequest(BaseModel):
     jobid: int
     characterId: int
     CV_content: str
-    week: int  # 新增字段
-    election_result: Optional[str] = (
-        "not_yet"  # 选举状态, 可以为 'not_yet'（未进行选举）、'failed'（选举失败）、'succeeded'（选举成功），默认值为 "not_yet"
-    )
+    week: int
+    health: int  # 新增字段
+    studyxp: int  # 新增字段
+    date: int  # 新增字段
+    jobName: str  # 新增字段
+    election_status: Optional[str] = "not_yet"  # 更新字段名
 
 
 class UpdateElectionResultRequest(BaseModel):
     characterId: int
-    election_result: str
+    election_status: str
     jobid: Optional[int] = None
     week: Optional[int] = None
 
@@ -286,8 +296,8 @@ class UpdateElectionResultRequest(BaseModel):
 class GetCVRequest(BaseModel):
     jobid: Optional[int] = None
     characterId: Optional[int] = None
-    week: Optional[int] = None  # 新增字段，设置为可选
-    election_result: Optional[str] = None  # 新增字段，设置为可选
+    week: Optional[int] = None
+    election_status: Optional[str] = None
 
 
 class StoreActionRequest(BaseModel):
@@ -375,17 +385,6 @@ class UpdateKnowledgeRequest(BaseModel):
     personal_information: Optional[str] = None
 
 
-class StoreToolRequest(BaseModel):
-    API: str
-    text: str
-    code: str
-
-
-class GetToolsRequest(BaseModel):
-    API: Optional[str] = None
-    k: Optional[int] = 1
-
-
 class StoreDiaryRequest(BaseModel):
     characterId: int
     diary_content: str
@@ -421,7 +420,7 @@ class GetcharacterRequest(BaseModel):
 
 class CharacterRAGInListRequest(BaseModel):
     characterId: int
-    characterList: List[int]  # 角色ID列表
+    characterList: List[int]
     topic: str
     k: Optional[int] = 1
 
@@ -464,7 +463,6 @@ class GetCharacterArcChangesRequest(BaseModel):
     k: Optional[int] = 1
 
 
-# 定义一个枚举类来限制 item_name 的值
 class SampleItem(str, Enum):
     relationship = "relationship"
     personality = "personality"
@@ -509,39 +507,56 @@ class DeleteAgentPromptRequest(BaseModel):
     characterId: int
 
 
-# Utility function for retrying operations
+class StoreConversationPromptRequest(BaseModel):
+    characterId: int
+    topic_requirements: Optional[str] = None
+    relation: Optional[str] = None
+    emotion: Optional[str] = None
+    personality: Optional[str] = None
+    habits_and_preferences: Optional[str] = None
+
+
+class UpdateConversationPromptRequest(BaseModel):
+    characterId: int
+    update_fields: Dict[str, Optional[str]]
+
+
+class GetConversationPromptRequest(BaseModel):
+    characterId: int
+
+
+class DeleteConversationPromptRequest(BaseModel):
+    characterId: int
+
+
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
-    """Utility function to retry an operation, skipping retries for DuplicateKeyError."""
-    for attempt in range(1, retries + 1):
-        try:
-            return func(*args, **kwargs)
-        except DuplicateKeyError as e:
-            # If DuplicateKeyError occurs, do not retry
-            logging.info(f"Duplicate key error: {e}")
-            raise e  # Let the global handler catch it
-        except PyMongoError as e:
-            logging.error(f"PyMongoError on attempt {attempt}: {e}")
-            if attempt < retries:
-                logging.info(f"Retrying in {delay} seconds...")
-                time.sleep(delay)
-            else:
-                logging.critical(f"Operation failed after {retries} attempts.")
-                raise e  # Let the global handler catch it
-        except Exception as e:
-            logging.error(f"Unexpected error on attempt {attempt}: {e}")
-            if attempt < retries:
-                logging.info(f"Retrying in {delay} seconds...")
-                time.sleep(delay)
-            else:
-                logging.critical(
-                    f"Operation failed after {retries} attempts due to unexpected error."
-                )
-                raise e  # Let the global handler catch it
+    # for attempt in range(1, retries + 1):
+    #     try:
+    #         return func(*args, **kwargs)
+    #     except DuplicateKeyError as e:
+    #         logging.info(f"Duplicate key error: {e}")
+    #         raise e
+    #     except PyMongoError as e:
+    #         logging.error(f"PyMongoError on attempt {attempt}: {e}")
+    #         if attempt < retries:
+    #             logging.info(f"Retrying in {delay} seconds...")
+    #             time.sleep(delay)
+    #         else:
+    #             logging.critical(f"Operation failed after {retries} attempts.")
+    #             raise e
+    #     except Exception as e:
+    #         logging.error(f"Unexpected error on attempt {attempt}: {e}")
+    #         if attempt < retries:
+    #             logging.info(f"Retrying in {delay} seconds...")
+    #             time.sleep(delay)
+    #         else:
+    #             logging.critical(
+    #                 f"Operation failed after {retries} attempts due to unexpected error."
+    #             )
+    #             raise e
+    return func(*args, **kwargs)
 
 
-# Define APIRouters for categorization
-
-# CRUD Operations Router
 crud_router = APIRouter(prefix="/crud", tags=["CRUD Operations"])
 
 
@@ -562,7 +577,7 @@ def insert_data(request: InsertRequest):
         raise HTTPException(status_code=500, detail="Failed to insert document.")
 
 
-@crud_router.post("/update", response_model=StandardResponse)
+@crud_router.put("/update", response_model=StandardResponse)
 def update_data(request: UpdateRequest):
     modified_count = retry_operation(
         db_utils.update_documents,
@@ -582,7 +597,7 @@ def update_data(request: UpdateRequest):
         raise HTTPException(status_code=404, detail="No documents were updated.")
 
 
-@crud_router.post("/delete", response_model=StandardResponse)
+@crud_router.delete("/delete", response_model=StandardResponse)
 def delete_data(request: DeleteRequest):
     if request.multi:
         deleted_count = retry_operation(
@@ -613,17 +628,25 @@ def delete_data(request: DeleteRequest):
     return success_response(data=deleted_count, message=message)
 
 
-@crud_router.post("/find", response_model=StandardResponse)
-def find_data(request: FindRequest):
+@crud_router.get("/find", response_model=StandardResponse)
+def find_data(
+    collection_name: str,
+    query: Optional[str] = None,
+    projection: Optional[str] = None,
+    limit: Optional[int] = 0,
+    sort: Optional[str] = None,
+):
+    # 这里需要将query、projection、sort从字符串转为实际的dict或list
+    # 此处省略转换的实现细节
     documents = retry_operation(
         db_utils.find_documents,
         retries=3,
         delay=2,
-        collection_name=request.collection_name,
-        query=request.query,
-        projection=request.projection,
-        limit=request.limit,
-        sort=request.sort,
+        collection_name=collection_name,
+        query={},  # 根据实际需要解析query字符串
+        projection=None,
+        limit=limit,
+        sort=None,
     )
     if documents:
         return success_response(
@@ -633,22 +656,22 @@ def find_data(request: FindRequest):
         raise HTTPException(status_code=404, detail="No documents found.")
 
 
-# Vector Search Router
-vector_search_router = APIRouter(
-    prefix="/vector_search", tags=["Vector Search"]
-)  # 添加 tags 参数
+vector_search_router = APIRouter(prefix="/vector_search", tags=["Vector Search"])
 
 
-@vector_search_router.post("/", response_model=StandardResponse)
-def vector_search_api(request: VectorSearchRequest):
+@vector_search_router.get("/", response_model=StandardResponse)
+def vector_search_api(
+    collection_name: str, query_text: str, fields_to_return: str, k: int = 1
+):
+    fields_list = fields_to_return.split(",")
     results = retry_operation(
         domain_queries.vector_search,
         retries=3,
         delay=2,
-        collection_name=request.collection_name,
-        query_text=request.query_text,
-        fields_to_return=request.fields_to_return,
-        k=request.k,
+        collection_name=collection_name,
+        query_text=query_text,
+        fields_to_return=fields_list,
+        k=k,
     )
     if results:
         return success_response(
@@ -660,21 +683,18 @@ def vector_search_api(request: VectorSearchRequest):
         )
 
 
-# Impressions Router
-impressions_router = APIRouter(
-    prefix="/impressions", tags=["Impressions"]
-)  # 添加 tags 参数
+impressions_router = APIRouter(prefix="/impressions", tags=["Impressions"])
 
 
-@impressions_router.post("/get", response_model=StandardResponse)
-def get_impression_api(request: ImpressionRequest):
+@impressions_router.get("/", response_model=StandardResponse)
+def get_impression_api(from_id: int, to_id: int, k: int = 1):
     impressions = retry_operation(
         domain_queries.get_impression_from_mongo,
         retries=3,
         delay=2,
-        from_id=request.from_id,
-        to_id=request.to_id,
-        k=request.k,
+        from_id=from_id,
+        to_id=to_id,
+        k=k,
     )
     if impressions:
         return success_response(
@@ -684,7 +704,7 @@ def get_impression_api(request: ImpressionRequest):
         raise HTTPException(status_code=404, detail="No impressions found.")
 
 
-@impressions_router.post("/store", response_model=StandardResponse)
+@impressions_router.post("/", response_model=StandardResponse)
 def store_impression_api(request: StoreImpressionRequest):
     inserted_id = retry_operation(
         domain_queries.store_impression,
@@ -702,21 +722,26 @@ def store_impression_api(request: StoreImpressionRequest):
         raise HTTPException(status_code=500, detail="Failed to store impression.")
 
 
-# Intimacy Router
-intimacy_router = APIRouter(prefix="/intimacy", tags=["Intimacy"])  # 添加 tags 参数
+intimacy_router = APIRouter(prefix="/intimacy", tags=["Intimacy"])
 
 
-@intimacy_router.post("/get", response_model=StandardResponse)
-def get_intimacy_api(request: IntimacyRequest):
+@intimacy_router.get("/", response_model=StandardResponse)
+def get_intimacy_api(
+    from_id: Optional[int] = None,
+    to_id: Optional[int] = None,
+    intimacy_level_min: Optional[int] = None,
+    intimacy_level_max: Optional[int] = None,
+    have_conversation: bool = False,
+):
     intimacy = retry_operation(
         domain_queries.get_intimacy,
         retries=3,
         delay=2,
-        from_id=request.from_id,
-        to_id=request.to_id,
-        intimacy_level_min=request.intimacy_level_min,  # 新增参数
-        intimacy_level_max=request.intimacy_level_max,  # 新增参数
-        have_conversation=request.have_conversation,  # 新增参数
+        from_id=from_id,
+        to_id=to_id,
+        intimacy_level_min=intimacy_level_min,
+        intimacy_level_max=intimacy_level_max,
+        have_conversation=have_conversation,
     )
     if intimacy:
         return success_response(
@@ -726,7 +751,7 @@ def get_intimacy_api(request: IntimacyRequest):
         raise HTTPException(status_code=404, detail="No intimacy level found.")
 
 
-@intimacy_router.post("/store", response_model=StandardResponse)
+@intimacy_router.post("/", response_model=StandardResponse)
 def store_intimacy_api(request: StoreIntimacyRequest):
     inserted_id = retry_operation(
         domain_queries.store_intimacy,
@@ -744,9 +769,8 @@ def store_intimacy_api(request: StoreIntimacyRequest):
         raise HTTPException(status_code=500, detail="Failed to store intimacy level.")
 
 
-@intimacy_router.post("/update", response_model=StandardResponse)
+@intimacy_router.put("/", response_model=StandardResponse)
 def update_intimacy_api(request: UpdateIntimacyRequest):
-    # 尝试获取当前的好感度记录
     current_intimacy = retry_operation(
         domain_queries.get_intimacy,
         retries=3,
@@ -756,7 +780,6 @@ def update_intimacy_api(request: UpdateIntimacyRequest):
     )
 
     if current_intimacy:
-        # 更新好感度为请求中提供的新值
         result = retry_operation(
             domain_queries.update_intimacy,
             retries=3,
@@ -780,7 +803,7 @@ def update_intimacy_api(request: UpdateIntimacyRequest):
         )
 
 
-@intimacy_router.post("/decrease_all", response_model=StandardResponse)
+@intimacy_router.patch("/decrease_all", response_model=StandardResponse)
 def decrease_all_intimacy_levels_api():
     result = retry_operation(
         domain_queries.decrease_all_intimacy_levels,
@@ -798,22 +821,18 @@ def decrease_all_intimacy_levels_api():
         )
 
 
-# Conversations Router
-conversations_router = APIRouter(
-    prefix="/conversations", tags=["Conversations"]
-)  # 添加 tags 参数
+conversations_router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
 
-@conversations_router.post("/get_with_characterIds", response_model=StandardResponse)
-def get_conversations_with_characterIds_api(
-    request: ConversationsWithcharactersRequest,
-):
+@conversations_router.get("/with_character_ids", response_model=StandardResponse)
+def get_conversations_with_characterIds_api(characterIds_list: str, k: int = 1):
+    ids = [int(x) for x in characterIds_list.split(",")]
     conversations = retry_operation(
         domain_queries.get_conversations_with_characterIds,
         retries=3,
         delay=2,
-        characterIds_list=request.characterIds_list,
-        k=request.k,
+        characterIds_list=ids,
+        k=k,
     )
     if conversations:
         return success_response(
@@ -823,18 +842,14 @@ def get_conversations_with_characterIds_api(
         raise HTTPException(status_code=404, detail="No conversations found.")
 
 
-@conversations_router.post(
-    "/get_containing_characterId", response_model=StandardResponse
-)
-def get_conversations_containing_characterId_api(
-    request: ConversationsContainingcharacterRequest,
-):
+@conversations_router.get("/containing_character_id", response_model=StandardResponse)
+def get_conversations_containing_characterId_api(characterId: int, k: int = 1):
     conversations = retry_operation(
         domain_queries.get_conversations_containing_characterId,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        k=request.k,
+        characterId=characterId,
+        k=k,
     )
     if conversations:
         return success_response(
@@ -844,7 +859,7 @@ def get_conversations_containing_characterId_api(
         raise HTTPException(status_code=404, detail="No conversations found.")
 
 
-@conversations_router.post("/store", response_model=StandardResponse)
+@conversations_router.post("/", response_model=StandardResponse)
 def store_conversation_api(request: StoreConversationRequest):
     inserted_id = retry_operation(
         domain_queries.store_conversation,
@@ -852,8 +867,8 @@ def store_conversation_api(request: StoreConversationRequest):
         delay=2,
         characterIds=request.characterIds,
         dialogue=request.dialogue,
-        start_day=request.start_day,  # 新增字段
-        start_time=request.start_time,  # 新增字段
+        start_day=request.start_day,
+        start_time=request.start_time,
     )
     if inserted_id:
         return success_response(
@@ -863,15 +878,16 @@ def store_conversation_api(request: StoreConversationRequest):
         raise HTTPException(status_code=500, detail="Failed to store conversation.")
 
 
-@conversations_router.post("/get_by_id_day_time", response_model=StandardResponse)
-def get_conversation_by_id_day_time_api(request: GetConversationByIdDayTimeRequest):
+@conversations_router.get("/by_id_day_time", response_model=StandardResponse)
+def get_conversation_by_id_day_time_api(day: int, time: str, characterIds_list: str):
+    ids = [int(x) for x in characterIds_list.split(",")]
     conversations = retry_operation(
         domain_queries.get_conversation_by_id_day_time,
         retries=3,
         delay=2,
-        characterIds_list=request.characterIds_list,  # 更新为 characterIds_list
-        day=request.day,
-        time=request.time,
+        characterIds_list=ids,
+        day=day,
+        time=time,
     )
     if conversations:
         return success_response(
@@ -881,14 +897,14 @@ def get_conversation_by_id_day_time_api(request: GetConversationByIdDayTimeReque
         raise HTTPException(status_code=404, detail="No conversation found.")
 
 
-@conversations_router.post("/get_by_id_and_day", response_model=StandardResponse)
-def get_conversations_by_id_and_day_api(request: GetConversationsByIdAndDayRequest):
+@conversations_router.get("/by_id_and_day", response_model=StandardResponse)
+def get_conversations_by_id_and_day_api(characterId: int, day: int):
     conversations = retry_operation(
         domain_queries.get_conversations_by_id_and_day,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        day=request.day,
+        characterId=characterId,
+        day=day,
     )
     if conversations:
         return success_response(
@@ -898,23 +914,17 @@ def get_conversations_by_id_and_day_api(request: GetConversationsByIdAndDayReque
         raise HTTPException(status_code=404, detail="No conversations found.")
 
 
-# Encounter Count Router
-encounter_count_router = APIRouter(
-    prefix="/encounter_count", tags=["Encounter Count"]
-)  # 添加 tags 参数
+encounter_count_router = APIRouter(prefix="/encounter_count", tags=["Encounter Count"])
 
 
-# 修改 `get_encounter_count_api` 方法的请求参数类型
-@encounter_count_router.post("/get", response_model=StandardResponse)
-def get_encounter_count_api(
-    request: EncounterCountRequest,
-):  # 修改为 EncounterCountRequest
+@encounter_count_router.get("/", response_model=StandardResponse)
+def get_encounter_count_api(from_id: int, to_id: int):
     encounter_count = retry_operation(
         domain_queries.get_encounter_count,
         retries=3,
         delay=2,
-        from_id=request.from_id,  # 修改为 from_id
-        to_id=request.to_id,  # 修改为 to_id
+        from_id=from_id,
+        to_id=to_id,
     )
     if encounter_count:
         return success_response(
@@ -924,15 +934,14 @@ def get_encounter_count_api(
         raise HTTPException(status_code=404, detail="No encounter count found.")
 
 
-# Define the API for getting encounters by from_id
-@encounter_count_router.post("/get_by_from_id", response_model=StandardResponse)
-def get_encounter_count_by_from_id_api(request: GetEncountersByFromIdRequest):
+@encounter_count_router.get("/by_from_id", response_model=StandardResponse)
+def get_encounter_count_by_from_id_api(from_id: int, k: int = 1):
     encounters = retry_operation(
         domain_queries.get_encounters_by_from_id,
         retries=3,
         delay=2,
-        from_id=request.from_id,  # Use from_id from the request
-        k=request.k,  # Use k from the request to limit results
+        from_id=from_id,
+        k=k,
     )
     if encounters:
         return success_response(
@@ -944,15 +953,14 @@ def get_encounter_count_by_from_id_api(request: GetEncountersByFromIdRequest):
         )
 
 
-# 修改 `store_encounter_count_api` 方法的请求参数
-@encounter_count_router.post("/store", response_model=StandardResponse)
+@encounter_count_router.post("/", response_model=StandardResponse)
 def store_encounter_count_api(request: StoreEncounterCountRequest):
     inserted_id = retry_operation(
         domain_queries.store_encounter_count,
         retries=3,
         delay=2,
-        from_id=request.from_id,  # 修改为 from_id
-        to_id=request.to_id,  # 修改为 to_id
+        from_id=request.from_id,
+        to_id=request.to_id,
         count=request.count,
     )
     if inserted_id:
@@ -963,15 +971,14 @@ def store_encounter_count_api(request: StoreEncounterCountRequest):
         raise HTTPException(status_code=500, detail="Failed to store encounter count.")
 
 
-# 修改 `increment_encounter_count_api` 方法的请求参数
-@encounter_count_router.post("/increment", response_model=StandardResponse)
+@encounter_count_router.put("/increment", response_model=StandardResponse)
 def increment_encounter_count_api(request: EncounterCountRequest):
     current_count = retry_operation(
         domain_queries.get_encounter_count,
         retries=3,
         delay=2,
-        from_id=request.from_id,  # 修改为 from_id
-        to_id=request.to_id,  # 修改为 to_id
+        from_id=request.from_id,
+        to_id=request.to_id,
     )
     if current_count:
         new_count = current_count[0]["count"] + 1
@@ -979,8 +986,8 @@ def increment_encounter_count_api(request: EncounterCountRequest):
             domain_queries.update_encounter_count,
             retries=3,
             delay=2,
-            from_id=request.from_id,  # 修改为 from_id
-            to_id=request.to_id,  # 修改为 to_id
+            from_id=request.from_id,
+            to_id=request.to_id,
             new_count=new_count,
         )
         if result:
@@ -992,14 +999,13 @@ def increment_encounter_count_api(request: EncounterCountRequest):
                 status_code=500, detail="Failed to increment encounter count."
             )
     else:
-        # 如果 current_count 不存在，则新建一条记录
         inserted_id = retry_operation(
             domain_queries.store_encounter_count,
             retries=3,
             delay=2,
-            from_id=request.from_id,  # 修改为 from_id
-            to_id=request.to_id,  # 修改为 to_id
-            count=1,  # 新建记录时，count 设置为 1
+            from_id=request.from_id,
+            to_id=request.to_id,
+            count=1,
         )
         if inserted_id:
             return success_response(
@@ -1011,15 +1017,14 @@ def increment_encounter_count_api(request: EncounterCountRequest):
             )
 
 
-# 修改 `update_encounter_count_api` 方法的请求参数
-@encounter_count_router.post("/update", response_model=StandardResponse)
+@encounter_count_router.put("/", response_model=StandardResponse)
 def update_encounter_count_api(request: UpdateEncounterCountRequest):
     result = retry_operation(
         domain_queries.update_encounter_count,
         retries=3,
         delay=2,
-        from_id=request.from_id,  # 修改为 from_id
-        to_id=request.to_id,  # 修改为 to_id
+        from_id=request.from_id,
+        to_id=request.to_id,
         new_count=request.count,
     )
     if result:
@@ -1030,11 +1035,10 @@ def update_encounter_count_api(request: UpdateEncounterCountRequest):
         raise HTTPException(status_code=500, detail="Failed to update encounter count.")
 
 
-# CVs Router
-cvs_router = APIRouter(prefix="/cv", tags=["CVs"])  # 添加 tags 参数
+cvs_router = APIRouter(prefix="/cv", tags=["CVs"])
 
 
-@cvs_router.post("/store", response_model=StandardResponse)
+@cvs_router.post("/", response_model=StandardResponse)
 def store_cv_api(request: StoreCVRequest):
     inserted_id = retry_operation(
         domain_queries.store_cv,
@@ -1043,8 +1047,12 @@ def store_cv_api(request: StoreCVRequest):
         jobid=request.jobid,
         characterId=request.characterId,
         CV_content=request.CV_content,
-        week=request.week,  # 传递 week 参数
-        election_result=request.election_result,  # 传递 election_result 参数
+        week=request.week,
+        health=request.health,
+        studyxp=request.studyxp,
+        date=request.date,
+        jobName=request.jobName,
+        election_status=request.election_status,
     )
     if inserted_id:
         return success_response(
@@ -1054,14 +1062,14 @@ def store_cv_api(request: StoreCVRequest):
         raise HTTPException(status_code=500, detail="Failed to store CV.")
 
 
-@cvs_router.post("/update_election_result", response_model=StandardResponse)
-def update_election_result_api(request: UpdateElectionResultRequest):
+@cvs_router.put("/election_status", response_model=StandardResponse)
+def update_election_status_api(request: UpdateElectionResultRequest):
     result = retry_operation(
-        domain_queries.update_election_result,
+        domain_queries.update_election_status,
         retries=3,
         delay=2,
         characterId=request.characterId,
-        election_result=request.election_result,
+        election_status=request.election_status,
         jobid=request.jobid,
         week=request.week,
     )
@@ -1073,16 +1081,21 @@ def update_election_result_api(request: UpdateElectionResultRequest):
         raise HTTPException(status_code=404, detail="No CV found to update.")
 
 
-@cvs_router.post("/get", response_model=StandardResponse)
-def get_cv_api(request: GetCVRequest):
+@cvs_router.get("/", response_model=StandardResponse)
+def get_cv_api(
+    jobid: Optional[int] = None,
+    characterId: Optional[int] = None,
+    week: Optional[int] = None,
+    election_status: Optional[str] = None,
+):
     cvs = retry_operation(
         domain_queries.get_cv,
         retries=3,
         delay=2,
-        jobid=request.jobid,
-        characterId=request.characterId,
-        week=request.week,  # 传递 week 参数
-        election_result=request.election_result,  # 传递 election_result 参数
+        jobid=jobid,
+        characterId=characterId,
+        week=week,
+        election_status=election_status,
     )
     if cvs:
         return success_response(data=cvs, message="CVs retrieved successfully.")
@@ -1090,11 +1103,10 @@ def get_cv_api(request: GetCVRequest):
         raise HTTPException(status_code=404, detail="No CVs found.")
 
 
-# Actions Router
-actions_router = APIRouter(prefix="/actions", tags=["Actions"])  # 添加 tags 参数
+actions_router = APIRouter(prefix="/actions", tags=["Actions"])
 
 
-@actions_router.post("/store", response_model=StandardResponse)
+@actions_router.post("/", response_model=StandardResponse)
 def store_action_api(request: StoreActionRequest):
     inserted_id = retry_operation(
         domain_queries.store_action,
@@ -1113,15 +1125,15 @@ def store_action_api(request: StoreActionRequest):
         raise HTTPException(status_code=500, detail="Failed to store action.")
 
 
-@actions_router.post("/get", response_model=StandardResponse)
-def get_action_api(request: GetActionRequest):
+@actions_router.get("/", response_model=StandardResponse)
+def get_action_api(characterId: int, action: str, k: int = 1):
     actions = retry_operation(
         domain_queries.get_action,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        action=request.action,
-        k=request.k,
+        characterId=characterId,
+        action=action,
+        k=k,
     )
     if actions:
         return success_response(data=actions, message="Actions retrieved successfully.")
@@ -1129,13 +1141,10 @@ def get_action_api(request: GetActionRequest):
         raise HTTPException(status_code=404, detail="No actions found.")
 
 
-# Descriptors Router
-descriptors_router = APIRouter(
-    prefix="/descriptors", tags=["Descriptors"]
-)  # 添加 tags 参数
+descriptors_router = APIRouter(prefix="/descriptors", tags=["Descriptors"])
 
 
-@descriptors_router.post("/store", response_model=StandardResponse)
+@descriptors_router.post("/", response_model=StandardResponse)
 def store_descriptor_api(request: StoreDescriptorRequest):
     inserted_id = retry_operation(
         domain_queries.store_descriptor,
@@ -1154,15 +1163,15 @@ def store_descriptor_api(request: StoreDescriptorRequest):
         raise HTTPException(status_code=500, detail="Failed to store descriptor.")
 
 
-@descriptors_router.post("/get", response_model=StandardResponse)
-def get_descriptor_api(request: GetDescriptorRequest):
+@descriptors_router.get("/", response_model=StandardResponse)
+def get_descriptor_api(action_id: int, characterId: int, k: int = 1):
     descriptors = retry_operation(
         domain_queries.get_descriptor,
         retries=3,
         delay=2,
-        action_id=request.action_id,
-        characterId=request.characterId,
-        k=request.k,
+        action_id=action_id,
+        characterId=characterId,
+        k=k,
     )
     if descriptors:
         return success_response(
@@ -1172,13 +1181,12 @@ def get_descriptor_api(request: GetDescriptorRequest):
         raise HTTPException(status_code=404, detail="No descriptors found.")
 
 
-# Daily Objectives Router
 daily_objectives_router = APIRouter(
     prefix="/daily_objectives", tags=["Daily Objectives"]
-)  # 添加 tags 参数
+)
 
 
-@daily_objectives_router.post("/store", response_model=StandardResponse)
+@daily_objectives_router.post("/", response_model=StandardResponse)
 def store_daily_objective_api(request: StoreDailyObjectiveRequest):
     inserted_id = retry_operation(
         domain_queries.store_daily_objective,
@@ -1195,14 +1203,14 @@ def store_daily_objective_api(request: StoreDailyObjectiveRequest):
         raise HTTPException(status_code=500, detail="Failed to store daily objectives.")
 
 
-@daily_objectives_router.post("/get", response_model=StandardResponse)
-def get_daily_objectives_api(request: GetDailyObjectivesRequest):
+@daily_objectives_router.get("/", response_model=StandardResponse)
+def get_daily_objectives_api(characterId: int, k: int = 1):
     objectives = retry_operation(
         domain_queries.get_daily_objectives,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        k=request.k,
+        characterId=characterId,
+        k=k,
     )
     if objectives:
         return success_response(
@@ -1212,11 +1220,10 @@ def get_daily_objectives_api(request: GetDailyObjectivesRequest):
         raise HTTPException(status_code=404, detail="No daily objectives found.")
 
 
-# Plans Router
-plans_router = APIRouter(prefix="/plans", tags=["Plans"])  # 添加 tags 参数
+plans_router = APIRouter(prefix="/plans", tags=["Plans"])
 
 
-@plans_router.post("/store", response_model=StandardResponse)
+@plans_router.post("/", response_model=StandardResponse)
 def store_plan_api(request: StorePlanRequest):
     inserted_id = retry_operation(
         domain_queries.store_plan,
@@ -1233,14 +1240,14 @@ def store_plan_api(request: StorePlanRequest):
         raise HTTPException(status_code=500, detail="Failed to store plan.")
 
 
-@plans_router.post("/get", response_model=StandardResponse)
-def get_plans_api(request: GetPlansRequest):
+@plans_router.get("/", response_model=StandardResponse)
+def get_plans_api(characterId: int, k: int = 1):
     plans = retry_operation(
         domain_queries.get_plans,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        k=request.k,
+        characterId=characterId,
+        k=k,
     )
     if plans:
         return success_response(data=plans, message="Plans retrieved successfully.")
@@ -1248,13 +1255,10 @@ def get_plans_api(request: GetPlansRequest):
         raise HTTPException(status_code=404, detail="No plans found.")
 
 
-# Meta Sequences Router
-meta_sequences_router = APIRouter(
-    prefix="/meta_sequences", tags=["Meta Sequences"]
-)  # 添加 tags 参数
+meta_sequences_router = APIRouter(prefix="/meta_sequences", tags=["Meta Sequences"])
 
 
-@meta_sequences_router.post("/store", response_model=StandardResponse)
+@meta_sequences_router.post("/", response_model=StandardResponse)
 def store_meta_seq_api(request: StoreMetaSeqRequest):
     inserted_id = retry_operation(
         domain_queries.store_meta_seq,
@@ -1271,14 +1275,14 @@ def store_meta_seq_api(request: StoreMetaSeqRequest):
         raise HTTPException(status_code=500, detail="Failed to store meta sequence.")
 
 
-@meta_sequences_router.post("/get", response_model=StandardResponse)
-def get_meta_sequences_api(request: GetMetaSequencesRequest):
+@meta_sequences_router.get("/", response_model=StandardResponse)
+def get_meta_sequences_api(characterId: int, k: int = 1):
     meta_sequences = retry_operation(
         domain_queries.get_meta_sequences,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        k=request.k,
+        characterId=characterId,
+        k=k,
     )
     if meta_sequences:
         return success_response(
@@ -1288,7 +1292,7 @@ def get_meta_sequences_api(request: GetMetaSequencesRequest):
         raise HTTPException(status_code=404, detail="No meta sequences found.")
 
 
-@meta_sequences_router.post("/update", response_model=StandardResponse)
+@meta_sequences_router.put("/", response_model=StandardResponse)
 def update_meta_seq_api(request: UpdateMetaSeqRequest):
     modified_count = retry_operation(
         domain_queries.update_meta_seq,
@@ -1305,11 +1309,10 @@ def update_meta_seq_api(request: UpdateMetaSeqRequest):
         raise HTTPException(status_code=404, detail="No meta sequences were updated.")
 
 
-# Knowledge Router
-knowledge_router = APIRouter(prefix="/knowledge", tags=["Knowledge"])  # 添加 tags 参数
+knowledge_router = APIRouter(prefix="/knowledge", tags=["Knowledge"])
 
 
-@knowledge_router.post("/store", response_model=StandardResponse)
+@knowledge_router.post("/", response_model=StandardResponse)
 def store_knowledge_api(request: StoreKnowledgeRequest):
     inserted_id = retry_operation(
         domain_queries.store_knowledge,
@@ -1328,14 +1331,14 @@ def store_knowledge_api(request: StoreKnowledgeRequest):
         raise HTTPException(status_code=500, detail="Failed to store knowledge.")
 
 
-@knowledge_router.post("/get", response_model=StandardResponse)
-def get_knowledge_api(request: GetKnowledgeRequest):
+@knowledge_router.get("/", response_model=StandardResponse)
+def get_knowledge_api(characterId: int, day: int):
     knowledge = retry_operation(
         domain_queries.get_knowledge,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        day=request.day,
+        characterId=characterId,
+        day=day,
     )
     if knowledge:
         return success_response(
@@ -1345,14 +1348,14 @@ def get_knowledge_api(request: GetKnowledgeRequest):
         raise HTTPException(status_code=404, detail="No knowledge found.")
 
 
-@knowledge_router.post("/get_latest", response_model=StandardResponse)
-def get_latest_knowledge_api(request: GetLatestKnowledgeRequest):
+@knowledge_router.get("/latest", response_model=StandardResponse)
+def get_latest_knowledge_api(characterId: int, k: int = 1):
     knowledge = retry_operation(
         domain_queries.get_latest_knowledge,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        k=request.k,
+        characterId=characterId,
+        k=k,
     )
     if knowledge:
         return success_response(
@@ -1362,7 +1365,7 @@ def get_latest_knowledge_api(request: GetLatestKnowledgeRequest):
         raise HTTPException(status_code=404, detail="No latest knowledge found.")
 
 
-@knowledge_router.post("/update", response_model=StandardResponse)
+@knowledge_router.put("/", response_model=StandardResponse)
 def update_knowledge_api(request: UpdateKnowledgeRequest):
     result = retry_operation(
         domain_queries.update_knowledge,
@@ -1379,44 +1382,10 @@ def update_knowledge_api(request: UpdateKnowledgeRequest):
         raise HTTPException(status_code=404, detail="No knowledge was updated.")
 
 
-# Tools Router
-tools_router = APIRouter(prefix="/tools", tags=["Tools"])  # 添加 tags 参数
+diaries_router = APIRouter(prefix="/diaries", tags=["Diaries"])
 
 
-@tools_router.post("/store", response_model=StandardResponse)
-def store_tool_api(request: StoreToolRequest):
-    inserted_id = retry_operation(
-        domain_queries.store_tool,
-        retries=3,
-        delay=2,
-        API=request.API,
-        text=request.text,
-        code=request.code,
-    )
-    if inserted_id:
-        return success_response(
-            data=str(inserted_id), message="Tool stored successfully."
-        )
-    else:
-        raise HTTPException(status_code=500, detail="Failed to store tool.")
-
-
-@tools_router.post("/get", response_model=StandardResponse)
-def get_tools_api(request: GetToolsRequest):
-    tools = retry_operation(
-        domain_queries.get_tools, retries=3, delay=2, API=request.API, k=request.k
-    )
-    if tools:
-        return success_response(data=tools, message="Tools retrieved successfully.")
-    else:
-        raise HTTPException(status_code=404, detail="No tools found.")
-
-
-# Diaries Router
-diaries_router = APIRouter(prefix="/diaries", tags=["Diaries"])  # 添加 tags 参数
-
-
-@diaries_router.post("/store", response_model=StandardResponse)
+@diaries_router.post("/", response_model=StandardResponse)
 def store_diary_api(request: StoreDiaryRequest):
     inserted_id = retry_operation(
         domain_queries.store_diary,
@@ -1433,14 +1402,14 @@ def store_diary_api(request: StoreDiaryRequest):
         raise HTTPException(status_code=500, detail="Failed to store diary entry.")
 
 
-@diaries_router.post("/get", response_model=StandardResponse)
-def get_diaries_api(request: GetDiariesRequest):
+@diaries_router.get("/", response_model=StandardResponse)
+def get_diaries_api(characterId: int, k: int = 1):
     diaries = retry_operation(
         domain_queries.get_diaries,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        k=request.k,
+        characterId=characterId,
+        k=k,
     )
     if diaries:
         return success_response(data=diaries, message="Diaries retrieved successfully.")
@@ -1448,15 +1417,11 @@ def get_diaries_api(request: GetDiariesRequest):
         raise HTTPException(status_code=404, detail="No diaries found.")
 
 
-# Characters Router
-characters_router = APIRouter(
-    prefix="/characters", tags=["Characters"]
-)  # 添加 tags 参数
+characters_router = APIRouter(prefix="/characters", tags=["Characters"])
 
 
-@characters_router.post("/store", response_model=StandardResponse)
+@characters_router.post("/", response_model=StandardResponse)
 def store_character_api(request: StorecharacterRequest):
-    # Check if character with the given characterId already exists
     existing_character = retry_operation(
         domain_queries.get_character,
         retries=3,
@@ -1474,7 +1439,6 @@ def store_character_api(request: StorecharacterRequest):
             },
         )
 
-    # 获取样本值的方法映射
     sample_methods = {
         "relationship": lambda: domain_queries.get_relationship_sample()[0],
         "personality": lambda: ", ".join(domain_queries.get_personality_sample()),
@@ -1486,7 +1450,6 @@ def store_character_api(request: StorecharacterRequest):
         "biography": domain_queries.get_biography_sample,
     }
 
-    # 构建角色数据，使用样本值替代 None
     character_data = {
         "characterId": request.characterId,
         "characterName": request.characterName,
@@ -1501,7 +1464,6 @@ def store_character_api(request: StorecharacterRequest):
         "biography": request.biography or sample_methods["biography"](),
     }
 
-    # Proceed to store the character with filtered data
     inserted_id = retry_operation(
         domain_queries.store_character, retries=3, delay=2, **character_data
     )
@@ -1514,13 +1476,13 @@ def store_character_api(request: StorecharacterRequest):
         raise HTTPException(status_code=500, detail="Failed to store character.")
 
 
-@characters_router.post("/get", response_model=StandardResponse)
-def get_character_api(request: GetcharacterRequest):
+@characters_router.get("/", response_model=StandardResponse)
+def get_character_api(characterId: Optional[int] = None):
     characters = retry_operation(
         domain_queries.get_character,
         retries=3,
         delay=2,
-        characterId=request.characterId,  # characterId 可以为 None
+        characterId=characterId,
     )
     if characters:
         return success_response(
@@ -1530,15 +1492,15 @@ def get_character_api(request: GetcharacterRequest):
         raise HTTPException(status_code=404, detail="No characters found.")
 
 
-@characters_router.post("/get_rag", response_model=StandardResponse)
-def get_character_rag_api(request: characterRAGRequest):
+@characters_router.get("/rag", response_model=StandardResponse)
+def get_character_rag_api(characterId: int, topic: str, k: int = 1):
     character_rag_results = retry_operation(
         domain_queries.get_character_RAG,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        topic=request.topic,
-        k=request.k,
+        characterId=characterId,
+        topic=topic,
+        k=k,
     )
     if character_rag_results:
         return success_response(
@@ -1549,7 +1511,7 @@ def get_character_rag_api(request: characterRAGRequest):
         raise HTTPException(status_code=404, detail="No character RAG results found.")
 
 
-@characters_router.post("/get_rag_in_list", response_model=StandardResponse)
+@characters_router.post("/rag_in_list", response_model=StandardResponse)
 def get_character_rag_in_list_api(request: CharacterRAGInListRequest):
     character_rag_results = retry_operation(
         domain_queries.get_character_RAG_in_list,
@@ -1571,7 +1533,7 @@ def get_character_rag_in_list_api(request: CharacterRAGInListRequest):
         )
 
 
-@characters_router.post("/update", response_model=StandardResponse)
+@characters_router.put("/", response_model=StandardResponse)
 def update_character_api(request: UpdatecharacterRequest):
     modified_count = retry_operation(
         domain_queries.update_character,
@@ -1588,12 +1550,10 @@ def update_character_api(request: UpdatecharacterRequest):
         raise HTTPException(status_code=404, detail="No character was updated.")
 
 
-character_arc_router = APIRouter(
-    prefix="/character_arc", tags=["Character Arc"]
-)  # 添加 tags 参数
+character_arc_router = APIRouter(prefix="/character_arc", tags=["Character Arc"])
 
 
-@character_arc_router.post("/store", response_model=StandardResponse)
+@character_arc_router.post("/", response_model=StandardResponse)
 def store_character_arc_api(request: CharacterArcRequest):
     inserted_id = retry_operation(
         domain_queries.store_character_arc,
@@ -1610,13 +1570,13 @@ def store_character_arc_api(request: CharacterArcRequest):
         raise HTTPException(status_code=500, detail="Failed to store character arc.")
 
 
-@character_arc_router.post("/get", response_model=StandardResponse)
-def get_character_arc_api(request: GetCharacterArcRequest):
+@character_arc_router.get("/", response_model=StandardResponse)
+def get_character_arc_api(characterId: int):
     arc = retry_operation(
         domain_queries.get_character_arc,
         retries=3,
         delay=2,
-        characterId=request.characterId,
+        characterId=characterId,
     )
     if arc:
         return success_response(
@@ -1626,14 +1586,14 @@ def get_character_arc_api(request: GetCharacterArcRequest):
         raise HTTPException(status_code=404, detail="No character arc found.")
 
 
-@character_arc_router.post("/get_with_changes", response_model=StandardResponse)
-def get_character_arc_with_changes_api(request: GetCharacterArcWithChangesRequest):
+@character_arc_router.get("/with_changes", response_model=StandardResponse)
+def get_character_arc_with_changes_api(characterId: int, k: int = 1):
     arc_with_changes = retry_operation(
         domain_queries.get_character_arc_with_changes,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        k=request.k,
+        characterId=characterId,
+        k=k,
     )
     if arc_with_changes:
         return success_response(
@@ -1646,7 +1606,7 @@ def get_character_arc_with_changes_api(request: GetCharacterArcWithChangesReques
         )
 
 
-@character_arc_router.post("/update", response_model=StandardResponse)
+@character_arc_router.put("/", response_model=StandardResponse)
 def update_character_arc_api(request: UpdateCharacterArcRequest):
     result = retry_operation(
         domain_queries.update_character_arc,
@@ -1663,7 +1623,7 @@ def update_character_arc_api(request: UpdateCharacterArcRequest):
         raise HTTPException(status_code=404, detail="No character arc was updated.")
 
 
-@character_arc_router.post("/store_change", response_model=StandardResponse)
+@character_arc_router.post("/change", response_model=StandardResponse)
 def store_character_arc_change_api(request: CharacterArcChangeRequest):
     inserted_id = retry_operation(
         domain_queries.store_character_arc_change,
@@ -1685,15 +1645,15 @@ def store_character_arc_change_api(request: CharacterArcChangeRequest):
         )
 
 
-@character_arc_router.post("/get_changes", response_model=StandardResponse)
-def get_character_arc_changes_api(request: GetCharacterArcChangesRequest):
+@character_arc_router.get("/changes", response_model=StandardResponse)
+def get_character_arc_changes_api(characterId: int, item: str, k: int = 1):
     changes = retry_operation(
         domain_queries.get_character_arc_changes,
         retries=3,
         delay=2,
-        characterId=request.characterId,
-        item=request.item,
-        k=request.k,
+        characterId=characterId,
+        item=item,
+        k=k,
     )
     if changes:
         return success_response(
@@ -1703,16 +1663,14 @@ def get_character_arc_changes_api(request: GetCharacterArcChangesRequest):
         raise HTTPException(status_code=404, detail="No character arc changes found.")
 
 
-# Sample Router
 sample_router = APIRouter(prefix="/sample", tags=["Sample"])
 
 
-@sample_router.post("/get", response_model=StandardResponse)
-def get_sample_api(request: SampleRequest):
-    if request.item_name is None:
-        # 获取所有项的样本
+@sample_router.get("/", response_model=StandardResponse)
+def get_sample_api(item_name: Optional[SampleItem] = None):
+    if item_name is None:
         samples = {
-            "relationship": domain_queries.get_relationship_sample(),  # 新增 relationship
+            "relationship": domain_queries.get_relationship_sample(),
             "personality": domain_queries.get_personality_sample(),
             "long_term_goal": domain_queries.get_long_term_goal_sample(),
             "short_term_goal": domain_queries.get_short_term_goal_sample(),
@@ -1720,37 +1678,33 @@ def get_sample_api(request: SampleRequest):
             "biography": domain_queries.get_biography_sample(),
         }
     else:
-        # 根据请求的项名获取相应的样本
         sample_method = {
-            SampleItem.relationship: domain_queries.get_relationship_sample,  # 新增 relationship
+            SampleItem.relationship: domain_queries.get_relationship_sample,
             SampleItem.personality: domain_queries.get_personality_sample,
             SampleItem.long_term_goal: domain_queries.get_long_term_goal_sample,
             SampleItem.short_term_goal: domain_queries.get_short_term_goal_sample,
             SampleItem.language_style: domain_queries.get_language_style_sample,
             SampleItem.biography: domain_queries.get_biography_sample,
-        }[request.item_name]
+        }[item_name]
 
-        samples = {request.item_name: sample_method()}
+        samples = {item_name: sample_method()}
     if samples:
         return success_response(data=samples, message="Sample retrieved successfully.")
     else:
         raise HTTPException(status_code=404, detail="No sample found.")
 
 
-# Define APIRouter for agent_prompt
 agent_prompt_router = APIRouter(prefix="/agent_prompt", tags=["Agent Prompt"])
 
 
-@agent_prompt_router.post("/store", response_model=StandardResponse)
+@agent_prompt_router.post("/", response_model=StandardResponse)
 def store_agent_prompt_api(request: AgentPromptRequest):
-    # 检查是否已存在相同的代理提示
     existing_prompt = retry_operation(
         domain_queries.get_agent_prompt,
         retries=3,
         delay=2,
         characterId=request.characterId,
     )
-
     if existing_prompt:
         return JSONResponse(
             status_code=200,
@@ -1789,13 +1743,13 @@ def store_agent_prompt_api(request: AgentPromptRequest):
         raise HTTPException(status_code=500, detail="Failed to store agent prompt.")
 
 
-@agent_prompt_router.post("/get", response_model=StandardResponse)
-def get_agent_prompt_api(request: GetAgentPromptRequest):
+@agent_prompt_router.get("/", response_model=StandardResponse)
+def get_agent_prompt_api(characterId: int):
     documents = retry_operation(
         domain_queries.get_agent_prompt,
         retries=3,
         delay=2,
-        characterId=request.characterId,
+        characterId=characterId,
     )
     if documents:
         return success_response(
@@ -1805,7 +1759,7 @@ def get_agent_prompt_api(request: GetAgentPromptRequest):
         raise HTTPException(status_code=404, detail="No agent prompt found.")
 
 
-@agent_prompt_router.post("/update", response_model=StandardResponse)
+@agent_prompt_router.put("/", response_model=StandardResponse)
 def update_agent_prompt_api(request: UpdateAgentPromptRequest):
     result = retry_operation(
         domain_queries.update_agent_prompt,
@@ -1822,7 +1776,7 @@ def update_agent_prompt_api(request: UpdateAgentPromptRequest):
         raise HTTPException(status_code=404, detail="No agent prompt found to update.")
 
 
-@agent_prompt_router.post("/delete", response_model=StandardResponse)
+@agent_prompt_router.delete("/", response_model=StandardResponse)
 def delete_agent_prompt_api(request: DeleteAgentPromptRequest):
     result = retry_operation(
         domain_queries.delete_agent_prompt,
@@ -1838,7 +1792,103 @@ def delete_agent_prompt_api(request: DeleteAgentPromptRequest):
         raise HTTPException(status_code=404, detail="No agent prompt found to delete.")
 
 
-# Include all routers into the main app
+conversation_prompt_router = APIRouter(
+    prefix="/conversation_prompt", tags=["Conversation Prompt"]
+)
+
+
+@conversation_prompt_router.post("/", response_model=StandardResponse)
+def store_conversation_prompt_api(request: StoreConversationPromptRequest):
+    existing_prompt = retry_operation(
+        domain_queries.get_conversation_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+    )
+    if existing_prompt:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "code": 2,
+                "message": f"Conversation prompt for characterId {request.characterId} already exists.",
+                "data": None,
+            },
+        )
+
+    inserted_id = retry_operation(
+        domain_queries.store_conversation_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        topic_requirements=request.topic_requirements,
+        relation=request.relation,
+        emotion=request.emotion,
+        personality=request.personality,
+        habits_and_preferences=request.habits_and_preferences,
+    )
+    if inserted_id:
+        return success_response(
+            data=str(inserted_id), message="Conversation prompt stored successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=500, detail="Failed to store conversation prompt."
+        )
+
+
+@conversation_prompt_router.get("/", response_model=StandardResponse)
+def get_conversation_prompt_api(characterId: int):
+    documents = retry_operation(
+        domain_queries.get_conversation_prompt,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+    )
+    if documents:
+        return success_response(
+            data=documents, message="Conversation prompt retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No conversation prompt found.")
+
+
+@conversation_prompt_router.put("/", response_model=StandardResponse)
+def update_conversation_prompt_api(request: UpdateConversationPromptRequest):
+    result = retry_operation(
+        domain_queries.update_conversation_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        update_fields=request.update_fields,
+    )
+    if result:
+        return success_response(
+            data=result, message="Conversation prompt updated successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=404, detail="No conversation prompt found to update."
+        )
+
+
+@conversation_prompt_router.delete("/", response_model=StandardResponse)
+def delete_conversation_prompt_api(request: DeleteConversationPromptRequest):
+    result = retry_operation(
+        domain_queries.delete_conversation_prompt,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+    )
+    if result:
+        return success_response(
+            data=result, message="Conversation prompt deleted successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=404, detail="No conversation prompt found to delete."
+        )
+
+
 app.include_router(crud_router)
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
@@ -1849,7 +1899,6 @@ app.include_router(descriptors_router)
 app.include_router(daily_objectives_router)
 app.include_router(plans_router)
 app.include_router(meta_sequences_router)
-app.include_router(tools_router)
 app.include_router(diaries_router)
 app.include_router(characters_router)
 app.include_router(encounter_count_router)
@@ -1858,7 +1907,7 @@ app.include_router(knowledge_router)
 app.include_router(character_arc_router)
 app.include_router(sample_router)
 app.include_router(agent_prompt_router)
+app.include_router(conversation_prompt_router)
 
-# Start the application
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

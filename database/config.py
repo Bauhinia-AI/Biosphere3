@@ -7,7 +7,6 @@ load_dotenv()
 # MongoDB Configuration
 db_name = "bio3agent"
 # db_name = "biosphere3_test"
-tool_collection_name = "tool"
 cv_collection_name = "cv"
 agent_profile_collection_name = "agent_profile"
 action_collection_name = "action"
@@ -25,6 +24,7 @@ character_arc_collection_name = "character_arc"
 character_arc_change_collection_name = "character_arc_change"
 profile_sample_collection_name = "profile_sample"
 agent_prompt_collection_name = "agent_prompt"
+conversation_prompt_collection_name = "conversation_prompt"
 
 mongo_uri = os.getenv("MONGO_URI")
 index_name = "vector_index"
@@ -40,7 +40,6 @@ numCandidates = 1000
 
 # 定义需要进行嵌入的集合及其对应的文本字段
 RAG_COLLECTIONS = {
-    # tool_collection_name: "text",
     # conversation_collection_name: "dialogue",
     agent_profile_collection_name: "full_profile",
     # 可以在此添加更多需要嵌入的集合和对应的字段

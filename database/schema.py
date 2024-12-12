@@ -203,13 +203,7 @@ validators = {
     "cv": {
         "$jsonSchema": {
             "bsonType": "object",
-            "required": [
-                "jobid",
-                "characterId",
-                "CV_content",
-                "created_at",
-                "week",  # 新增字段
-            ],
+            "required": ["jobid", "characterId", "CV_content", "week"],
             "properties": {
                 "jobid": {
                     "bsonType": "int",
@@ -224,41 +218,41 @@ validators = {
                     "description": "简历内容, 必须为字符串且为必填项",
                 },
                 "created_at": {
-                    "bsonType": "string",
+                    "bsonType": ["string", "null"],
                     "description": "创建时间, 必须为字符串且为必填项",
                 },
-                "week": {  # 新增字段
+                "week": {
                     "bsonType": "int",
                     "description": "周数, 必须为整数且为必填项",
                 },
-                "election_status": {  # 修改字段名称和类型
-                    "bsonType": "string",
+                "election_status": {
+                    "bsonType": ["string", "null"],
                     "enum": ["not_yet", "failed", "succeeded"],
                     "description": "选举状态, 可以为 'not_yet'（未进行选举）、'failed'（选举失败）、'succeeded'（选举成功）",
                 },
-            },
-        }
-    },
-    "descriptor": {
-        "$jsonSchema": {
-            "bsonType": "object",
-            "required": ["failed_action", "action_id", "characterId", "reflection"],
-            "properties": {
-                "failed_action": {
-                    "bsonType": "string",
-                    "description": "执行失败的动作, 必须为字符串且为必填项",
+                "health": {
+                    "bsonType": ["int", "null"],
+                    "description": "健康值, 必须为整数且为必填项",
                 },
-                "action_id": {
-                    "bsonType": "int",
-                    "description": "失败动作的ID, 必须为整数且为必填项",
+                "studyxp": {
+                    "bsonType": ["int", "null"],
+                    "description": "学习经验值, 必须为整数且为必填项",
                 },
-                "characterId": {
-                    "bsonType": "int",
-                    "description": "character ID, 必须为整数且为必填项",
+                "date": {
+                    "bsonType": ["int", "null"],
+                    "description": "游戏中的日期数, 必须为整数且为必填项",
                 },
-                "reflection": {
-                    "bsonType": "string",
-                    "description": "动作失败后的反思, 必须为字符串且为必填项",
+                "experience": {
+                    "bsonType": ["array", "null"],
+                    "description": "经验列表, 必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "经验内容, 必须为字符串",
+                    },
+                },
+                "jobName": {
+                    "bsonType": ["string", "null"],
+                    "description": "工作名称, 必须为字符串且为必填项",
                 },
             },
         }
@@ -361,26 +355,6 @@ validators = {
                 "created_at": {
                     "bsonType": "string",
                     "description": "创建时间, 必须为字符串且为必填项",
-                },
-            },
-        }
-    },
-    "tool": {
-        "$jsonSchema": {
-            "bsonType": "object",
-            "required": ["API", "text", "code"],
-            "properties": {
-                "API": {
-                    "bsonType": "string",
-                    "description": "API的名称, 必须为字符串且为必填项",
-                },
-                "text": {
-                    "bsonType": "string",
-                    "description": "工具的描述文本, 必须为字符串且为必填项",
-                },
-                "code": {
-                    "bsonType": "string",
-                    "description": "工具的代码段, 必须为字符串且为必填项",
                 },
             },
         }
@@ -663,6 +637,47 @@ validators = {
                     "bsonType": "string",
                     "enum": ["Formal", "Moderate", "Gentle"],
                     "description": "描述时语言的语气和风格, 可选项有Formal, Moderate, Gentle",
+                },
+                "created_at": {
+                    "bsonType": "string",
+                    "description": "创建时间,必须为字符串且为必填项",
+                },
+                "updated_at": {
+                    "bsonType": "string",
+                    "description": "最后更新时间, 必须为字符串且为必填项",
+                },
+            },
+        }
+    },
+    "conversation_prompt": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["characterId"],
+            "properties": {
+                "characterId": {
+                    "bsonType": "int",
+                    "description": "角色ID, 必须为整数且为必填项",
+                },
+                "topic_requirements": {
+                    "bsonType": ["string", "null"],
+                    "description": "玩家对于对话主题的额外要求",
+                },
+                "relation": {
+                    "bsonType": ["string", "null"],
+                    "description": "如何看待其他agent",
+                },
+                "emotion": {
+                    "bsonType": ["string", "null"],
+                    "description": "情绪影响对话语气",
+                },
+                "personality": {
+                    "bsonType": ["string", "null"],
+                    "enum": ["Introversion", "Extraversion"],
+                    "description": "影响对话长度和轮次数，可选项有Introversion，Extraversion",
+                },
+                "habits_and_preferences": {
+                    "bsonType": ["string", "null"],
+                    "description": "愿意和其他人分享的兴趣爱好",
                 },
                 "created_at": {
                     "bsonType": "string",

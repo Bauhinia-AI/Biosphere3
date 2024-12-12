@@ -77,9 +77,15 @@ async def generate_daily_objective(state: RunningState):
     # 重试一次
     # 获取最新的prompt数据
     try:
-        prompt = await make_api_request_async("GET", f"/agent_prompt/?characterId={state['userid']}")
+        prompt = await make_api_request_async(
+            "GET", f"/agent_prompt/?characterId={state['userid']}"
+        )
         prompt_data = prompt.get("data", [{}])[0]  # 如果data为空，返回一个空字典
-        state["prompts"] = {key: prompt_data[key] for key in prompt_data if key not in ["characterId", "created_at", "updated_at"]}
+        state["prompts"] = {
+            key: prompt_data[key]
+            for key in prompt_data
+            if key not in ["characterId", "created_at", "updated_at"]
+        }
     except (IndexError, KeyError) as e:
         logger.error(f"⛔ Error retrieving prompt data: {e}")
         state["prompts"] = {}  # 设置一个默认值或处理逻辑
@@ -114,7 +120,7 @@ async def generate_daily_objective(state: RunningState):
         "objectives": planner_response.objectives,
     }
     await make_api_request_async(
-        "POST", "/daily_objectives/store", data=daily_objective_data
+        "POST", "/daily_objectives/", data=daily_objective_data
     )
 
     logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
@@ -186,9 +192,7 @@ async def adjust_meta_action_sequence(state: RunningState):
         "characterId": state["userid"],
         "meta_sequence": meta_action_sequence.meta_action_sequence,
     }
-    await make_api_request_async(
-        "POST", "/meta_sequences/update", data=update_meta_seq_data
-    )
+    await make_api_request_async("PUT", "/meta_sequences/", data=update_meta_seq_data)
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
@@ -307,7 +311,7 @@ async def generate_change_job_cv(state: RunningState):
 
     logger.info(f"📃 CV: {cv}")
 
-    if 'instance' in state and state['instance']:
+    if "instance" in state and state["instance"]:
         await state["instance"].send_message(
             {
                 "characterId": state["userid"],
@@ -363,7 +367,7 @@ async def generate_mayor_decision(state: RunningState):
     logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
     logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
 
-    if 'instance' in state and state['instance']:
+    if "instance" in state and state["instance"]:
         await state["instance"].send_message(
             {
                 "characterId": state["userid"],

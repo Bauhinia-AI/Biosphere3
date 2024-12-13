@@ -58,6 +58,7 @@ class ConversationInstance:
         self.reply_message_task = asyncio.create_task(self.reply_message())
         self.clear_readonly_task = asyncio.create_task(self.clear_readonly())
         self.plan_start_task = asyncio.create_task(self.run_workflow())
+        self.listener_task = asyncio.create_task(self.listener())
 
         self.logger.info(f"User {self.user_id} conversation client initialized")
         return self

@@ -76,7 +76,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
         memory = []
 
     # 获取角色弧光
-    arc_response = make_api_request_sync("GET", "/character_arc/changes", params={"characterId": state["userid"], "k": 1})
+    arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
     if not arc_response["data"]:
         arc_data = []
     else:
@@ -745,7 +745,7 @@ async def update_intimacy(id1: int, id2: int, conversation):
 
 
 # 现实时间到游戏时间转换器
-def calculate_game_time(real_time=datetime.now(), day1_str='2024-12-1 8:00'):  # 暂时设置的day1，real_time=datetime.now()
+def calculate_game_time(real_time=datetime.now(), day1_str='2024-7-1 0:00'):  # 暂时设置的day1，real_time=datetime.now()
     # 解析现实时间
     day1 = datetime.strptime(day1_str, "%Y-%m-%d %H:%M")
     # 第1天的开始时间

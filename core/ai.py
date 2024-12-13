@@ -1,7 +1,4 @@
 import sys
-
-sys.path.append(".")
-
 import yaml
 import asyncio
 import websockets
@@ -13,16 +10,6 @@ from websocket_server.character_manager import CharacterManager
 from websocket_server.web_monitor.routes import WebMonitor
 from graph_instance import LangGraphInstance
 from conversation_instance import ConversationInstance
-
-
-class ConfigLoader:
-    def __init__(self, environment):
-        config_path = os.path.join(os.path.dirname(__file__), "config.yaml")
-        with open(config_path, "r") as file:
-            self.config = yaml.safe_load(file)[environment]
-
-    def get(self, key):
-        return self.config.get(key)
 
 
 class ConfigLoader:
@@ -59,9 +46,7 @@ class AI_WS_Server:
             )
             character = self.character_manager.get_character(character_id)
             agent_instance = character.agent_instance
-            # conversation_instance = character.conversation_instance
-
-            character.log_message("received", response)
+            conversation_instance = character.conversation_instance
 
             character.log_message("received", response)
 
@@ -85,14 +70,13 @@ class AI_WS_Server:
 
                     else:  # 处理其他消息：放到对应agent和conversation agent的消息队列
                         message_queue = agent_instance.state["message_queue"]
-                        await message_queue.put(data)
-
-                    # logger.info(
-                    #     f"🧾 User {agent_instance.user_id} message_queue: {message_queue}"
-                    # )
-
-                    # # 处理消息：对话系统
-                    # await conversation_instance.listener(message)
+                        conversation_message_queue = conversation_instance.state[
+                            "message_queue"
+                        ]
+                        await asyncio.gather(
+                            message_queue.put(data),
+                            conversation_message_queue.put(data),
+                        )
 
                 except websockets.ConnectionClosed as e:
                     logger.warning(f"🔗 Connection closed from {character_id}")
@@ -138,8 +122,13 @@ class AI_WS_Server:
         if self.character_manager.has_hosted_character(character_id):
             self.character_manager.unhost_character(character_id)
 
-        agent_instance = LangGraphInstance(character_id, websocket)
-        conversation_instance = None  # ConversationInstance(character_id, websocket)
+        # 使用异步工厂方法创建 LangGraphInstance 实例
+        agent_instance = await LangGraphInstance.create(character_id, websocket)
+        # conversation_instance = ConversationInstance(character_id, websocket)
+        # 在initialize_connection中：
+        conversation_instance = await ConversationInstance.create(
+            character_id, websocket
+        )
 
         self.character_manager.add_character(
             character_id, agent_instance, conversation_instance
@@ -205,6 +194,17 @@ class AI_WS_Server:
 
 
 def main():
+    logger.add(
+        "agent_instance.log",
+        filter=lambda record: record["extra"].get("agent_instance") == True,
+        format="{time} {level} {message}",
+    )
+
+    logger.add(
+        "conversation_instance.log",
+        filter=lambda record: record["extra"].get("conversation_instance") == True,
+        format="{time} {level} {message}",
+    )
     environment = "production" if sys.platform.startswith("linux") else "development"
     config = ConfigLoader(environment)
     server = AI_WS_Server(config)

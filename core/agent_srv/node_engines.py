@@ -24,7 +24,6 @@ from core.agent_srv.node_model import (
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
-from core.db.database_api_utils import make_api_request_async
 from core.backend_service.backend_api_utils import (
     make_api_request_async as make_api_request_async_backend,
     make_api_request_sync as make_api_request_sync_backend,
@@ -32,9 +31,8 @@ from core.backend_service.backend_api_utils import (
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-base_url = (
-    "https://api.aiproxy.io/v1" if os.getenv("ENVIRONMENT") == "production" else None
-)
+base_url = "https://api.aiproxy.io/v1"
+
 obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)
@@ -70,6 +68,23 @@ mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
 async def generate_daily_objective(state: RunningState):
     # BUG 这里如果检验失败会报错，需要重试
     # 重试一次
+    # 获取最新的prompt数据
+
+    
+    # try:
+    #     prompt = await make_api_request_async_backend(
+    #         "GET", f"/agent_prompt/?characterId={state['userid']}"
+    #     )
+    #     logger.info(f"🔍 Prompt: {prompt}")
+    #     prompt_data = prompt.get("data", [{}])[0]  # 如果data为空，返回一个空字典
+    #     state["prompts"] = {
+    #         key: prompt_data[key]
+    #         for key in prompt_data
+    #         if key not in ["characterId", "created_at", "updated_at"]
+    #     }
+    # except (IndexError, KeyError) as e:
+    #     logger.error(f"⛔ Error retrieving prompt data: {e}")
+    #     state["prompts"] = {}  # 设置一个默认值或处理逻辑
     retry_count = 0
     payload = {
         "character_stats": state["character_stats"],
@@ -83,7 +98,6 @@ async def generate_daily_objective(state: RunningState):
         "life_style": state["prompts"]["life_style"],
         "additional_requirements": state["prompts"]["daily_objective_ar"],
     }
-    pprint(payload)
     while retry_count < 3:
         try:
             planner_response: RunningState = await obj_planner.ainvoke(payload)
@@ -100,9 +114,10 @@ async def generate_daily_objective(state: RunningState):
         "characterId": state["userid"],
         "objectives": planner_response.objectives,
     }
-    await make_api_request_async(
-        "POST", "/daily_objectives/store", data=daily_objective_data
-    )
+    # print(daily_objective_data)
+    # await make_api_request_async_backend(
+    #     "POST", "/daily_objectives/store", data=daily_objective_data
+    # )
 
     logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
     return {"decision": {"daily_objective": [planner_response.objectives]}}
@@ -129,7 +144,6 @@ async def generate_meta_action_sequence(state: RunningState):
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],
     }
-    pprint(payload)
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
 
     await state["instance"].send_message(
@@ -174,9 +188,9 @@ async def adjust_meta_action_sequence(state: RunningState):
         "characterId": state["userid"],
         "meta_sequence": meta_action_sequence.meta_action_sequence,
     }
-    await make_api_request_async(
-        "POST", "/meta_sequences/update", data=update_meta_seq_data
-    )
+    # make_api_request_async_backend(
+    #     "POST", "/meta_sequences/update", data=update_meta_seq_data
+    # )
 
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
@@ -289,13 +303,22 @@ async def generate_change_job_cv(state: RunningState):
 
     payload = {
         "character_stats": state["character_stats"],
-        "reflection": state["decision"]["reflection"][-5:],
         "character_info": character_info,
         "available_public_jobs": available_public_jobs,
     }
     cv = await cv_generator.ainvoke(payload)
 
     logger.info(f"📃 CV: {cv}")
+
+    if "instance" in state and state["instance"]:
+        await state["instance"].send_message(
+            {
+                "characterId": state["userid"],
+                "messageName": "cv_submission",
+                "messageCode": 9,
+                "data": {"jobId": cv.job_id, "cv": cv.cv},
+            }
+        )
     return {"decision": {"cv": cv.cv, "newJobId": cv.job_id}}
 
 
@@ -343,6 +366,18 @@ async def generate_mayor_decision(state: RunningState):
     logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
     logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
 
+    if "instance" in state and state["instance"]:
+        await state["instance"].send_message(
+            {
+                "characterId": state["userid"],
+                "messageName": "mayor_decision",
+                "messageCode": 10,
+                "data": {
+                    "decision": mayor_decision.decision,
+                    "comments": mayor_decision.comments,
+                },
+            }
+        )
     return {
         "decision": {
             "mayor_decision": mayor_decision.decision,

@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append(".")
 
 import asyncio
@@ -21,8 +22,11 @@ from core.agent_srv.node_engines import (
     generate_mayor_decision,
 )
 from core.agent_srv.node_model import RunningState
-from core.agent_srv.utils import generate_initial_state_hardcoded, update_dict, get_initial_state_from_db
-
+from core.agent_srv.utils import (
+    generate_initial_state_hardcoded,
+    update_dict,
+    get_initial_state_from_db,
+)
 
 
 class LangGraphInstance:
@@ -41,31 +45,62 @@ class LangGraphInstance:
         self.user_id = user_id
         self.websocket = websocket
         self.signal = None
-        # 初始化 langgraph 实例
-        # TODO We should 根据user_id 检索数据库中的信息，更新stat
-        # self.state = RunningState(
-        #     **generate_initial_state_hardcoded(self.user_id, self.websocket)
-        # )
-        self.state = RunningState(**asyncio.run(get_initial_state_from_db(self.user_id, self.websocket)))
+        self.state = {}  # 初始化为空字典
 
-        self.state["instance"] = self
-        pprint(self.state)
         self.connection_stats = {}
         # 数据竞争时，锁住state
         self.websocket_lock = asyncio.Lock()
         self.graph = self._get_workflow_with_listener()
         self.graph_config = {"recursion_limit": 1e10}
-        # 三个协程
-        # self.listener_task = asyncio.create_task(self.listener())
+        self.action_result = []
+        self.logger = logger.bind(agent_instance=True)
+        self.logger.info(f"LangGraphInstance for user {self.user_id} initialized.")
+
+        # 初始化任务为 None，稍后在异步工厂方法中创建
+        self.msg_processor_task = None
+        self.event_scheduler_task = None
+        self.queue_visualizer_task = None
+        self.task = None
+
+    @classmethod
+    async def create(cls, user_id, websocket=None):
+        """
+        异步工厂方法，用于创建并初始化 LangGraphInstance 的实例。
+
+        Args:
+            user_id (str): 用户的唯一标识符。
+            websocket (WebSocket, optional): 用于通信的 WebSocket 连接。
+
+        Returns:
+            LangGraphInstance: 初始化完成的类实例。
+        """
+        self = cls(user_id, websocket)
+        # 异步获取初始状态
+        initial_state = await get_initial_state_from_db(user_id, websocket)
+        if not initial_state:
+            initial_state = {}
+        self.state = initial_state
+
+        # logger.info(f"🔍 User {self.user_id} state: {self.state}")
+
+        self.state["instance"] = self
+        self.connection_stats = {}
+        self.websocket_lock = asyncio.Lock()
+        self.graph = self._get_workflow_with_listener()
+        self.graph_config = {"recursion_limit": 1e10}
+        self.action_result = []
+
+        # 初始化异步任务
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
-        # self.schedule_task = asyncio.create_task(self.schedule_messages())
+        #self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         self.state["event_queue"].put_nowait("PLAN")
-        logger.info(f"User {self.user_id} workflow initialized")
-        self.action_result = []
+        self.logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
+        return self
+    
+    
     async def msg_processor(self):
         """
         Continuously processes incoming messages from the message queue.
@@ -79,7 +114,7 @@ class LangGraphInstance:
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
             message_code = msg.get("messageCode")
-            # logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
+            # self.logger.info(f"㊗️ 处理信息信息 User {self.user_id} message: {msg}")
             if message_name == "actionresult":
                 # 处理动作结果
                 self.state["decision"]["action_result"].append(msg["data"])
@@ -87,28 +122,28 @@ class LangGraphInstance:
                 if msg["data"]["result"] is False:
                     try:
                         # 如果失败，则往false_action_queue里放
-                        logger.info(
+                        self.logger.info(
                             f"❌❌❌❌❌ User {self.user_id}: Put REPLAN into event_queue"
                         )
                         self.state["false_action_queue"].put_nowait(msg["data"])
                         self.state["event_queue"].put_nowait("REPLAN")
                     except Exception as e:
-                        logger.error(
+                        self.logger.error(
                             f"User {self.user_id}: Error putting REPLAN into event_queue: {e}"
                         )
 
-                logger.info(
+                self.logger.info(
                     f"🏃 User {self.user_id}: Received action result: {msg['data']}"
                 )
                 # 把action_result 和本地時間 记录下来
                 self.action_result.append(
                     {"action_result": msg["data"], "timestamp": datetime.now()}
                 )
-            elif message_name == "prompt_modification":
-                update_dict(self.state["prompts"], msg["data"])
-                logger.info(
-                    f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
-                )
+            # elif message_name == "prompt_modification":
+            #     update_dict(self.state["prompts"], msg["data"])
+            #     self.logger.info(
+            #         f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
+            #     )
             elif message_name == "new_day":
                 self.state["event_queue"].put_nowait("JOB_HUNTING")
             elif message_name == "onestep":
@@ -119,7 +154,7 @@ class LangGraphInstance:
             elif message_code >= 100:
                 pass  # 忽略掉对话系统的消息
             else:
-                logger.error(f"User {self.user_id}: Unknown message: {message_name}")
+                self.logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
     async def event_scheduler(self):
         """
@@ -137,7 +172,7 @@ class LangGraphInstance:
             start_time = time.time()
             while True:
                 if self.signal == "TERMINATE":
-                    logger.error(
+                    self.logger.error(
                         "⛔ Task event_scheduler terminated due to termination signal."
                     )
                     break
@@ -160,9 +195,9 @@ class LangGraphInstance:
                     start_time = time.time()
                     # self.state["event_queue"].put_nowait("REFLECT")
                 # self.state["event_queue"].put_nowait("PLAN")
-                # logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
+                # self.logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
         except Exception as e:
-            logger.error(f"User {self.user_id}: Error in event_scheduler: {e}")
+            self.logger.error(f"User {self.user_id}: Error in event_scheduler: {e}")
 
     async def queue_visualizer(self):
         """
@@ -171,17 +206,17 @@ class LangGraphInstance:
         while True:
             await asyncio.sleep(10)
             if self.signal == "TERMINATE":
-                logger.error(
+                self.logger.error(
                     "⛔ Task queue_visualizer terminated due to termination signal."
                 )
                 break
-            logger.info(
+            self.logger.info(
                 f"🧾 User {self.user_id} event_queue: {self.state['event_queue']}"
             )
-            # logger.info(
+            # self.logger.info(
             #     f"🧾 User {self.user_id} message_queue: {self.state['message_queue']}"
             # )
-            logger.info(
+            self.logger.info(
                 f"❌ User {self.user_id} false_action_queue: {self.state['false_action_queue']}"
             )
 
@@ -202,7 +237,7 @@ class LangGraphInstance:
         """
         while True:
             event = await state["event_queue"].get()
-            logger.info(f"🚦 User {self.user_id}: Event: {event}")
+            self.logger.info(f"🚦 User {self.user_id}: Event: {event}")
 
             if event == "PLAN":
                 return "Objectives_planner"
@@ -223,7 +258,7 @@ class LangGraphInstance:
                 pprint(self.state["decision"]["action_result"])
 
             else:
-                logger.error(f"User {self.user_id}: Unknown event: {event}")
+                self.logger.error(f"User {self.user_id}: Unknown event: {event}")
             # await self.state['message_queue'].task_done()
 
     def _get_workflow_with_listener(self):
@@ -309,8 +344,8 @@ class LangGraphInstance:
         except Exception as e:
             self.signal = "TERMINATE"
 
-            logger.error(f"User {self.user_id} Error in workflow: {e}")
-            logger.error("⛔ Task a_run terminated due to termination signal.")
+            self.logger.error(f"User {self.user_id} Error in workflow: {e}")
+            self.logger.error("⛔ Task a_run terminated due to termination signal.")
             self.task.cancel()
 
     async def send_message(self, message):
@@ -322,21 +357,22 @@ class LangGraphInstance:
         """
         async with self.websocket_lock:
             if self.websocket is None or self.websocket.closed:
-                logger.error(f"⛔ User {self.user_id}: WebSocket is not connected.")
+                self.logger.error(f"⛔ User {self.user_id}: WebSocket is not connected.")
                 self.signal = "TERMINATE"
                 return
             try:
                 await self.websocket.send(json.dumps(message))
-                logger.info(f"📤 User {self.user_id}: Sent message: {message}")
+                self.logger.info(f"📤 User {self.user_id}: Sent message: {message}")
             except websockets.ConnectionClosed:
-                logger.warning(
+                self.logger.warning(
                     f"User {self.user_id}: WebSocket connection closed during send."
                 )
                 # TODO 这里的逻辑之后再写
                 self.signal = "TERMINATE"
                 pass
             except Exception as e:
-                logger.error(f"User {self.user_id}: Error sending message: {e}")
+                self.logger.error(f"User {self.user_id}: Error sending message: {e}")
+
 
 if __name__ == "__main__":
-    a = LangGraphInstance(42)
+    pass

@@ -33,7 +33,7 @@ class ConversationInstance:
     #     self.clear_readonly_task = asyncio.create_task(self.clear_readonly())
     #     self.plan_start_task = asyncio.create_task(self.run_workflow())
     #     # self.plan_start_task = None
-    #     logger.info(f"User {self.user_id} conversation client initialized")
+    #     self.logger.info(f"User {self.user_id} conversation client initialized")
     def __init__(self, user_id, websocket=None):
         self.user_id = user_id
         self.websocket = websocket
@@ -46,6 +46,7 @@ class ConversationInstance:
         self.reply_message_task = None
         self.clear_readonly_task = None
         self.plan_start_task = None
+        self.logger = logger.bind(conversation_instance=True)
 
     @classmethod
     async def create(cls, user_id, websocket=None):
@@ -58,7 +59,7 @@ class ConversationInstance:
         self.clear_readonly_task = asyncio.create_task(self.clear_readonly())
         self.plan_start_task = asyncio.create_task(self.run_workflow())
 
-        logger.info(f"User {self.user_id} conversation client initialized")
+        self.logger.info(f"User {self.user_id} conversation client initialized")
         return self
 
     # listener，监听消息，收入message_queue队列等待处理
@@ -81,26 +82,26 @@ class ConversationInstance:
         try:
             data = json.loads(message)
             await message_queue.put(data)
-            logger.info(
+            self.logger.info(
                 f"👂 User {self.user_id}: Received conversation message: {data} and put into queue"
             )
-            logger.info(
+            self.logger.info(
                 f"🧾 User {self.user_id} conversation message queue: {self.state['message_queue']}"
             )
         except websockets.ConnectionClosed:
-            logger.error(f"User {self.user_id}: WebSocket connection closed.")
+            self.logger.error(f"User {self.user_id}: WebSocket connection closed.")
 
         except Exception as e:
-            logger.error(f"User {self.user_id}: Error in listener: {e}")
+            self.logger.error(f"User {self.user_id}: Error in listener: {e}")
 
     # 任务分拣器，区分agent任务，只读任务和主动发起对话任务
     async def msg_processor(self):
-        logger.info("💬 CONVERSATION_INSTANCE: msg_processor started!")
+        self.logger.info("💬 CONVERSATION_INSTANCE: msg_processor started!")
         while True:
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
             message_code = msg.get("messageCode")
-            logger.info(f"💬 CONVERSATION_INSTANCE: User {self.user_id}: received message: {msg}")
+            self.logger.info(f"💬 CONVERSATION_INSTANCE: User {self.user_id}: received message: {msg}")
             if message_name == "gameTime":
                 data = msg.get("data")
                 time_object = datetime.strptime(data["gameTime"], "%H:%M")
@@ -111,14 +112,14 @@ class ConversationInstance:
                     hours == 0 and minutes <= 35
                 ):  # 如果每隔现实5分钟发送一次时间，则0:35的时间是每天第一条时间消息
                     self.plan_signal = True
-                    logger.info(f"🏃 User {self.user_id}: IT'S A NEW DAY!")
+                    self.logger.info(f"🏃 User {self.user_id}: IT'S A NEW DAY!")
                 # self.plan_start_task = asyncio.create_task(self.run_workflow())
                 # await asyncio.sleep(5)  # 等待创建任务
                 # await self.plan_start_task
             elif (
                 message_name == "read_only"
             ):  # 当前user被玩家夺舍，只需要储存获得的消息，不需要触发回复流程
-                logger.info(
+                self.logger.info(
                     f"User {self.user_id} receives a read-only message: {msg['data']}."
                 )
                 current_time = calculate_game_time()
@@ -133,7 +134,7 @@ class ConversationInstance:
                 readonly_response = make_api_request_sync(
                     "POST", "/conversations/", data=readonly_data
                 )
-                logger.info(
+                self.logger.info(
                     f"A read-only conversation is saved to database: {readonly_response['message']}"
                 )
 
@@ -162,7 +163,7 @@ class ConversationInstance:
                             "dialogue": msg["data"]["dialogue"],
                         }
                     )
-                    logger.info(
+                    self.logger.info(
                         f"User {self.user_id}: A new conversation event just happened."
                     )
                 else:
@@ -172,14 +173,14 @@ class ConversationInstance:
                         "start_day": current_time[0],
                         "dialogue": msg["data"]["dialogue"],
                     }
-                    logger.info(
+                    self.logger.info(
                         f"User {self.user_id}: An existing conversation event continues."
                     )
-                logger.info(
+                self.logger.info(
                     f"User {self.user_id}: the conversation is recorded in the instance and is waited to be handled."
                 )
             elif message_name == "to_agent":  # 当前玩家由agent接管，需要回复的消息
-                logger.info(
+                self.logger.info(
                     f"User {self.user_id} receives a message and is waiting for agent response: {msg['data']}."
                 )
                 await check_conversation_state(
@@ -187,7 +188,7 @@ class ConversationInstance:
                 )  # 判断对话是否结束，分别处理
             elif message_name == "prompt_modification":  # 改prompt
                 new_prompt_data = msg.get("data")
-                logger.info(f"User {self.user_id}: new prompts received.")
+                self.logger.info(f"User {self.user_id}: new prompts received.")
                 if "topic_planner_prompt" in new_prompt_data:
                     new_topic_prompt = new_prompt_data["topic_planner_prompt"]
                     self.state["prompt"]["topic_requirements"] = new_topic_prompt
@@ -196,13 +197,13 @@ class ConversationInstance:
                     self.state["prompt"]["impression_impact"].update(
                         new_impression_prompt
                     )
-                logger.info(
+                self.logger.info(
                     f"User {self.user_id}'s new prompts are: {self.state['prompt']}"
                 )
             elif message_code < 100:
                 pass  # 忽略agent_instance的消息
             else:
-                logger.error(f"User {self.user_id}: Unknown message: {message_name}")
+                self.logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
     # 回复消息任务队列
     async def reply_message(self):
@@ -218,7 +219,7 @@ class ConversationInstance:
     async def clear_readonly(self):
         while True:
             if len(self.state["ongoing_task"]) != 0:
-                logger.info(f"🏃 User {self.user_id}: handling read-only messages...")
+                self.logger.info(f"🏃 User {self.user_id}: handling read-only messages...")
                 await handling_readonly_conversation(self.state)
             await asyncio.sleep(120)  # 每隔2分钟处理一次
 
@@ -227,7 +228,7 @@ class ConversationInstance:
         while True:
             if self.plan_signal:
                 try:
-                    logger.info(
+                    self.logger.info(
                         f"🏃 User {self.user_id}: Begin planning for today's conversations..."
                     )
                     await self.graph.ainvoke(self.state, config=self.graph_config)
@@ -236,9 +237,9 @@ class ConversationInstance:
                     # try:
                     #     await self.plan_start_task
                     # except asyncio.CancelledError:
-                    #     logger.info(f"User {self.user_id}: today's plan-and-start task is finished.")
+                    #     self.logger.info(f"User {self.user_id}: today's plan-and-start task is finished.")
                 except Exception as e:
-                    logger.error(
+                    self.logger.error(
                         f"User {self.user_id} Error in conversation planning and starting workflow: {e}"
                     )
                     self.plan_signal = False
@@ -249,7 +250,7 @@ class ConversationInstance:
             # hour = time_sleep//3600
             # minute = (time_sleep-hour*3600)//60
             # second = time_sleep-hour*3600-minute*60
-            # logger.info(f"User {self.user_id}: time before next plan task is {hour} hours {minute} minutes and {second} seconds.")
+            # self.logger.info(f"User {self.user_id}: time before next plan task is {hour} hours {minute} minutes and {second} seconds.")
             # await asyncio.sleep(time_sleep)  # 设置规划间隔时长
 
 

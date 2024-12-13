@@ -194,6 +194,17 @@ class AI_WS_Server:
 
 
 def main():
+    logger.add(
+        "agent_instance.log",
+        filter=lambda record: record["extra"].get("agent_instance") == True,
+        format="{time} {level} {message}",
+    )
+
+    logger.add(
+        "conversation_instance.log",
+        filter=lambda record: record["extra"].get("conversation_instance") == True,
+        format="{time} {level} {message}",
+    )
     environment = "production" if sys.platform.startswith("linux") else "development"
     config = ConfigLoader(environment)
     server = AI_WS_Server(config)

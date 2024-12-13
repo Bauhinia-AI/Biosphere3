@@ -31,7 +31,9 @@ class AI_WS_Server:
     async def handler(self, websocket, path):
         character_id = None
         try:
-            success, character_id, response = await self.initialize_connection(websocket)
+            success, character_id, response = await self.initialize_connection(
+                websocket
+            )
             await websocket.send(response)
             if not success:
                 logger.warning(
@@ -44,7 +46,7 @@ class AI_WS_Server:
             )
             character = self.character_manager.get_character(character_id)
             agent_instance = character.agent_instance
-            # conversation_instance = character.conversation_instance
+            conversation_instance = character.conversation_instance
 
             character.log_message("received", response)
 
@@ -68,7 +70,13 @@ class AI_WS_Server:
 
                     else:  # 处理其他消息：放到对应agent和conversation agent的消息队列
                         message_queue = agent_instance.state["message_queue"]
-                        await message_queue.put(data)
+                        conversation_message_queue = conversation_instance.state[
+                            "message_queue"
+                        ]
+                        await asyncio.gather(
+                            message_queue.put(data),
+                            conversation_message_queue.put(data),
+                        )
 
                 except websockets.ConnectionClosed as e:
                     logger.warning(f"🔗 Connection closed from {character_id}")
@@ -116,7 +124,11 @@ class AI_WS_Server:
 
         # 使用异步工厂方法创建 LangGraphInstance 实例
         agent_instance = await LangGraphInstance.create(character_id, websocket)
-        conversation_instance = ConversationInstance(character_id, websocket)
+        # conversation_instance = ConversationInstance(character_id, websocket)
+        # 在initialize_connection中：
+        conversation_instance = await ConversationInstance.create(
+            character_id, websocket
+        )
 
         self.character_manager.add_character(
             character_id, agent_instance, conversation_instance

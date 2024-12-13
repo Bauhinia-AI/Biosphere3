@@ -70,12 +70,10 @@ class AI_WS_Server:
 
                     else:  # 处理其他消息：放到对应agent和conversation agent的消息队列
                         message_queue = agent_instance.state["message_queue"]
-                        conversation_message_queue = conversation_instance.state[
-                            "message_queue"
-                        ]
+
                         await asyncio.gather(
                             message_queue.put(data),
-                            conversation_message_queue.put(data),
+                            conversation_instance.listener(data),
                         )
 
                 except websockets.ConnectionClosed as e:

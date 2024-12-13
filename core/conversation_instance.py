@@ -58,14 +58,14 @@ class ConversationInstance:
         self.reply_message_task = asyncio.create_task(self.reply_message())
         self.clear_readonly_task = asyncio.create_task(self.clear_readonly())
         self.plan_start_task = asyncio.create_task(self.run_workflow())
-        self.listener_task = asyncio.create_task(self.listener())
+        # self.listener_task = asyncio.create_task(self.listener())
 
         self.logger.info(f"User {self.user_id} conversation client initialized")
         return self
 
     # listener，监听消息，收入message_queue队列等待处理
-    async def listener(self, message):
-        print("Listener started!")
+    async def listener(self, data):
+        # print("Listener started!")
         if self.is_initial:
             # 进一步检查今天是否已经进行过对话，避免对话过多
             current_time = calculate_game_time()
@@ -76,12 +76,14 @@ class ConversationInstance:
             )
             if not check_response["data"]:
                 self.plan_signal = True
+            elif len(check_response["data"]) < 3:
+                self.plan_signal = True
             self.is_initial = False
         websocket = self.state["websocket"]
         message_queue = self.state["message_queue"]
 
         try:
-            data = json.loads(message)
+            # data = json.loads(message)
             await message_queue.put(data)
             self.logger.info(
                 f"👂 User {self.user_id}: Received conversation message: {data} and put into queue"

@@ -4,7 +4,6 @@ obj_planner_prompt = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-
             """You are the daily objectives planner in a RPG game. Come up with a general daily objectives. 
             
             The user profile is:{character_stats}. 
@@ -301,5 +300,46 @@ mayor_decision_prompt = ChatPromptTemplate.from_template(
         "comments": "This job is not suitable for this player because there is too big a gap in education level."
     }}
     Decision:
+    """
+)
+
+generate_character_arc_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, generate a character arc for the user.
+    User State:
+    {character_stats}
+    Character Info:
+    {character_info}
+    Daily Objectives:
+    {daily_objectives}
+    Daily Reflection:
+    {daily_reflection}
+    Daily Action Results:
+    {action_results}
+
+    You should carefully analyze the user's current state, the user's past actions, and any other relevant factors to decide the character arc.
+    Character Arc should include:
+
+    belief: str = Field(description="belief")
+    mood: str = Field(description="mood")
+    values: str = Field(description="values")
+    habits: str = Field(description="habits")
+    personality: str = Field(description="personality")
+
+    """
+)
+
+generate_daily_reflection_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, generate a diary-like daily reflection for the user.
+    You can have different tone and style for different users based on their actions or stats.Use first person to describe the reflection.\n
+    Do not output more than 100 words.\n
+    User State:
+    {character_stats}
+    Daily Objectives:
+    {daily_objectives}
+    Failed Actions:
+    {failed_actions}\n
+
+    Daily Reflection Example:
+    Today I failed to study for 2 hours. Perhaps before going to school, I should earn enough money to pay the tuition fee.\n
     """
 )

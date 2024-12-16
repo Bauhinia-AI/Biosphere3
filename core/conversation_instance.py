@@ -68,7 +68,7 @@ class ConversationInstance:
         # print("Listener started!")
         if self.is_initial:
             # 进一步检查今天是否已经进行过对话，避免对话过多
-            current_time = calculate_game_time()
+            current_time = calculate_game_time(real_time=datetime.now())
             current_day = current_time[0]
             check_data = {"characterId": self.user_id, "day": current_day}
             check_response = make_api_request_sync(
@@ -125,7 +125,7 @@ class ConversationInstance:
                 self.logger.info(
                     f"User {self.user_id} receives a read-only message: {msg['data']}."
                 )
-                current_time = calculate_game_time()
+                current_time = calculate_game_time(real_time=datetime.now())
 
                 # 存储对话到数据库
                 readonly_data = {

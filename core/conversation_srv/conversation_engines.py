@@ -66,14 +66,17 @@ async def generate_daily_conversation_plan(state: ConversationState):
 
     # 获取daily objectives
     get_daily_objectives_data = {
-        "characterId": state["userid"],
-        "k": 1
+        "characterId": state["userid"]
     }
-    objective_response = make_api_request_sync("GET", "/daily_objectives/", params=get_daily_objectives_data)
+    objective_response = make_api_request_sync("GET", "/decision/", params=get_daily_objectives_data)
     if objective_response["data"] is not None:
-        memory = objective_response["data"]
+        if "daily_objective" in objective_response["data"][0]:
+            memory = objective_response["data"][0]["daily_objective"]
+        else:
+            memory = ["No objectives."]
     else:
         memory = []
+    logger.info(f"User {state['userid']} current daily objectives are: {memory}")
 
     # 获取角色弧光
     arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
@@ -83,12 +86,12 @@ async def generate_daily_conversation_plan(state: ConversationState):
         arc_data = arc_response["data"]
     logger.info(f"User {state['userid']} current character arc is {arc_data}")
 
-    #获取对话prompt: topic
+    # 获取对话prompt: topic
     topic_response = make_api_request_sync("GET", "/conversation_prompt/", params={"characterId": state["userid"]})
     if not topic_response["data"]:
         topic_requirement = ""
     else:
-        topic_requirement = topic_response["data"]["topic_requirements"]
+        topic_requirement = topic_response["data"][0]["topic_requirements"]
 
     # 生成对话主题列表
     retry_count = 0
@@ -123,25 +126,26 @@ async def generate_daily_conversation_plan(state: ConversationState):
     except ValueError as e:
         logger.error(f"⛔ User {state['userid']} Error in planning conversation: {e}")
 
-    for index, start_time in enumerate(start_time_list):
-        # start_time = start_time_list[index]
-        talk = final_topic_list[index]
-        # 重组格式
-        single_conversation = ConversationTask(
-            from_id=state["userid"],
-            to_id=0,  # talk["userid"],
-            start_time=start_time,
-            topic=talk,
-            dialogue=[],  # [{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
-            Finish=[False, False]
-        )
-        conversation_plan.conversations.append(single_conversation)
+    if start_time_list:
+        for index, start_time in enumerate(start_time_list):
+            # start_time = start_time_list[index]
+            talk = final_topic_list[index]
+            # 重组格式
+            single_conversation = ConversationTask(
+                from_id=state["userid"],
+                to_id=0,  # talk["userid"],
+                start_time=start_time,
+                topic=talk,
+                dialogue=[],  # [{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
+                Finish=[False, False]
+            )
+            conversation_plan.conversations.append(single_conversation)
 
-    # 更新每日计划到state
-    state["daily_task"] = conversation_plan.conversations
+        # 更新每日计划到state
+        state["daily_task"] = conversation_plan.conversations
 
-    logger.info(f"🧠 DAILY CONVERSATION PLAN GENERATED...")
-    logger.info(f"Daily conversation plan of User {state['userid']}: {state['daily_task']}")
+        logger.info(f"🧠 DAILY CONVERSATION PLAN GENERATED...")
+        logger.info(f"Daily conversation plan of User {state['userid']}: {state['daily_task']}")
     return state
 
 
@@ -233,7 +237,7 @@ async def start_conversation(state: ConversationState):
         # rag 对话对象
         encounter_data = {
                     "from_id": state["userid"],
-                    "k": 3
+                    "k": 10
                 }
         encounter_response = make_api_request_sync("GET", "/encounter_count/by_from_id", params=encounter_data)
 
@@ -259,7 +263,7 @@ async def start_conversation(state: ConversationState):
             rag_response = make_api_request_sync("POST", "/characters/rag_in_list", data=character_rag_data)
 
         current_topic_list = {}
-        if len(rag_response['data']) == 0:
+        if not rag_response['data']:
             logger.info(f"User {state['userid']}: There is no suitable person to talk to on this topic {current_talk['topic']}. Randomly choose one.")
             id_data = random_user_with_power(5, state['userid'])
             rag_response["data"] = [{"characterId": id_data}]
@@ -469,7 +473,7 @@ async def check_conversation_state(state: ConversationState, message: RunningCon
         logger.info(f"🧠 RECEIVE MESSAGE. WAITING FOR RESPONSE...")
     elif message["Finish"] == [True, True]:
         logger.info(f"🧠 SOME CONVERSATIONS ARE FINISHED. UPDATING IMPRESSION...")
-        game_time = calculate_game_time()
+        game_time = calculate_game_time(real_time=datetime.now())
         conversation = {
             "characterIds": [message["from_id"], message["to_id"]],
             "dialogue": message["dialogue"],
@@ -555,7 +559,7 @@ async def generate_knowledge(state: ConversationState):
     profile = state["character_stats"]
 
     # 获得当天所有通话的记录
-    current_time = calculate_game_time()
+    current_time = calculate_game_time(real_time=datetime.now())
     talked_data = {
         "characterId": state["userid"],
         "day": current_time[0]
@@ -781,23 +785,32 @@ def random_user_with_power(k: int, user: int):
 
 # 随机生成k次对话发生的时间，从当前时间开始到发条值结束前10分钟为之。时间输出为游戏时间
 def generate_talk_time(k: int, id: int):
-    day, hour, minute = calculate_game_time()
+    day, hour, minute = calculate_game_time(real_time=datetime.now())
 
     endpoint = "/characterPower/getByCharacterId/" + str(id)
     power_check = make_backend_api_request_sync("GET", endpoint=endpoint)
     if not power_check["data"]:
         return []
-    elif power_check["data"]["currentPower"] < 6:
+    elif power_check["data"]["currentPower"] < 5:
         return []
     power_minute = power_check["data"]["currentPower"]
 
-    power_minute = min(power_minute * 7, 1440)
+    largest_minute = (24-hour)*60+(0-minute)
+    power_minute = min(power_minute, largest_minute//7)
 
     k = min(k, power_minute//10)    # 预留通信时间，控制通话次数
+    time_slot = power_minute//k
 
     time_list = []
-    random_numbers = [random.randint(2, power_minute-10) for _ in range(k)]
-    sorted_numbers = sorted(random_numbers)
+    # random_numbers = [random.randint(2, power_minute-20) for _ in range(k)]
+    # sorted_numbers = sorted(random_numbers)
+    sorted_numbers = []
+    for kk in range(k):
+        sorted_numbers.append(random.randint(kk*time_slot+5, (kk+1)*time_slot-5)*7)
+
+    # 测试用，让第一次对话尽快发生
+    sorted_numbers[0] = 5
+
     for t in sorted_numbers:
         add_hour, add_minute = divmod(minute+t, 60)
         if (hour+add_hour) >= 24:

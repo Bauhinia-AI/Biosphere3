@@ -20,6 +20,8 @@ from core.agent_srv.node_engines import (
     sensing_environment,
     generate_change_job_cv,
     generate_mayor_decision,
+    generate_character_arc,
+    generate_daily_reflection,
 )
 from core.agent_srv.node_model import RunningState
 from core.agent_srv.utils import (
@@ -93,14 +95,13 @@ class LangGraphInstance:
         # 初始化异步任务
         self.msg_processor_task = asyncio.create_task(self.msg_processor())
         self.event_scheduler_task = asyncio.create_task(self.event_scheduler())
-        #self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
+        # self.queue_visualizer_task = asyncio.create_task(self.queue_visualizer())
         self.state["event_queue"].put_nowait("PLAN")
         self.logger.info(f"User {self.user_id} workflow initialized")
         self.task = asyncio.create_task(self.a_run())
 
         return self
-    
-    
+
     async def msg_processor(self):
         """
         Continuously processes incoming messages from the message queue.
@@ -154,7 +155,9 @@ class LangGraphInstance:
             elif message_code >= 100:
                 pass  # 忽略掉对话系统的消息
             else:
-                self.logger.error(f"User {self.user_id}: Unknown message: {message_name}")
+                self.logger.error(
+                    f"User {self.user_id}: Unknown message: {message_name}"
+                )
 
     async def event_scheduler(self):
         """
@@ -192,8 +195,13 @@ class LangGraphInstance:
                 if time.time() - start_time > 300:
                     # BUG REFLECT raise error
                     self.state["event_queue"].put_nowait("PLAN")
-                    start_time = time.time()
-                    # self.state["event_queue"].put_nowait("REFLECT")
+                elif time.time() - start_time > 600:
+                    self.state["event_queue"].put_nowait("DAILY_REFLECTION")
+                elif time.time() - start_time > 900:
+                    self.state["event_queue"].put_nowait("CHARACTER_ARC")
+
+                start_time = time.time()
+                # self.state["event_queue"].put_nowait("REFLECT")
                 # self.state["event_queue"].put_nowait("PLAN")
                 # self.logger.info(f"🆕 User {self.user_id}: Put PLAN into event_queue")
         except Exception as e:
@@ -242,20 +250,17 @@ class LangGraphInstance:
             if event == "PLAN":
                 return "Objectives_planner"
 
-            elif event == "REFLECT":
-                return "Reflect_And_Summarize"
-
             elif event == "JOB_HUNTING":
                 return "Change_Job"
 
-            elif event == "gameevent":
-                pass
+            elif event == "CHARACTER_ARC":
+                return "Character_Arc"
 
             elif event == "REPLAN":
                 return "Replan_Action"
 
-            elif event == "check":
-                pprint(self.state["decision"]["action_result"])
+            elif event == "DAILY_REFLECTION":
+                return "Daily_Reflection"
 
             else:
                 self.logger.error(f"User {self.user_id}: Unknown event: {event}")
@@ -268,10 +273,11 @@ class LangGraphInstance:
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
         workflow.add_node("Change_Job", generate_change_job_cv)
         workflow.add_node("Mayor_Decision", generate_mayor_decision)
+        workflow.add_node("Character_Arc", generate_character_arc)
+        workflow.add_node("Daily_Reflection", generate_daily_reflection)
         # workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
 
         workflow.add_node("Replan_Action", replan_action)
-        # workflow.add_node("Reflect_And_Summarize", reflect_and_summarize)
 
         workflow.set_entry_point("Sensing_Route")
         workflow.add_conditional_edges("Sensing_Route", self.event_router)
@@ -283,52 +289,9 @@ class LangGraphInstance:
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
         workflow.add_edge("Change_Job", "Mayor_Decision")
         workflow.add_edge("Mayor_Decision", "Sensing_Route")
+        workflow.add_edge("Character_Arc", "Sensing_Route")
+        workflow.add_edge("Daily_Reflection", "Sensing_Route")
         # workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
-        # 循环回消息处理
-        # workflow.add_edge("adjust_meta_action_sequence", "Sensing_Route")
-        # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
-
-        # 每隔五次目标或3分钟反思一次
-        # def should_reflect(state: RunningState) -> bool:
-        #     objectives_count = len(state.get("decision", {}).get("daily_objective", []))
-        #     last_reflection_time = (
-        #         state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
-        #     )
-
-        #     if last_reflection_time:
-        #         time_since_last = datetime.now() - datetime.fromisoformat(
-        #             last_reflection_time
-        #         )
-        #         return time_since_last.total_seconds() > 180  # 3分钟
-
-        #     return objectives_count > 0 and objectives_count % 5 == 0
-
-        # # workflow.add_conditional_edges(
-        # #     "Process_Messages",
-        # #     lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
-        # # )
-        # # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
-
-        # # 每隔五次目标或3分钟反思一次
-        # def should_reflect(state: RunningState) -> bool:
-        #     objectives_count = len(state.get("decision", {}).get("daily_objective", []))
-        #     last_reflection_time = (
-        #         state.get("decision", {}).get("reflections", [{}])[-1].get("timestamp")
-        #     )
-
-        #     if last_reflection_time:
-        #         time_since_last = datetime.now() - datetime.fromisoformat(
-        #             last_reflection_time
-        #         )
-        #         return time_since_last.total_seconds() > 180  # 3分钟
-
-        #     return objectives_count > 0 and objectives_count % 5 == 0
-
-        # workflow.add_conditional_edges(
-        #     "Process_Messages",
-        #     lambda x: "Reflect_And_Summarize" if should_reflect(x) else "Sensing_Route",
-        # )
-        # workflow.add_edge("Reflect_And_Summarize", "Sensing_Route")
 
         return workflow.compile()
 
@@ -357,7 +320,9 @@ class LangGraphInstance:
         """
         async with self.websocket_lock:
             if self.websocket is None or self.websocket.closed:
-                self.logger.error(f"⛔ User {self.user_id}: WebSocket is not connected.")
+                self.logger.error(
+                    f"⛔ User {self.user_id}: WebSocket is not connected."
+                )
                 self.signal = "TERMINATE"
                 return
             try:

@@ -131,6 +131,16 @@ class Response(BaseModel):
     response: str
 
 
+class CharacterArc(BaseModel):
+    """Character arc to follow in future"""
+
+    belief: str = Field(description="belief")
+    mood: str = Field(description="mood")
+    values: str = Field(description="values")
+    habits: str = Field(description="habits")
+    personality: str = Field(description="personality")
+
+
 if __name__ == "__main__":
     import pprint
     run = RunningState()

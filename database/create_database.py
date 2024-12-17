@@ -187,7 +187,7 @@ if __name__ == "__main__":
     # app.setup_database(config.daily_objective_collection_name)
     # app.setup_database(config.plan_collection_name)
     # app.setup_database(config.meta_seq_collection_name)
-    # app.setup_database(config.conversation_collection_name)
+    app.setup_database(config.conversation_collection_name)
     # app.setup_database(config.diary_collection_name)
     # app.setup_database(
     #     config.encounter_count_collection_name, unique_index_fields=["from_id", "to_id"]
@@ -210,8 +210,7 @@ if __name__ == "__main__":
     #     config.conversation_prompt_collection_name, unique_index_fields=["characterId"]
     # )
     # app.setup_database(config.decision_collection_name)
-    app.setup_database(config.current_pointer_collection_name)
-
+    # app.setup_database(config.current_pointer_collection_name)
 
     # # Import data
     # app.import_data_into_collection(

@@ -81,57 +81,6 @@ class DomainSpecificQueries:
         # Return in JSON format
         return [doc[item] for doc in documents]
 
-    def get_conversations_with_characterIds(self, characterIds_list, k):
-        query = {"characterIds": {"$all": characterIds_list}}
-        documents = self.db_utils.find_documents(
-            collection_name=config.conversation_collection_name,
-            query=query,
-            limit=k,
-        )
-        return documents
-
-    def get_conversations_containing_characterId(self, characterId, k):
-        query = {"characterIds": characterId}
-        documents = self.db_utils.find_documents(
-            collection_name=config.conversation_collection_name,
-            query=query,
-            limit=k,
-        )
-        return documents
-
-    def get_conversation_by_id_day_time(self, characterIds_list, day, time):
-        query = {
-            "characterIds": {"$all": characterIds_list},
-            "start_day": day,
-            "start_time": time,
-        }
-        documents = self.db_utils.find_documents(
-            collection_name=config.conversation_collection_name,
-            query=query,
-        )
-        return documents
-
-    def get_conversations_by_id_and_day(self, characterId, day):
-        query = {"characterIds": characterId, "start_day": day}
-        documents = self.db_utils.find_documents(
-            collection_name=config.conversation_collection_name,
-            query=query,
-        )
-        return documents
-
-    def store_conversation(self, characterIds, dialogue, start_day, start_time):
-        document = {
-            "characterIds": characterIds,
-            "start_day": start_day,  # 新增字段
-            "start_time": start_time,  # 新增字段
-            "dialogue": dialogue,
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        inserted_id = self.db_utils.insert_document(
-            config.conversation_collection_name, document
-        )
-        return inserted_id
-
     def store_impression(self, from_id, to_id, impression):
         document = {
             "from_id": from_id,
@@ -209,17 +158,18 @@ class DomainSpecificQueries:
             else:
                 query["intimacy_level"] = {"$lte": intimacy_level_max}
 
-        # 如果 have_conversation 为 True，获取所有包含 from_id 的 characterIds
+        # 如果 have_conversation 为 True，获取所有包含 from_id 的对话
         if have_conversation and from_id is not None:
             conversation_documents = self.db_utils.find_documents(
                 collection_name=config.conversation_collection_name,
-                query={"characterIds": from_id},
-                projection={"characterIds": 1},
+                query={"$or": [{"from_id": from_id}, {"to_id": from_id}]},
+                projection={"from_id": 1, "to_id": 1},
             )
             # 提取所有相关的 characterIds
             related_ids = set()
             for doc in conversation_documents:
-                related_ids.update(doc["characterIds"])
+                related_ids.add(doc["from_id"])
+                related_ids.add(doc["to_id"])
             # 移除 from_id 自身
             related_ids.discard(from_id)
             # 更新查询条件
@@ -1277,6 +1227,7 @@ class DomainSpecificQueries:
             latest_doc[field] = merged_list
 
         return [latest_doc]
+
     def store_current_pointer(self, characterId, current_pointer):
         document = {
             "characterId": characterId,
@@ -1322,6 +1273,66 @@ class DomainSpecificQueries:
         )
         return result
 
+    def store_conversation(
+        self,
+        from_id,
+        to_id,
+        start_time,
+        start_day,
+        message,
+        send_gametime,
+        send_realtime,
+    ):
+        document = {
+            "from_id": from_id,
+            "to_id": to_id,
+            "start_time": start_time,
+            "start_day": start_day,
+            "message": message,
+            "send_gametime": send_gametime,
+            "send_realtime": send_realtime,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        inserted_id = self.db_utils.insert_document(
+            config.conversation_collection_name, document
+        )
+        return inserted_id
+
+    def get_conversation(
+        self,
+        from_id=None,
+        to_id=None,
+        k=None,
+        start_day=None,
+        start_time=None,
+        characterId=None,
+    ):
+        query = {}
+
+        # 根据提供的参数构建查询条件
+        if from_id is not None and to_id is not None:
+            query["from_id"] = from_id
+            query["to_id"] = to_id
+
+        if start_day is not None:
+            query["start_day"] = start_day
+
+        if start_time is not None:
+            query["start_time"] = start_time
+
+        if characterId is not None:
+            query["$or"] = [{"from_id": characterId}, {"to_id": characterId}]
+
+        # 执行查询
+        documents = self.db_utils.find_documents(
+            collection_name=config.conversation_collection_name,
+            query=query,
+            limit=k if k is not None else 0,  # 如果 k 为 None，则不限制数量
+            sort=[("created_at", DESCENDING)] if k is not None else None,
+        )
+        return documents
+
+
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
@@ -1358,7 +1369,6 @@ if __name__ == "__main__":
     print("\n验证删除后的 current_pointer...")
     deleted_documents = queries.get_current_pointer(characterId)
     print("删除后的 current_pointer 文档：", deleted_documents)
-
 
     # print("存储决策数据...")
 

@@ -164,91 +164,6 @@ def test_intimacy_decrease_all():
     print(json.dumps(response, indent=4))
 
 
-def test_conversations_with_character_ids():
-    print("Testing Conversations with Character IDs...")
-    # Ensure conversations exist before getting
-    store_conversation_data = {
-        "characterIds": [101, 102],
-        "dialogue": [
-            {"speaker": "101", "line": "Hello, how are you?"},
-            {"speaker": "102", "line": "I'm good, thank you!"},
-        ],
-        "start_day": 5,
-        "start_time": "14:30",
-    }
-    make_api_request_sync("POST", "/conversations/", data=store_conversation_data)
-
-    conversations_with_ids_params = {"characterIds_list": "101,102", "k": 2}
-    response = make_api_request_sync(
-        "GET", "/conversations/with_character_ids", params=conversations_with_ids_params
-    )
-    print(json.dumps(response, indent=4))
-
-
-def test_conversations_containing_character_id():
-    print("Testing Conversations Containing Character ID...")
-    # Ensure conversations exist before getting
-    store_conversation_data = {
-        "characterIds": [101, 103],
-        "dialogue": [
-            {"speaker": "101", "line": "Are you ready for the mission?"},
-            {"speaker": "103", "line": "Absolutely, let's go!"},
-        ],
-        "start_day": 6,
-        "start_time": "10:00",
-    }
-    make_api_request_sync("POST", "/conversations/", data=store_conversation_data)
-
-    conversations_containing_id_params = {"characterId": 101, "k": 3}
-    response = make_api_request_sync(
-        "GET",
-        "/conversations/containing_character_id",
-        params=conversations_containing_id_params,
-    )
-    print(json.dumps(response, indent=4))
-
-
-def test_conversations_store():
-    print("Testing Conversations Store...")
-    store_conversation_data = {
-        "characterIds": [101, 102],
-        "dialogue": [
-            {"speaker": "101", "line": "Hello, how are you?"},
-            {"speaker": "102", "line": "I'm good, thank you!"},
-        ],
-        "start_day": 5,
-        "start_time": "14:30",
-    }
-    response = make_api_request_sync(
-        "POST", "/conversations/", data=store_conversation_data
-    )
-    print(json.dumps(response, indent=4))
-
-
-def test_conversations_by_id_day_time():
-    print("Testing Conversations by ID, Day, and Time...")
-    conversation_by_id_day_time_params = {
-        "day": 5,
-        "time": "14:30",
-        "characterIds_list": "101,102",
-    }
-    response = make_api_request_sync(
-        "GET",
-        "/conversations/by_id_day_time",
-        params=conversation_by_id_day_time_params,
-    )
-    print(json.dumps(response, indent=4))
-
-
-def test_conversations_by_id_and_day():
-    print("Testing Conversations by ID and Day...")
-    conversations_by_id_and_day_params = {"characterId": 101, "day": 5}
-    response = make_api_request_sync(
-        "GET", "/conversations/by_id_and_day", params=conversations_by_id_and_day_params
-    )
-    print(json.dumps(response, indent=4))
-
-
 def test_encounter_count_store():
     print("Testing Encounter Count Store...")
     store_encounter_count_data = {"from_id": 101, "to_id": 103, "count": 1}
@@ -897,59 +812,157 @@ def test_decision_get():
     response = make_api_request_sync("GET", "/decision/", params=get_decision_params)
     print(json.dumps(response, indent=4))
 
+
 def test_current_pointer_store():
     print("Testing Current Pointer Store...")
-    store_current_pointer_data = {
-        "characterId": 101,
-        "current_pointer": "pointer_1"
-    }
+    store_current_pointer_data = {"characterId": 101, "current_pointer": "pointer_1"}
     response = make_api_request_sync(
         "POST", "/current_pointer/", data=store_current_pointer_data
     )
     print(json.dumps(response, indent=4))
 
+
 def test_current_pointer_get():
     print("Testing Current Pointer Get...")
     get_current_pointer_params = {"characterId": 101}
     response = make_api_request_sync(
-        "GET", f"/current_pointer/{get_current_pointer_params['characterId']}", params={}
+        "GET",
+        f"/current_pointer/{get_current_pointer_params['characterId']}",
+        params={},
     )
     print(json.dumps(response, indent=4))
 
+
 def test_current_pointer_update():
     print("Testing Current Pointer Update...")
-    update_current_pointer_data = {
-        "characterId": 101,
-        "current_pointer": "pointer_2"
-    }
+    update_current_pointer_data = {"characterId": 101, "current_pointer": "pointer_2"}
     response = make_api_request_sync(
         "PUT", "/current_pointer/", data=update_current_pointer_data
     )
     print(json.dumps(response, indent=4))
 
+
 def test_current_pointer_delete():
     print("Testing Current Pointer Delete...")
     delete_current_pointer_params = {"characterId": 101}
     response = make_api_request_sync(
-        "DELETE", f"/current_pointer/{delete_current_pointer_params['characterId']}", params={}
+        "DELETE",
+        f"/current_pointer/{delete_current_pointer_params['characterId']}",
+        params={},
+    )
+    print(json.dumps(response, indent=4))
+
+
+# def test_conversation_store():
+#     print("Testing Conversation Store...")
+#     store_conversation_data = {
+#         "from_id": 1,
+#         "to_id": 2,
+#         "start_time": "10:00",
+#         "start_day": 1,
+#         "message": "Hello! How are you?",
+#         "send_gametime": [1, "10:02"],
+#         "send_realtime": "2024-12-16 20:00",
+#     }
+#     response = make_api_request_sync("POST", "/conversation/", data=store_conversation_data)
+#     print(json.dumps(response, indent=4))
+
+
+def test_conversation_store():
+    print("Testing Conversation Store...")
+    conversations = [
+        {
+            "from_id": 1,
+            "to_id": 2,
+            "start_time": "10:00",
+            "start_day": 1,
+            "message": "Hello! How are you?",
+            "send_gametime": [1, "10:02"],
+            "send_realtime": "2024-12-16 20:00",
+        },
+        {
+            "from_id": 1,
+            "to_id": 2,
+            "start_time": "11:00",
+            "start_day": 1,
+            "message": "Are you coming to the meeting?",
+            "send_gametime": [1, "11:05"],
+            "send_realtime": "2024-12-16 21:00",
+        },
+        {
+            "from_id": 2,
+            "to_id": 1,
+            "start_time": "12:00",
+            "start_day": 1,
+            "message": "Yes, I'll be there.",
+            "send_gametime": [1, "12:10"],
+            "send_realtime": "2024-12-16 22:00",
+        },
+        {
+            "from_id": 1,
+            "to_id": 3,
+            "start_time": "13:00",
+            "start_day": 2,
+            "message": "Did you finish the report?",
+            "send_gametime": [2, "13:15"],
+            "send_realtime": "2024-12-17 09:00",
+        },
+    ]
+
+    for conversation in conversations:
+        response = make_api_request_sync("POST", "/conversation/", data=conversation)
+        print(json.dumps(response, indent=4))
+        time.sleep(0.5)  # 确保每条记录有不同的时间戳
+
+
+def test_conversation_get():
+    print("Testing Conversation Get...")
+    get_conversation_params = {"from_id": 1, "to_id": 2, "k": 5}
+    response = make_api_request_sync(
+        "GET", "/conversation/", params=get_conversation_params
+    )
+    print(json.dumps(response, indent=4))
+
+    # Test with start_day and start_time
+    get_conversation_params = {
+        "from_id": 1,
+        "to_id": 2,
+        "start_day": 1,
+        "start_time": "10:00",
+    }
+    response = make_api_request_sync(
+        "GET", "/conversation/", params=get_conversation_params
+    )
+    print(json.dumps(response, indent=4))
+
+    # Test with characterId and start_day
+    get_conversation_params = {"characterId": 1, "start_day": 1}
+    response = make_api_request_sync(
+        "GET", "/conversation/", params=get_conversation_params
     )
     print(json.dumps(response, indent=4))
 
 
 def main():
-    # 测试 current_pointer 的增删查改
-    test_current_pointer_store()
-    time.sleep(1)
-    test_current_pointer_get()
-    time.sleep(1)
-    test_current_pointer_update()
-    time.sleep(1)
-    test_current_pointer_get()  # 验证更新
-    time.sleep(1)
-    test_current_pointer_delete()
-    time.sleep(1)
-    test_current_pointer_get()  # 验证删除
 
+    # # Test conversation endpoints
+    # test_conversation_store()
+    # time.sleep(1)
+    test_conversation_get()
+    time.sleep(1)
+
+    # # 测试 current_pointer 的增删查改
+    # test_current_pointer_store()
+    # time.sleep(1)
+    # test_current_pointer_get()
+    # time.sleep(1)
+    # test_current_pointer_update()
+    # time.sleep(1)
+    # test_current_pointer_get()  # 验证更新
+    # time.sleep(1)
+    # test_current_pointer_delete()
+    # time.sleep(1)
+    # test_current_pointer_get()  # 验证删除
 
     # test_decision_store()
     # time.sleep(1)  # 等待数据写入
@@ -983,18 +996,6 @@ def main():
     # test_intimacy_update()
     # time.sleep(1)
     # test_intimacy_decrease_all()
-    # time.sleep(1)
-
-    # # Conversations
-    # test_conversations_with_character_ids()
-    # time.sleep(1)
-    # test_conversations_containing_character_id()
-    # time.sleep(1)
-    # test_conversations_store()
-    # time.sleep(1)
-    # test_conversations_by_id_day_time()
-    # time.sleep(1)
-    # test_conversations_by_id_and_day()
     # time.sleep(1)
 
     # # Encounter Count

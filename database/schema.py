@@ -363,44 +363,52 @@ validators = {
         "$jsonSchema": {
             "bsonType": "object",
             "required": [
-                "characterIds",
-                "start_day",
+                "from_id",
+                "to_id",
                 "start_time",
-                "dialogue",
-                "created_at",
+                "start_day",
+                "message",
+                "send_gametime",
+                "send_realtime"
             ],
             "properties": {
-                "characterIds": {
-                    "bsonType": "array",
-                    "description": "包含参与对话的character ID的数组, 必须为整数数组且为必填项",
-                    "items": {
-                        "bsonType": "int",
-                        "description": "character的ID, 必须为整数",
-                    },
+                "from_id": {
+                    "bsonType": "int",
+                    "description": "发送消息的角色ID, 必须为整数且为必填项",
+                },
+                "to_id": {
+                    "bsonType": "int",
+                    "description": "接收消息的角色ID, 必须为整数且为必填项",
+                },
+                "start_time": {
+                    "bsonType": "string",
+                    "description": "对话开始的时间, 必须为字符串且为必填项, 格式为 'HH:MM'",
                 },
                 "start_day": {
                     "bsonType": "int",
                     "description": "对话开始的天数, 必须为整数且为必填项",
                 },
-                "start_time": {
+                "message": {
                     "bsonType": "string",
-                    "description": "对话开始的时间, 必须为字符串且为必填项, 格式为 'HH:MM:SS'",
+                    "description": "消息内容, 必须为字符串且为必填项",
                 },
-                "dialogue": {
+                "send_gametime": {
                     "bsonType": "array",
-                    "description": "对话内容, 必须为对象数组且为必填项",
-                    "items": {
-                        "bsonType": "object",
-                        "description": "对话中的单个发言",
-                        "additionalProperties": {
-                            "bsonType": "string",
-                            "description": "发言内容, 必须为字符串",
+                    "description": "游戏内发送时间, 必须为数组且为必填项",
+                    "items": [
+                        {
+                            "bsonType": "int",
+                            "description": "游戏内天数, 必须为整数",
                         },
-                    },
+                        {
+                            "bsonType": "string",
+                            "description": "游戏内时间, 格式为 'HH:MM'",
+                        }
+                    ]
                 },
-                "created_at": {
+                "send_realtime": {
                     "bsonType": "string",
-                    "description": "创建时间, 必须为字符串且为必填项",
+                    "description": "实际发送时间, 必须为字符串且为必填项, 格式为 'YYYY-MM-DD HH:MM'",
                 },
             },
         }

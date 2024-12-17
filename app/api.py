@@ -5,6 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
+from pyparsing import Union
 import uvicorn
 import sys
 import os
@@ -232,34 +233,6 @@ class UpdateIntimacyRequest(BaseModel):
     from_id: int
     to_id: int
     new_intimacy_level: int
-
-
-class ConversationsWithcharactersRequest(BaseModel):
-    characterIds_list: List[int]
-    k: Optional[int] = 1
-
-
-class ConversationsContainingcharacterRequest(BaseModel):
-    characterId: int
-    k: Optional[int] = 1
-
-
-class StoreConversationRequest(BaseModel):
-    characterIds: List[int]
-    dialogue: List[Dict[str, str]]
-    start_day: int
-    start_time: str
-
-
-class GetConversationByIdDayTimeRequest(BaseModel):
-    characterIds_list: List[int]
-    day: int
-    time: str
-
-
-class GetConversationsByIdAndDayRequest(BaseModel):
-    characterId: int
-    day: int
 
 
 class ImpressionRequest(BaseModel):
@@ -548,6 +521,16 @@ class GetDecisionRequest(BaseModel):
 class CurrentPointerRequest(BaseModel):
     characterId: int
     current_pointer: str
+
+
+class StoreConversationRequest(BaseModel):
+    from_id: int
+    to_id: int
+    start_time: str
+    start_day: int
+    message: str
+    send_gametime: List[Union[int, str]]
+    send_realtime: str
 
 
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
@@ -840,99 +823,6 @@ def decrease_all_intimacy_levels_api():
         raise HTTPException(
             status_code=500, detail="Failed to decrease intimacy levels."
         )
-
-
-conversations_router = APIRouter(prefix="/conversations", tags=["Conversations"])
-
-
-@conversations_router.get("/with_character_ids", response_model=StandardResponse)
-def get_conversations_with_characterIds_api(characterIds_list: str, k: int = 1):
-    ids = [int(x) for x in characterIds_list.split(",")]
-    conversations = retry_operation(
-        domain_queries.get_conversations_with_characterIds,
-        retries=3,
-        delay=2,
-        characterIds_list=ids,
-        k=k,
-    )
-    if conversations:
-        return success_response(
-            data=conversations, message="Conversations retrieved successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No conversations found.")
-
-
-@conversations_router.get("/containing_character_id", response_model=StandardResponse)
-def get_conversations_containing_characterId_api(characterId: int, k: int = 1):
-    conversations = retry_operation(
-        domain_queries.get_conversations_containing_characterId,
-        retries=3,
-        delay=2,
-        characterId=characterId,
-        k=k,
-    )
-    if conversations:
-        return success_response(
-            data=conversations, message="Conversations retrieved successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No conversations found.")
-
-
-@conversations_router.post("/", response_model=StandardResponse)
-def store_conversation_api(request: StoreConversationRequest):
-    inserted_id = retry_operation(
-        domain_queries.store_conversation,
-        retries=3,
-        delay=2,
-        characterIds=request.characterIds,
-        dialogue=request.dialogue,
-        start_day=request.start_day,
-        start_time=request.start_time,
-    )
-    if inserted_id:
-        return success_response(
-            data=str(inserted_id), message="Conversation stored successfully."
-        )
-    else:
-        raise HTTPException(status_code=500, detail="Failed to store conversation.")
-
-
-@conversations_router.get("/by_id_day_time", response_model=StandardResponse)
-def get_conversation_by_id_day_time_api(day: int, time: str, characterIds_list: str):
-    ids = [int(x) for x in characterIds_list.split(",")]
-    conversations = retry_operation(
-        domain_queries.get_conversation_by_id_day_time,
-        retries=3,
-        delay=2,
-        characterIds_list=ids,
-        day=day,
-        time=time,
-    )
-    if conversations:
-        return success_response(
-            data=conversations, message="Conversation retrieved successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No conversation found.")
-
-
-@conversations_router.get("/by_id_and_day", response_model=StandardResponse)
-def get_conversations_by_id_and_day_api(characterId: int, day: int):
-    conversations = retry_operation(
-        domain_queries.get_conversations_by_id_and_day,
-        retries=3,
-        delay=2,
-        characterId=characterId,
-        day=day,
-    )
-    if conversations:
-        return success_response(
-            data=conversations, message="Conversations retrieved successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No conversations found.")
 
 
 encounter_count_router = APIRouter(prefix="/encounter_count", tags=["Encounter Count"])
@@ -2025,9 +1915,61 @@ def delete_current_pointer_api(characterId: int):
         )
 
 
+conversation_router = APIRouter(prefix="/conversation", tags=["Conversation"])
+
+
+@conversation_router.get("/", response_model=StandardResponse)
+def get_conversation_api(
+    from_id: Optional[int] = None,
+    to_id: Optional[int] = None,
+    k: Optional[int] = None,
+    start_day: Optional[int] = None,
+    start_time: Optional[str] = None,
+    characterId: Optional[int] = None,
+):
+    try:
+        conversations = domain_queries.get_conversation(
+            from_id=from_id,
+            to_id=to_id,
+            k=k,
+            start_day=start_day,
+            start_time=start_time,
+            characterId=characterId,
+        )
+        if conversations:
+            return success_response(
+                data=conversations, message="Conversations retrieved successfully."
+            )
+        else:
+            raise HTTPException(status_code=404, detail="No conversations found.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@conversation_router.post("/", response_model=StandardResponse)
+def store_conversation_api(request: StoreConversationRequest):
+    try:
+        inserted_id = domain_queries.store_conversation(
+            from_id=request.from_id,
+            to_id=request.to_id,
+            start_time=request.start_time,
+            start_day=request.start_day,
+            message=request.message,
+            send_gametime=request.send_gametime,
+            send_realtime=request.send_realtime,
+        )
+        if inserted_id:
+            return success_response(
+                data=str(inserted_id), message="Conversation stored successfully."
+            )
+        else:
+            raise HTTPException(status_code=500, detail="Failed to store conversation.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
-app.include_router(conversations_router)
 app.include_router(cvs_router)
 app.include_router(actions_router)
 app.include_router(descriptors_router)
@@ -2046,6 +1988,7 @@ app.include_router(conversation_prompt_router)
 app.include_router(decision_router)
 app.include_router(crud_router)
 app.include_router(current_pointer_router)
+app.include_router(conversation_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

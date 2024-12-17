@@ -3,7 +3,7 @@ from langchain_openai import ChatOpenAI
 from datetime import datetime, timedelta
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from task_scheduler import Task
+from core.legacy.task_scheduler import Task
 import json
 
 os.environ["OPENAI_API_KEY"] = "sk-tejMSVz1e3ziu6nB0yP2wLiaCUp2jR4Jtf4uaAoXNro6YXmh"

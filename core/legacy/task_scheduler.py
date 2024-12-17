@@ -5,7 +5,7 @@ from enum import Enum, auto
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.jobstores.base import JobLookupError
-from llm_tools.single_command_generator import CommandGenerator
+from core.legacy.single_command_generator import CommandGenerator
 
 
 class TaskStatus(Enum):

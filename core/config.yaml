@@ -13,9 +13,9 @@ production:
   http_monitor_host: "0.0.0.0"
   http_monitor_port: 8097
   websocket_host: "0.0.0.0"
-  websocket_port: 8080
+  websocket_port: 8006
   ssl_certfile: "/etc/ssl/certs/bio3.crt"
   ssl_keyfile: "/etc/ssl/certs/bio3.key"
-  monitor_trigger: True
-  dashboard_trigger: True
+  monitor_trigger: False
+  dashboard_trigger: False
   ssl_trigger: True

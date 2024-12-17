@@ -1,52 +1,15 @@
-import functools
 import requests
 import os
 from json import JSONDecodeError
 import asyncio
-from pprint import pprint
 from dotenv import load_dotenv
 import aiohttp
 from loguru import logger
-# from core.db.database_api_utils import make_api_request_sync
 
 load_dotenv()
 GAME_BACKEND_URL = os.getenv("GAME_BACKEND_URL")
-AMM_POOL_GET_AVG_PRICE = os.getenv("AMM_POOL_GET_AVG_PRICE")
 GAME_BACKEND_TIMEOUT = int(os.getenv("GAME_BACKEND_TIMEOUT"))
 AGENT_BACKEND_URL = os.getenv("AGENT_BACKEND_URL")
-
-
-
-
-def fetch_api_data(
-    method: str,
-    endpoint: str,
-    userid: int,
-    _logger,
-    timeout: int = GAME_BACKEND_TIMEOUT,
-) -> dict:
-    """
-    Make an API request with error handling.
-
-    Args:
-        method (str): HTTP method (e.g., 'POST').
-        endpoint (str): API endpoint.
-        data (dict): Data to send in the request.
-        logger: The logger instance for logging errors.
-        timeout (int): The timeout for the request.
-
-    Returns:
-        dict: The API response data if successful, otherwise an empty dict.
-    """
-    try:
-        return make_api_request_sync(
-            method, endpoint, data={"characterId": userid}, timeout=timeout
-        )
-    except TimeoutError:
-        _logger.error(f"Failed to get data from {endpoint}")
-    except JSONDecodeError:
-        _logger.error(f"Failed to decode JSON from {endpoint}")
-    return {}
 
 
 async def fetch_api_data_async(
@@ -153,7 +116,6 @@ async def fetch_json_async(
 def get_inventory(
     userid, filter_fields: list = ["ore", "apple", "wheat", "fish"]
 ) -> dict:
-    # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
     response = fetch_json(
         f"{GAME_BACKEND_URL}/bag/getByCharacterId/{userid}",
         timeout=GAME_BACKEND_TIMEOUT,
@@ -211,7 +173,7 @@ async def get_inventory_async(
 def get_market_data_from_db(fields: list = ["ore", "apple", "wheat", "fish"]):
     # Market data
     price_response = fetch_json(
-        AMM_POOL_GET_AVG_PRICE,
+        url=f"{GAME_BACKEND_URL}/ammPool/getAveragePrice",
         timeout=GAME_BACKEND_TIMEOUT,
         _logger=logger,
         error_message="Failed to get market data from AMM pool",
@@ -279,7 +241,6 @@ async def get_character_data_async(userid: int) -> dict:
     # Fetch data concurrently using asyncio.gather
     game_db_task = asyncio.create_task(fetch_game_db_character_response_async(userid))
     agent_db_task = asyncio.create_task(fetch_agent_db_response_async(userid))
-    
 
     game_db_character_response, agent_db_response = await asyncio.gather(
         game_db_task, agent_db_task
@@ -318,14 +279,13 @@ async def get_character_data_async(userid: int) -> dict:
 
 async def get_initial_state_from_db(userid, websocket):
     # 获取市场数据
+    market_data = get_market_data_from_db()
     # 获取角色数据
     character_data = await get_character_data_async(userid)
-    if not character_data:
-        return {}
     state = {
         "userid": userid,
         "character_stats": character_data,
-        "public_data": {"market_data": get_market_data_from_db()},
+        "public_data": {"market_data": market_data},
         "decision": {
             "need_replan": False,
             "action_description": [],
@@ -443,10 +403,9 @@ async def get_initial_state_from_db(userid, websocket):
 
 
 def generate_initial_state_hardcoded(userid, websocket):
-    # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
     try:
         price_response = requests.get(
-            AMM_POOL_GET_AVG_PRICE, timeout=GAME_BACKEND_TIMEOUT
+            f"{GAME_BACKEND_URL}/ammPool/getAveragePrice", timeout=GAME_BACKEND_TIMEOUT
         )
         market_data = price_response.json()["data"]
         market_data_dict = dict(
@@ -457,36 +416,34 @@ def generate_initial_state_hardcoded(userid, websocket):
             }
         )
     except TimeoutError:
-        logger.error(f"Failed to get market data from {AMM_POOL_GET_AVG_PRICE}")
-        market_data_dict = {}
+        logger.error("Failed to get market data from AMM pool")
 
-# =======
-# def get_inventory(userid) -> dict:
-#     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
-#     response = requests.get(f"http://47.95.21.135:8082/bag/getByCharacterId/{userid}")
-#     # 只保留ore, apple, wheat, fish
-#     inventory_dict = {}
-#     for x in response.json()["data"]:
-#         if x["itemName"].lower() in ["apple", "wheat", "fish"]:
-#             inventory_dict[x["itemName"]] = x["itemQuantity"]
-#         if x["itemName"].lower() == "iron_ore":
-#             inventory_dict["ore"] = x["itemQuantity"]
+    # =======
+    # def get_inventory(userid) -> dict:
+    #     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+    #     response = requests.get(f"http://47.95.21.135:8082/bag/getByCharacterId/{userid}")
+    #     # 只保留ore, apple, wheat, fish
+    #     inventory_dict = {}
+    #     for x in response.json()["data"]:
+    #         if x["itemName"].lower() in ["apple", "wheat", "fish"]:
+    #             inventory_dict[x["itemName"]] = x["itemQuantity"]
+    #         if x["itemName"].lower() == "iron_ore":
+    #             inventory_dict["ore"] = x["itemQuantity"]
 
-#     return inventory_dict
+    #     return inventory_dict
 
-
-# def generate_initial_state_hardcoded(userid, websocket):
-#     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
-#     price_response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
-#     market_data = price_response.json()["data"]
-#     market_data_dict = dict(
-#         {
-#             x["name"]: x["averagePrice"]
-#             for x in market_data
-#             if x["name"] in ["ore", "apple", "wheat", "fish"]
-#         }
-#     )
-# >>>>>>> dev
+    # def generate_initial_state_hardcoded(userid, websocket):
+    #     # 从数据库中读取http://47.95.21.135:8082/ammPool/getAveragePrice
+    #     price_response = requests.get("http://47.95.21.135:8082/ammPool/getAveragePrice")
+    #     market_data = price_response.json()["data"]
+    #     market_data_dict = dict(
+    #         {
+    #             x["name"]: x["averagePrice"]
+    #             for x in market_data
+    #             if x["name"] in ["ore", "apple", "wheat", "fish"]
+    #         }
+    #     )
+    # >>>>>>> dev
     initial_state = {
         "userid": userid,
         "character_stats": {
@@ -554,12 +511,6 @@ def generate_initial_state_hardcoded(userid, websocket):
     return initial_state
 
 
-def update_dict(existing_dict, new_dict):
-    for key, value in new_dict.items():
-        if key in existing_dict:
-            existing_dict[key] = value
-
-
 tool_functions_easy = """
     1. goto [placeName:string]: Go to a specified location.
 Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).\n
@@ -586,6 +537,8 @@ Constraints: Must be in school and have enough money.\n
 
 # 9. seedoctor [hours:int]: Visit a doctor, costing money.
 # Constraints: Must have enough money and be in the hospital.\n
-if __name__ == "__main__":
-    print(asyncio.run(get_character_data_async(42)))
 
+
+if __name__ == "__main__":
+    print(asyncio.run(get_initial_state_from_db(29, "websocket")))
+    # print(generate_initial_state_hardcoded(29, "websocket"))

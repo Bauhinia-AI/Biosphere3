@@ -5,7 +5,6 @@ import dotenv
 dotenv.load_dotenv()
 
 BASE_URL = os.getenv("AGENT_BACKEND_URL")
-# BASE_URL = "http://localhost:8085"
 
 
 # 异步函数
@@ -23,9 +22,7 @@ async def make_api_request_async(
     async with httpx.AsyncClient() as client:
         try:
             if method == "GET":
-                response = await client.get(
-                    url, params=params, timeout=timeout
-                )
+                response = await client.get(url, params=params, timeout=timeout)
             else:
                 response = await client.request(
                     method, url, json={"characterId": userid}, timeout=timeout

@@ -1,30 +1,22 @@
-import sys
 import os
-import json
 import asyncio
-from pprint import pprint
-
 from dotenv import load_dotenv
 from loguru import logger
-import websockets
-
-
 from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph
 
 from core.agent_srv.node_model import (
-    CV,
     DailyObjective,
     DetailedPlan,
-    MayorDecision,
     MetaActionSequence,
     CV,
     MayorDecision,
     RunningState,
+    CharacterArc,
+    Reflection,
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
-from core.backend_service.backend_api_utils import (
+from core.db.game_api_utils import (
     make_api_request_async as make_api_request_async_backend,
     make_api_request_sync as make_api_request_sync_backend,
 )
@@ -64,13 +56,31 @@ mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=0.5
 ).with_structured_output(MayorDecision)
 
+character_arc_generator = generate_character_arc_prompt | ChatOpenAI(
+    base_url=base_url, model="gpt-4o-mini", temperature=0.5
+).with_structured_output(CharacterArc)
+
+daily_reflection_generator = generate_daily_reflection_prompt | ChatOpenAI(
+    base_url=base_url, model="gpt-4o-mini", temperature=1
+).with_structured_output(Reflection)
+
+
+async def generate_daily_reflection(state: RunningState):
+    daily_reflection = await daily_reflection_generator.ainvoke(
+        {
+            "character_stats": state["character_stats"],
+            "daily_objectives": state["decision"]["daily_objective"],
+            "failed_actions": str(state["false_action_queue"]),
+        }
+    )
+    return {"decision": {"daily_reflection": daily_reflection.reflection}}
+
 
 async def generate_daily_objective(state: RunningState):
     # BUG 这里如果检验失败会报错，需要重试
     # 重试一次
     # 获取最新的prompt数据
 
-    
     # try:
     #     prompt = await make_api_request_async_backend(
     #         "GET", f"/agent_prompt/?characterId={state['userid']}"
@@ -386,18 +396,41 @@ async def generate_mayor_decision(state: RunningState):
     }
 
 
+async def generate_character_arc(state: RunningState):
+    character_info_task = make_api_request_async_backend(
+        "GET", f"/characters/getById/{state['userid']}"
+    )
+    character_info_response = await character_info_task
+    character_info = character_info_response.get("data", {})
+    character_arc = await character_arc_generator.ainvoke(
+        {
+            "character_stats": state["character_stats"],
+            "character_info": character_info,
+            "daily_objectives": state["decision"]["daily_objective"],
+            "daily_reflection": state["decision"].get("daily_reflection", ""),
+            "action_results": state["decision"]["action_result"],
+        }
+    )
+    return {"Character_Stats": {"character_arc": dict(character_arc)}}
+
+
 async def main():
     # 测试简历投递系统
+    # state = RunningState(**generate_initial_state_hardcoded(1, None))
+    # workflow = StateGraph(RunningState)
+    # workflow.add_node("generate_change_job_cv", generate_change_job_cv)
+    # workflow.add_node("generate_mayor_decision", generate_mayor_decision)
+
+    # workflow.set_entry_point("generate_change_job_cv")
+    # workflow.add_edge("generate_change_job_cv", "generate_mayor_decision")
+    # graph = workflow.compile()
+
+    # await graph.ainvoke(state)
+
+    # 测试Character Arc
     state = RunningState(**generate_initial_state_hardcoded(1, None))
-    workflow = StateGraph(RunningState)
-    workflow.add_node("generate_change_job_cv", generate_change_job_cv)
-    workflow.add_node("generate_mayor_decision", generate_mayor_decision)
-
-    workflow.set_entry_point("generate_change_job_cv")
-    workflow.add_edge("generate_change_job_cv", "generate_mayor_decision")
-    graph = workflow.compile()
-
-    await graph.ainvoke(state)
+    res = await generate_character_arc(state)
+    print(res)
 
 
 if __name__ == "__main__":

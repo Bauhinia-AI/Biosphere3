@@ -122,7 +122,6 @@ class AI_WS_Server:
 
         # 使用异步工厂方法创建 LangGraphInstance 实例
         agent_instance = await LangGraphInstance.create(character_id, websocket)
-        # conversation_instance = ConversationInstance(character_id, websocket)
         # 在initialize_connection中：
         conversation_instance = await ConversationInstance.create(
             character_id, websocket

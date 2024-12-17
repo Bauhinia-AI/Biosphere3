@@ -19,7 +19,7 @@ logging.basicConfig(
     ],
 )
 
-# BASE_URL = "http://47.95.21.135:8085"
+# BASE_URL = os.getenv("API_URL")
 BASE_URL = "http://localhost:8085"
 
 
@@ -79,7 +79,7 @@ def make_api_request_sync(
 
 
 async def get_all_characters():
-    url = "http://47.95.21.135:8082/characters/getAll"
+    url = os.getenv("CHARACTERS_GETALL_URL")
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.get(url)  # Make the GET request asynchronously

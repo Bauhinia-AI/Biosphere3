@@ -1,7 +1,5 @@
 from langchain_core.pydantic_v1 import BaseModel, Field
-from typing import Union, List, Annotated, Tuple, TypedDict, Dict, Any
-import operator
-from langgraph.graph import StateGraph
+from typing import List, Annotated, TypedDict, Dict, Any
 import asyncio
 
 # 带有合并逻辑的鸡肋
@@ -33,7 +31,6 @@ class CharacterStats(TypedDict):
     health: int
     energy: int
     education: str
-
 
 
 class Decision(TypedDict):
@@ -143,7 +140,7 @@ class CharacterArc(BaseModel):
 
 if __name__ == "__main__":
     import pprint
+
     run = RunningState()
 
     pprint(run)
-

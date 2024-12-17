@@ -10,7 +10,7 @@ import json
 import os
 import pprint
 from core.db.database_api_utils import make_api_request_sync
-from core.backend_service.backend_api_utils import make_api_request_sync as make_backend_api_request_sync
+from core.db.game_api_utils import make_api_request_sync as make_backend_api_request_sync
 from datetime import datetime, timedelta
 import random
 import numpy as np

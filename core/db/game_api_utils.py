@@ -1,6 +1,10 @@
 import httpx
+from dotenv import load_dotenv
+import os
 
-BASE_URL = "http://47.95.21.135:8082"
+load_dotenv()
+
+BASE_URL = os.environ.get("GAME_BACKEND_URL")
 
 
 # 异步函数

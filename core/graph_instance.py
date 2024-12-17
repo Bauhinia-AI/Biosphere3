@@ -24,11 +24,7 @@ from core.agent_srv.node_engines import (
     generate_daily_reflection,
 )
 from core.agent_srv.node_model import RunningState
-from core.agent_srv.utils import (
-    generate_initial_state_hardcoded,
-    update_dict,
-    get_initial_state_from_db,
-)
+from core.agent_srv.utils import get_initial_state_from_db
 
 
 class LangGraphInstance:
@@ -140,11 +136,6 @@ class LangGraphInstance:
                 self.action_result.append(
                     {"action_result": msg["data"], "timestamp": datetime.now()}
                 )
-            # elif message_name == "prompt_modification":
-            #     update_dict(self.state["prompts"], msg["data"])
-            #     self.logger.info(
-            #         f"🏃 User {self.user_id}: Updated prompts: {self.state['prompts']}"
-            #     )
             elif message_name == "new_day":
                 self.state["event_queue"].put_nowait("JOB_HUNTING")
             elif message_name == "onestep":

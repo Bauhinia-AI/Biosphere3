@@ -1,22 +1,12 @@
-import sys
 import os
-import json
 import asyncio
-from pprint import pprint
-
 from dotenv import load_dotenv
 from loguru import logger
-import websockets
-
-
 from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph
 
 from core.agent_srv.node_model import (
-    CV,
     DailyObjective,
     DetailedPlan,
-    MayorDecision,
     MetaActionSequence,
     CV,
     MayorDecision,
@@ -26,7 +16,7 @@ from core.agent_srv.node_model import (
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
-from core.backend_service.backend_api_utils import (
+from core.db.game_api_utils import (
     make_api_request_async as make_api_request_async_backend,
     make_api_request_sync as make_api_request_sync_backend,
 )
@@ -74,6 +64,7 @@ daily_reflection_generator = generate_daily_reflection_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=1
 ).with_structured_output(Reflection)
 
+
 async def generate_daily_reflection(state: RunningState):
     daily_reflection = await daily_reflection_generator.ainvoke(
         {
@@ -84,12 +75,12 @@ async def generate_daily_reflection(state: RunningState):
     )
     return {"decision": {"daily_reflection": daily_reflection.reflection}}
 
+
 async def generate_daily_objective(state: RunningState):
     # BUG 这里如果检验失败会报错，需要重试
     # 重试一次
     # 获取最新的prompt数据
 
-    
     # try:
     #     prompt = await make_api_request_async_backend(
     #         "GET", f"/agent_prompt/?characterId={state['userid']}"
@@ -440,6 +431,7 @@ async def main():
     state = RunningState(**generate_initial_state_hardcoded(1, None))
     res = await generate_character_arc(state)
     print(res)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1407,49 +1407,146 @@ class DomainSpecificQueries:
 
         return result
 
+    def store_work_experience(self, characterId, jobid, start_date):
+        document = {
+            "characterId": characterId,
+            "jobid": jobid,
+            "start_date": start_date,
+            "duration": 0,
+            "total_work": 0,
+            "total_salary": 0.0,
+        }
+        inserted_id = self.db_utils.insert_document(
+            config.work_experience_collection_name, document
+        )
+        return inserted_id
+
+    def get_all_work_experiences(self, characterId):
+        query = {"characterId": characterId}
+        documents = self.db_utils.find_documents(
+            collection_name=config.work_experience_collection_name,
+            query=query,
+            sort=[("start_date", DESCENDING)],
+        )
+        return documents
+
+    def get_current_work_experience(self, characterId):
+        query = {"characterId": characterId}
+        documents = self.db_utils.find_documents(
+            collection_name=config.work_experience_collection_name,
+            query=query,
+            sort=[("start_date", DESCENDING)],
+            limit=1,
+        )
+        return documents[0] if documents else None
+
+    def update_work_experience(
+        self, characterId, jobid, additional_work, additional_salary
+    ):
+        query = {"characterId": characterId, "jobid": jobid}
+        update_data = {
+            "$inc": {
+                "total_work": additional_work,
+                "total_salary": additional_salary,
+            }
+        }
+        result = self.db_utils.update_documents(
+            collection_name=config.work_experience_collection_name,
+            query=query,
+            update=update_data,
+            upsert=False,
+            multi=False,
+        )
+        return result
+
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试存储 memory
-    print("存储 memory...")
-    characterId = 10
-    day = 1
-    topic_plan = [
-        "Talk about weather",
-        "Talk about food",
-        "Talk about clothing",
-        "Are you happy",
-        "How to study",
+    # 测试存储多条工作经历
+    print("存储多条工作经历...")
+    characterId = 1
+    job_entries = [
+        {"jobid": 101, "start_date": 20231001},
+        {"jobid": 102, "start_date": 20231101},
+        {"jobid": 103, "start_date": 20231201},
     ]
-    time_list = ["09:00", "12:00", "15:00"]
-    # started = [{"topic": "Talk about weather", "time": "10:00"}]
-    # inserted_id = queries.store_memory(characterId, day, topic_plan, time_list, started)
-    inserted_id = queries.store_conversation_memory(
-        characterId, day, topic_plan, time_list
-    )
-    print(f"插入成功，文档 ID：{inserted_id}")
 
-    # 测试获取 memory
-    print("\n获取 memory...")
-    documents = queries.get_conversation_memory(characterId, day)
-    print("获取的 memory 文档：", documents)
+    for entry in job_entries:
+        inserted_id = queries.store_work_experience(
+            characterId, entry["jobid"], entry["start_date"]
+        )
+        print(f"插入成功，文档 ID：{inserted_id}")
 
-    # 测试更新 memory
-    print("\n更新 memory...")
-    # update_fields = {"topic_plan": ["更新后的计划讨论主题"]}
-    add_started = {"topic": "Talk about weather", "time": "10:00"}
-    update_result = queries.update_conversation_memory(
-        characterId, day, add_started=add_started
-    )
-    # update_result = queries.update_memory(characterId, day, update_fields)
-    print(f"更新成功，修改了 {update_result} 个文档。")
+    # 测试获取所有工作经历
+    print("\n获取所有工作经历...")
+    all_work_experiences = queries.get_all_work_experiences(characterId)
+    print("所有工作经历：", all_work_experiences)
 
-    # 再次获取以验证更新
-    print("\n更新后的 memory...")
-    updated_documents = queries.get_conversation_memory(characterId, day)
-    print("更新后的 memory 文档：", updated_documents)
+    # 测试获取当前工作经历
+    print("\n获取当前工作经历...")
+    current_work_experience = queries.get_current_work_experience(characterId)
+    print("当前工作经历：", current_work_experience)
+
+    # 测试更新当前工作经历
+    print("\n更新当前工作经历...")
+    if current_work_experience:
+        jobid = current_work_experience["jobid"]
+        additional_work = 8
+        additional_salary = 1500.0
+        update_result = queries.update_work_experience(
+            characterId, jobid, additional_work, additional_salary
+        )
+        print(f"更新成功，修改了 {update_result} 个文档。")
+
+        # 再次获取当前工作经历以验证更新
+        print("\n更新后的当前工作经历...")
+        updated_current_work_experience = queries.get_current_work_experience(
+            characterId
+        )
+        print("更新后的当前工作经历：", updated_current_work_experience)
+    else:
+        print("没有找到当前工作经历进行更新。")
+
+    # # 测试存储 memory
+    # print("存储 memory...")
+    # characterId = 10
+    # day = 1
+    # topic_plan = [
+    #     "Talk about weather",
+    #     "Talk about food",
+    #     "Talk about clothing",
+    #     "Are you happy",
+    #     "How to study",
+    # ]
+    # time_list = ["09:00", "12:00", "15:00"]
+    # # started = [{"topic": "Talk about weather", "time": "10:00"}]
+    # # inserted_id = queries.store_memory(characterId, day, topic_plan, time_list, started)
+    # inserted_id = queries.store_conversation_memory(
+    #     characterId, day, topic_plan, time_list
+    # )
+    # print(f"插入成功，文档 ID：{inserted_id}")
+
+    # # 测试获取 memory
+    # print("\n获取 memory...")
+    # documents = queries.get_conversation_memory(characterId, day)
+    # print("获取的 memory 文档：", documents)
+
+    # # 测试更新 memory
+    # print("\n更新 memory...")
+    # # update_fields = {"topic_plan": ["更新后的计划讨论主题"]}
+    # add_started = {"topic": "Talk about weather", "time": "10:00"}
+    # update_result = queries.update_conversation_memory(
+    #     characterId, day, add_started=add_started
+    # )
+    # # update_result = queries.update_memory(characterId, day, update_fields)
+    # print(f"更新成功，修改了 {update_result} 个文档。")
+
+    # # 再次获取以验证更新
+    # print("\n更新后的 memory...")
+    # updated_documents = queries.get_conversation_memory(characterId, day)
+    # print("更新后的 memory 文档：", updated_documents)
 
     # # 测试存储 current_pointer
     # print("存储 current_pointer...")

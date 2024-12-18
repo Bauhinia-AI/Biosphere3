@@ -1002,17 +1002,73 @@ def test_conversation_memory_add_started():
     print(json.dumps(response, indent=4))
 
 
+def test_work_experience_store():
+    print("Testing Work Experience Store...")
+    store_work_experience_data = {
+        "characterId": 101,
+        "jobid": 1,
+        "start_date": 20230101,
+    }
+    response = make_api_request_sync(
+        "POST", "/work_experience/", data=store_work_experience_data
+    )
+    print(json.dumps(response, indent=4))
+
+
+def test_work_experience_get_all():
+    print("Testing Work Experience Get All...")
+    get_all_work_experiences_params = {"characterId": 101}
+    response = make_api_request_sync(
+        "GET", "/work_experience/all", params=get_all_work_experiences_params
+    )
+    print(json.dumps(response, indent=4))
+
+
+def test_work_experience_get_current():
+    print("Testing Work Experience Get Current...")
+    get_current_work_experience_params = {"characterId": 101}
+    response = make_api_request_sync(
+        "GET", "/work_experience/current", params=get_current_work_experience_params
+    )
+    print(json.dumps(response, indent=4))
+
+
+def test_work_experience_update():
+    print("Testing Work Experience Update...")
+    update_work_experience_data = {
+        "characterId": 101,
+        "jobid": 1,
+        "additional_work": 10,
+        "additional_salary": 500.0,
+    }
+    response = make_api_request_sync(
+        "PUT", "/work_experience/", data=update_work_experience_data
+    )
+    print(json.dumps(response, indent=4))
+
+
 def main():
-    # Test conversation memory endpoints
-    test_conversation_memory_store()
+    # Test work experience endpoints
+    test_work_experience_store()
     time.sleep(1)
-    test_conversation_memory_get()
+    test_work_experience_get_all()
     time.sleep(1)
-    test_conversation_memory_update()
+    test_work_experience_get_current()
     time.sleep(1)
-    test_conversation_memory_add_started()
+    test_work_experience_update()
     time.sleep(1)
-    test_conversation_memory_get()  # Verify updates
+    test_work_experience_get_all()
+
+    # # Test conversation memory endpoints
+    # test_conversation_memory_store()
+    # time.sleep(1)
+    # test_conversation_memory_get()
+    # time.sleep(1)
+    # test_conversation_memory_update()
+    # time.sleep(1)
+    # test_conversation_memory_add_started()
+    # time.sleep(1)
+    # test_conversation_memory_get()  # Verify updates
 
     # # Test conversation endpoints
     # test_conversation_store()

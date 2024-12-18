@@ -841,4 +841,39 @@ validators = {
             },
         }
     },
+    "work_experience": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": [
+                "characterId",
+                "jobid",
+            ],
+            "properties": {
+                "characterId": {
+                    "bsonType": "int",
+                    "description": "角色ID, 必须为整数且为必填项",
+                },
+                "jobid": {
+                    "bsonType": "int",
+                    "description": "工作ID, 必须为整数且为必填项",
+                },
+                "start_date": {
+                    "bsonType": "int",
+                    "description": "开始日期, 必须为整数且为必填项",
+                },
+                "duration": {
+                    "bsonType": "int",
+                    "description": "持续时间, 必须为整数且为必填项",
+                },
+                "total_work": {
+                    "bsonType": "int",
+                    "description": "工作时间, 必须为整数且为必填项",
+                },
+                "total_salary": {
+                    "bsonType": "double",
+                    "description": "获取的总薪资, 必须为浮点数且为必填项",
+                },
+            },
+        }
+    },
 }

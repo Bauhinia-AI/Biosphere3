@@ -548,6 +548,19 @@ class UpdateConversationMemoryRequest(BaseModel):
     add_started: Optional[dict] = None
 
 
+class StoreWorkExperienceRequest(BaseModel):
+    characterId: int
+    jobid: int
+    start_date: int
+
+
+class UpdateWorkExperienceRequest(BaseModel):
+    characterId: int
+    jobid: int
+    additional_work: int
+    additional_salary: float
+
+
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
     # for attempt in range(1, retries + 1):
     #     try:
@@ -2048,6 +2061,80 @@ def update_conversation_memory_api(request: UpdateConversationMemoryRequest):
         )
 
 
+work_experience_router = APIRouter(prefix="/work_experience", tags=["Work Experience"])
+
+
+@work_experience_router.post("/", response_model=StandardResponse)
+def store_work_experience_api(request: StoreWorkExperienceRequest):
+    inserted_id = retry_operation(
+        domain_queries.store_work_experience,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        jobid=request.jobid,
+        start_date=request.start_date,
+    )
+    if inserted_id:
+        return success_response(
+            data=str(inserted_id), message="Work experience stored successfully."
+        )
+    else:
+        raise HTTPException(status_code=500, detail="Failed to store work experience.")
+
+
+@work_experience_router.get("/all", response_model=StandardResponse)
+def get_all_work_experiences_api(characterId: int):
+    documents = retry_operation(
+        domain_queries.get_all_work_experiences,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+    )
+    if documents:
+        return success_response(
+            data=documents, message="All work experiences retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No work experiences found.")
+
+
+@work_experience_router.get("/current", response_model=StandardResponse)
+def get_current_work_experience_api(characterId: int):
+    document = retry_operation(
+        domain_queries.get_current_work_experience,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+    )
+    if document:
+        return success_response(
+            data=document, message="Current work experience retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No current work experience found.")
+
+
+@work_experience_router.put("/", response_model=StandardResponse)
+def update_work_experience_api(request: UpdateWorkExperienceRequest):
+    result = retry_operation(
+        domain_queries.update_work_experience,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        jobid=request.jobid,
+        additional_work=request.additional_work,
+        additional_salary=request.additional_salary,
+    )
+    if result:
+        return success_response(
+            data=result, message="Work experience updated successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=404, detail="No work experience found to update."
+        )
+
+
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
 app.include_router(cvs_router)
@@ -2070,6 +2157,7 @@ app.include_router(crud_router)
 app.include_router(current_pointer_router)
 app.include_router(conversation_router)
 app.include_router(conversation_memory_router)
+app.include_router(work_experience_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

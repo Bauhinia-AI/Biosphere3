@@ -188,11 +188,18 @@ def test_encounter_count_get():
 
 def test_encounter_count_by_from_id():
     print("Testing Encounter Count by From ID...")
-    # Ensure encounter counts exist before getting
-    store_encounter_count_data = {"from_id": 101, "to_id": 105, "count": 1}
-    make_api_request_sync("POST", "/encounter_count/", data=store_encounter_count_data)
+    # # Ensure encounter counts exist before getting
+    # store_encounter_count_data = {"from_id": 101, "to_id": 102, "count": 10}
+    # make_api_request_sync("POST", "/encounter_count/", data=store_encounter_count_data)
+    # time.sleep(1)
+    # store_encounter_count_data = {"from_id": 101, "to_id": 107, "count": 5}
+    # make_api_request_sync("POST", "/encounter_count/", data=store_encounter_count_data)
+    # time.sleep(1)
+    # store_encounter_count_data = {"from_id": 101, "to_id": 100, "count": 100}
+    # make_api_request_sync("POST", "/encounter_count/", data=store_encounter_count_data)
+    # time.sleep(1)
 
-    encounter_by_from_id_params = {"from_id": 101, "k": 2}
+    encounter_by_from_id_params = {"from_id": 101, "k": 5}
     response = make_api_request_sync(
         "GET", "/encounter_count/by_from_id", params=encounter_by_from_id_params
     )
@@ -853,66 +860,68 @@ def test_current_pointer_delete():
     print(json.dumps(response, indent=4))
 
 
-# def test_conversation_store():
-#     print("Testing Conversation Store...")
-#     store_conversation_data = {
-#         "from_id": 1,
-#         "to_id": 2,
-#         "start_time": "10:00",
-#         "start_day": 1,
-#         "message": "Hello! How are you?",
-#         "send_gametime": [1, "10:02"],
-#         "send_realtime": "2024-12-16 20:00",
-#     }
-#     response = make_api_request_sync("POST", "/conversation/", data=store_conversation_data)
-#     print(json.dumps(response, indent=4))
-
-
 def test_conversation_store():
     print("Testing Conversation Store...")
-    conversations = [
-        {
-            "from_id": 1,
-            "to_id": 2,
-            "start_time": "10:00",
-            "start_day": 1,
-            "message": "Hello! How are you?",
-            "send_gametime": [1, "10:02"],
-            "send_realtime": "2024-12-16 20:00",
-        },
-        {
-            "from_id": 1,
-            "to_id": 2,
-            "start_time": "11:00",
-            "start_day": 1,
-            "message": "Are you coming to the meeting?",
-            "send_gametime": [1, "11:05"],
-            "send_realtime": "2024-12-16 21:00",
-        },
-        {
-            "from_id": 2,
-            "to_id": 1,
-            "start_time": "12:00",
-            "start_day": 1,
-            "message": "Yes, I'll be there.",
-            "send_gametime": [1, "12:10"],
-            "send_realtime": "2024-12-16 22:00",
-        },
-        {
-            "from_id": 1,
-            "to_id": 3,
-            "start_time": "13:00",
-            "start_day": 2,
-            "message": "Did you finish the report?",
-            "send_gametime": [2, "13:15"],
-            "send_realtime": "2024-12-17 09:00",
-        },
-    ]
+    store_conversation_data = {
+        "from_id": 1,
+        "to_id": 2,
+        "start_time": "10:00",
+        "start_day": 1,
+        "message": "Hello! How are you?",
+        "send_gametime": [1, "10:02"],
+        "send_realtime": "2024-12-16 20:00",
+    }
+    response = make_api_request_sync(
+        "POST", "/conversation/", data=store_conversation_data
+    )
+    print(json.dumps(response, indent=4))
 
-    for conversation in conversations:
-        response = make_api_request_sync("POST", "/conversation/", data=conversation)
-        print(json.dumps(response, indent=4))
-        time.sleep(0.5)  # 确保每条记录有不同的时间戳
+
+# def test_conversation_store():
+#     print("Testing Conversation Store...")
+#     conversations = [
+#         {
+#             "from_id": 1,
+#             "to_id": 2,
+#             "start_time": "10:00",
+#             "start_day": 1,
+#             "message": "Hello! How are you?",
+#             "send_gametime": [1, "10:02"],
+#             "send_realtime": "2024-12-16 20:00",
+#         },
+#         {
+#             "from_id": 1,
+#             "to_id": 2,
+#             "start_time": "11:00",
+#             "start_day": 1,
+#             "message": "Are you coming to the meeting?",
+#             "send_gametime": [1, "11:05"],
+#             "send_realtime": "2024-12-16 21:00",
+#         },
+#         {
+#             "from_id": 2,
+#             "to_id": 1,
+#             "start_time": "12:00",
+#             "start_day": 1,
+#             "message": "Yes, I'll be there.",
+#             "send_gametime": [1, "12:10"],
+#             "send_realtime": "2024-12-16 22:00",
+#         },
+#         {
+#             "from_id": 1,
+#             "to_id": 3,
+#             "start_time": "13:00",
+#             "start_day": 2,
+#             "message": "Did you finish the report?",
+#             "send_gametime": [2, "13:15"],
+#             "send_realtime": "2024-12-17 09:00",
+#         },
+#     ]
+
+#     for conversation in conversations:
+#         response = make_api_request_sync("POST", "/conversation/", data=conversation)
+#         print(json.dumps(response, indent=4))
+#         time.sleep(0.5)  # 确保每条记录有不同的时间戳
 
 
 def test_conversation_get():
@@ -948,8 +957,8 @@ def main():
     # # Test conversation endpoints
     # test_conversation_store()
     # time.sleep(1)
-    test_conversation_get()
-    time.sleep(1)
+    # test_conversation_get()
+    # time.sleep(1)
 
     # # 测试 current_pointer 的增删查改
     # test_current_pointer_store()
@@ -1003,7 +1012,7 @@ def main():
     # time.sleep(1)
     # test_encounter_count_get()
     # time.sleep(1)
-    # test_encounter_count_by_from_id()
+    test_encounter_count_by_from_id()
     # time.sleep(1)
     # test_encounter_count_increment()
     # time.sleep(1)

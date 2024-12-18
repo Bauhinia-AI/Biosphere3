@@ -302,6 +302,7 @@ class DomainSpecificQueries:
         documents = self.db_utils.find_documents(
             collection_name=config.encounter_count_collection_name,
             query=query,
+            sort=[("count", DESCENDING)],  # 按相遇次数降序排序
             limit=k,
         )
         return documents

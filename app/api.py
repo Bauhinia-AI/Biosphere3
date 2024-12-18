@@ -533,6 +533,21 @@ class StoreConversationRequest(BaseModel):
     send_realtime: str
 
 
+class StoreConversationMemoryRequest(BaseModel):
+    characterId: int
+    day: int
+    topic_plan: Optional[List[str]] = None
+    time_list: Optional[List[str]] = None
+    started: Optional[List[dict]] = None
+
+
+class UpdateConversationMemoryRequest(BaseModel):
+    characterId: int
+    day: int
+    update_fields: Optional[dict] = None
+    add_started: Optional[dict] = None
+
+
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
     # for attempt in range(1, retries + 1):
     #     try:
@@ -1968,6 +1983,71 @@ def store_conversation_api(request: StoreConversationRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+conversation_memory_router = APIRouter(
+    prefix="/conversation_memory", tags=["Conversation Memory"]
+)
+
+
+@conversation_memory_router.post("/", response_model=StandardResponse)
+def store_conversation_memory_api(request: StoreConversationMemoryRequest):
+    inserted_id = retry_operation(
+        domain_queries.store_conversation_memory,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        day=request.day,
+        topic_plan=request.topic_plan,
+        time_list=request.time_list,
+        started=request.started,
+    )
+    if inserted_id:
+        return success_response(
+            data=str(inserted_id), message="Conversation memory stored successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=500, detail="Failed to store conversation memory."
+        )
+
+
+@conversation_memory_router.get("/", response_model=StandardResponse)
+def get_conversation_memory_api(characterId: int, day: Optional[int] = None):
+    documents = retry_operation(
+        domain_queries.get_conversation_memory,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+        day=day,
+    )
+    if documents:
+        return success_response(
+            data=documents, message="Conversation memory retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No conversation memory found.")
+
+
+@conversation_memory_router.put("/", response_model=StandardResponse)
+def update_conversation_memory_api(request: UpdateConversationMemoryRequest):
+    result = retry_operation(
+        domain_queries.update_conversation_memory,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        day=request.day,
+        update_fields=request.update_fields,
+        add_started=request.add_started,
+    )
+    if result:
+        return success_response(
+            data=result, message="Conversation memory updated successfully."
+        )
+    else:
+        raise HTTPException(
+            status_code=404, detail="No conversation memory found to update."
+        )
+
+
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
 app.include_router(cvs_router)
@@ -1989,6 +2069,7 @@ app.include_router(decision_router)
 app.include_router(crud_router)
 app.include_router(current_pointer_router)
 app.include_router(conversation_router)
+app.include_router(conversation_memory_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

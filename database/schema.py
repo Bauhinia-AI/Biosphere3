@@ -369,7 +369,7 @@ validators = {
                 "start_day",
                 "message",
                 "send_gametime",
-                "send_realtime"
+                "send_realtime",
             ],
             "properties": {
                 "from_id": {
@@ -403,8 +403,8 @@ validators = {
                         {
                             "bsonType": "string",
                             "description": "游戏内时间, 格式为 'HH:MM'",
-                        }
-                    ]
+                        },
+                    ],
                 },
                 "send_realtime": {
                     "bsonType": "string",
@@ -787,6 +787,56 @@ validators = {
                 "updated_at": {
                     "bsonType": "string",
                     "description": "最后更新时间, 必须为字符串且为必填项",
+                },
+            },
+        }
+    },
+    "conversation_memory": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["characterId", "day"],
+            "properties": {
+                "characterId": {
+                    "bsonType": "int",
+                    "description": "角色ID, 必须为整数且为必填项",
+                },
+                "day": {
+                    "bsonType": "int",
+                    "description": "游戏时间天数，区分哪一天的plan, 必须为整数且为必填项",
+                },
+                "topic_plan": {
+                    "bsonType": "array",
+                    "description": "当天对话的topic，必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "对话主题, 必须为字符串",
+                    },
+                },
+                "time_list": {
+                    "bsonType": "array",
+                    "description": "对话发生的时间，必须为字符串数组且为必填项",
+                    "items": {
+                        "bsonType": "string",
+                        "description": "对话时间, 格式为 'HH:MM'",
+                    },
+                },
+                "started": {
+                    "bsonType": "array",
+                    "description": "已经开始的对话，必须为对象数组且为必填项",
+                    "items": {
+                        "bsonType": "object",
+                        "required": ["topic", "time"],
+                        "properties": {
+                            "topic": {
+                                "bsonType": "string",
+                                "description": "对话主题, 必须为字符串",
+                            },
+                            "time": {
+                                "bsonType": "string",
+                                "description": "对话时间, 格式为 'HH:MM'",
+                            },
+                        },
+                    },
                 },
             },
         }

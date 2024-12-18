@@ -1128,6 +1128,21 @@ class DomainSpecificQueries:
             collection_name=config.conversation_prompt_collection_name,
             query=query,
         )
+
+        # 添加固定内容到每个文档
+        fixed_content = {
+            "topic_factor": "The topics should be related to the daily objectives, your current personality and profile.",
+            "casual_topic": "Randomly add at most one casual topics. Try to combine the casual topic with the profile and personality. The casual topics could be, for example, weather, food, emotion, clothing, health condition, education, product prize.",
+            "critical_topic": "Randomly discuss seriously or criticize others on at most one topic. The topic can be determined by your profile and personality. For example, discuss on others' lifestyle, emotion, habit, education, taste or attitidue towards certain event.",
+            "start_check": "First summarize the topics of finished conversations. Then if you have talked about the same topic with the same person, you should not start this conversation.",
+            "should_end": "Based on your profile, personality, the impression and the conversation history, determine whether the conversation shoud end. The relation in impression can influence the overall round of the conversation. For example, if two speakers are close friends, they may talk more rounds. If they are in bad relation, the conversation may end very soon.",
+            "intimacy_mark": "The intimacy mark should be an integer ranging from -2 to 2. There are five levels with different marks: Very friendly and close is 2. Positive and polite, but not so close is 1. Neutral is 0. A bit negative is -1. Hate each other, about to quarrel is -2.",
+            "impression_update": "Update impression, which contain four items: relation, emotion, personality, habits and preferences. In each item also include a brief description. Relation is the way other agent treates you. Emotion is decided by others tone. Personality is based on openness to experience, conscientiousness, extraversion, agreeableness, and neuroticism.habits and preferences are the other player's habit and taste. Also include things he dislike.",
+        }
+
+        for document in documents:
+            document.update(fixed_content)
+
         return documents
 
     def update_conversation_prompt(self, characterId, update_fields):
@@ -1333,43 +1348,141 @@ class DomainSpecificQueries:
         )
         return documents
 
+    def store_conversation_memory(
+        self, characterId, day, topic_plan=None, time_list=None, started=None
+    ):
+        # 确保默认值为列表而不是 None
+        topic_plan = topic_plan if topic_plan is not None else []
+        time_list = time_list if time_list is not None else []
+        started = started if started is not None else []
+
+        document = {
+            "characterId": characterId,
+            "day": day,
+            "topic_plan": topic_plan,
+            "time_list": time_list,
+            "started": started,
+        }
+        inserted_id = self.db_utils.insert_document(
+            config.conversation_memory_collection_name, document
+        )
+        return inserted_id
+
+    def get_conversation_memory(self, characterId, day=None):
+        query = {"characterId": characterId}
+        if day is not None:
+            query["day"] = day
+
+        documents = self.db_utils.find_documents(
+            collection_name=config.conversation_memory_collection_name,
+            query=query,
+        )
+        return documents
+
+    def update_conversation_memory(
+        self, characterId, day, update_fields=None, add_started=None
+    ):
+        # 确保 update_fields 和 add_started 不能同时存在
+        if update_fields is not None and add_started is not None:
+            raise ValueError("只能提供 update_fields 或 add_started 中的一个。")
+
+        # 构建查询条件
+        query = {"characterId": characterId, "day": day}
+
+        # 构建更新操作
+        update = {}
+        if update_fields is not None:
+            update = {"$set": update_fields}
+        elif add_started is not None:
+            update = {"$push": {"started": add_started}}
+        else:
+            raise ValueError("必须提供 update_fields 或 add_started。")
+
+        # 执行更新操作
+        result = self.db_utils.update_documents(
+            collection_name=config.conversation_memory_collection_name,
+            query=query,
+            update=update,
+        )
+
+        return result
+
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试存储 current_pointer
-    print("存储 current_pointer...")
-    characterId = 1
-    current_pointer = "pointer_1"
-    inserted_id = queries.store_current_pointer(characterId, current_pointer)
+    # 测试存储 memory
+    print("存储 memory...")
+    characterId = 10
+    day = 1
+    topic_plan = [
+        "Talk about weather",
+        "Talk about food",
+        "Talk about clothing",
+        "Are you happy",
+        "How to study",
+    ]
+    time_list = ["09:00", "12:00", "15:00"]
+    # started = [{"topic": "Talk about weather", "time": "10:00"}]
+    # inserted_id = queries.store_memory(characterId, day, topic_plan, time_list, started)
+    inserted_id = queries.store_conversation_memory(
+        characterId, day, topic_plan, time_list
+    )
     print(f"插入成功，文档 ID：{inserted_id}")
 
-    # 测试获取 current_pointer
-    print("\n获取 current_pointer...")
-    documents = queries.get_current_pointer(characterId)
-    print("获取的 current_pointer 文档：", documents)
+    # 测试获取 memory
+    print("\n获取 memory...")
+    documents = queries.get_conversation_memory(characterId, day)
+    print("获取的 memory 文档：", documents)
 
-    # 测试更新 current_pointer
-    print("\n更新 current_pointer...")
-    new_pointer = "pointer_2"
-    update_result = queries.update_current_pointer(characterId, new_pointer)
+    # 测试更新 memory
+    print("\n更新 memory...")
+    # update_fields = {"topic_plan": ["更新后的计划讨论主题"]}
+    add_started = {"topic": "Talk about weather", "time": "10:00"}
+    update_result = queries.update_conversation_memory(
+        characterId, day, add_started=add_started
+    )
+    # update_result = queries.update_memory(characterId, day, update_fields)
     print(f"更新成功，修改了 {update_result} 个文档。")
 
     # 再次获取以验证更新
-    print("\n更新后的 current_pointer...")
-    updated_documents = queries.get_current_pointer(characterId)
-    print("更新后的 current_pointer 文档：", updated_documents)
+    print("\n更新后的 memory...")
+    updated_documents = queries.get_conversation_memory(characterId, day)
+    print("更新后的 memory 文档：", updated_documents)
 
-    # 测试删除 current_pointer
-    print("\n删除 current_pointer...")
-    delete_result = queries.delete_current_pointer(characterId)
-    print(f"删除成功，删除了 {delete_result} 个文档。")
+    # # 测试存储 current_pointer
+    # print("存储 current_pointer...")
+    # characterId = 1
+    # current_pointer = "pointer_1"
+    # inserted_id = queries.store_current_pointer(characterId, current_pointer)
+    # print(f"插入成功，文档 ID：{inserted_id}")
 
-    # 验证删除
-    print("\n验证删除后的 current_pointer...")
-    deleted_documents = queries.get_current_pointer(characterId)
-    print("删除后的 current_pointer 文档：", deleted_documents)
+    # # 测试获取 current_pointer
+    # print("\n获取 current_pointer...")
+    # documents = queries.get_current_pointer(characterId)
+    # print("获取的 current_pointer 文档：", documents)
+
+    # # 测试更新 current_pointer
+    # print("\n更新 current_pointer...")
+    # new_pointer = "pointer_2"
+    # update_result = queries.update_current_pointer(characterId, new_pointer)
+    # print(f"更新成功，修改了 {update_result} 个文档。")
+
+    # # 再次获取以验证更新
+    # print("\n更新后的 current_pointer...")
+    # updated_documents = queries.get_current_pointer(characterId)
+    # print("更新后的 current_pointer 文档：", updated_documents)
+
+    # # 测试删除 current_pointer
+    # print("\n删除 current_pointer...")
+    # delete_result = queries.delete_current_pointer(characterId)
+    # print(f"删除成功，删除了 {delete_result} 个文档。")
+
+    # # 验证删除
+    # print("\n验证删除后的 current_pointer...")
+    # deleted_documents = queries.get_current_pointer(characterId)
+    # print("删除后的 current_pointer 文档：", deleted_documents)
 
     # print("存储决策数据...")
 
@@ -1465,7 +1578,7 @@ if __name__ == "__main__":
     #     relation="Friend",
     #     emotion="Happy",
     #     personality="Introversion",
-    #     habits_and_preferences="Likes to talk about technology"
+    #     habits_and_preferences="Likes to talk about technology",
     # )
     # print(f"插入成功，文档 ID：{inserted_id}")
 

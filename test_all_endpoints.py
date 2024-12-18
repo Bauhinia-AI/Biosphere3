@@ -952,7 +952,67 @@ def test_conversation_get():
     print(json.dumps(response, indent=4))
 
 
+def test_conversation_memory_store():
+    print("Testing Conversation Memory Store...")
+    store_conversation_memory_data = {
+        "characterId": 101,
+        "day": 1,
+        "topic_plan": ["Discuss strategy", "Review patrol routes"],
+        "time_list": ["09:00", "14:00"],
+        "started": [{"time": "09:00", "topic": "Discuss strategy"}],
+    }
+    response = make_api_request_sync(
+        "POST", "/conversation_memory/", data=store_conversation_memory_data
+    )
+    print(json.dumps(response, indent=4))
+
+
+def test_conversation_memory_get():
+    print("Testing Conversation Memory Get...")
+    get_conversation_memory_params = {"characterId": 101, "day": 1}
+    response = make_api_request_sync(
+        "GET", "/conversation_memory/", params=get_conversation_memory_params
+    )
+    print(json.dumps(response, indent=4))
+
+
+def test_conversation_memory_update():
+    print("Testing Conversation Memory Update...")
+    update_conversation_memory_data = {
+        "characterId": 101,
+        "day": 1,
+        "update_fields": {"topic_plan": ["Discuss new strategy"]},
+    }
+    response = make_api_request_sync(
+        "PUT", "/conversation_memory/", data=update_conversation_memory_data
+    )
+    print(json.dumps(response, indent=4))
+
+
+def test_conversation_memory_add_started():
+    print("Testing Conversation Memory Add Started...")
+    add_started_data = {
+        "characterId": 101,
+        "day": 1,
+        "add_started": {"time": "14:00", "topic": "Review patrol routes"},
+    }
+    response = make_api_request_sync(
+        "PUT", "/conversation_memory/", data=add_started_data
+    )
+    print(json.dumps(response, indent=4))
+
+
 def main():
+    # Test conversation memory endpoints
+    test_conversation_memory_store()
+    time.sleep(1)
+    test_conversation_memory_get()
+    time.sleep(1)
+    test_conversation_memory_update()
+    time.sleep(1)
+    test_conversation_memory_add_started()
+    time.sleep(1)
+    test_conversation_memory_get()  # Verify updates
 
     # # Test conversation endpoints
     # test_conversation_store()
@@ -1012,7 +1072,7 @@ def main():
     # time.sleep(1)
     # test_encounter_count_get()
     # time.sleep(1)
-    test_encounter_count_by_from_id()
+    # test_encounter_count_by_from_id()
     # time.sleep(1)
     # test_encounter_count_increment()
     # time.sleep(1)

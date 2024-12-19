@@ -245,23 +245,20 @@ mayor_decision_prompt = ChatPromptTemplate.from_template(
 
 generate_cv_prompt = ChatPromptTemplate.from_template(
     """Based on the following information, decide if a job change is necessary.
-    User State:
-    {character_stats}
-    Character Info:
-    {character_info}
     Available Jobs:
     {available_public_jobs}
-
-    You should carefully analyze the user's current job(if any), current daily wages, education, experience, work hours, wagePerHours to decide whether the user should change the job.
-    You should also consider the character's status, such as health, energy, and money.
+    User State: {health}
+    Experience: {experience}
+    Education Level: {education}
+    Based on the these information, You should carefully decide whether the user should change the job.
 
     If the decision is NOT to change job, your output should be like this:
     {{
         "jobId": 0,
         "cv": ""
     }}
-    If the decision is to change job, you should choose a job from the available job list with the jobId and generate a professional CV based on the detail of the job.
-    If you choose the job with jobId 1, Here is an example to follow (don't copy it):
+    If the decision is to change job, you should choose a job from the "Available Jobs" listed above with the jobId and generate a professional CV based on the detail of the job.
+    Here is an example to follow (follow the rule but not content):
     {{
         "jobId": 1,
         "cv": "I think my knowledge level is good enough to be a student helper and I love this job"
@@ -277,8 +274,6 @@ generate_cv_prompt = ChatPromptTemplate.from_template(
 mayor_decision_prompt = ChatPromptTemplate.from_template(
     """Based on the following information, make a decision regarding the user's job application.
     
-    User State:
-    {character_stats}
     CV:
     {cv}
     Details of the job:

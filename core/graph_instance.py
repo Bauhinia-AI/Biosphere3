@@ -19,7 +19,6 @@ from core.agent_srv.node_engines import (
     replan_action,
     sensing_environment,
     generate_change_job_cv,
-    generate_mayor_decision,
     generate_character_arc,
     generate_daily_reflection,
 )
@@ -136,8 +135,8 @@ class LangGraphInstance:
                 self.action_result.append(
                     {"action_result": msg["data"], "timestamp": datetime.now()}
                 )
-            elif message_name == "new_day":
-                self.state["event_queue"].put_nowait("JOB_HUNTING")
+            elif message_name == "cv_submission":
+                await generate_change_job_cv(self.state["instance"], msg)
             elif message_name == "onestep":
                 self.state["event_queue"].put_nowait("PLAN")
 
@@ -241,8 +240,8 @@ class LangGraphInstance:
             if event == "PLAN":
                 return "Objectives_planner"
 
-            elif event == "JOB_HUNTING":
-                return "Change_Job"
+            # elif event == "JOB_HUNTING":
+            #     return "Change_Job"
 
             elif event == "CHARACTER_ARC":
                 return "Character_Arc"
@@ -262,8 +261,8 @@ class LangGraphInstance:
         workflow.add_node("Sensing_Route", sensing_environment)
         workflow.add_node("Objectives_planner", generate_daily_objective)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
-        workflow.add_node("Change_Job", generate_change_job_cv)
-        workflow.add_node("Mayor_Decision", generate_mayor_decision)
+        # workflow.add_node("Change_Job", generate_change_job_cv)
+        # workflow.add_node("Mayor_Decision", generate_mayor_decision)
         workflow.add_node("Character_Arc", generate_character_arc)
         workflow.add_node("Daily_Reflection", generate_daily_reflection)
         # workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
@@ -278,8 +277,8 @@ class LangGraphInstance:
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
-        workflow.add_edge("Change_Job", "Mayor_Decision")
-        workflow.add_edge("Mayor_Decision", "Sensing_Route")
+        # workflow.add_edge("Change_Job", "Mayor_Decision")
+        # workflow.add_edge("Mayor_Decision", "Sensing_Route")
         workflow.add_edge("Character_Arc", "Sensing_Route")
         workflow.add_edge("Daily_Reflection", "Sensing_Route")
         # workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")

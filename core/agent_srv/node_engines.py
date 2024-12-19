@@ -16,6 +16,7 @@ from core.agent_srv.node_model import (
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
+from core.db.database_api_utils import make_api_request_sync
 from core.db.game_api_utils import (
     make_api_request_async as make_api_request_async_backend,
     make_api_request_sync as make_api_request_sync_backend,
@@ -294,72 +295,76 @@ async def replan_action(state: RunningState):
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
-async def generate_change_job_cv(state: RunningState):
-    # 1. 从后端接口调用获取角色信息和工作列表
-    # 2. 从state中获取用户状态信息和过去5条反思
-    # 3. 调用LLM，输出申请的jobId和cv内容
-    # 4. 存储在state中
-    character_info_task = make_api_request_async_backend(
-        "GET", f"/characters/getById/{state['userid']}"
-    )
-    available_public_jobs_task = make_api_request_async_backend(
+async def generate_change_job_cv(instance, msg: dict):
+    # 1. 从后端接口调用工作列表
+    # 2. 调用LLM，输出申请的jobId和cv内容
+    # 3. 存储在数据库cv表中
+    available_public_jobs = make_api_request_sync_backend(
         "GET", "/publicWork/getAll"
-    )
-    character_info_response, available_public_jobs_response = await asyncio.gather(
-        character_info_task, available_public_jobs_task
-    )
-    character_info = character_info_response.get("data", {})
-    available_public_jobs = available_public_jobs_response.get("data", [])
+    ).get("data", [])
+
+    user_id = msg.get("characterId")
+    msg_data = msg.get("data", {})
+    health = msg_data.get("health", 0)
+    studyXp = msg_data.get("studyXp", 0)
+    education = msg_data.get("education", "None")
+    week = msg_data.get("week", 0)
+    date = msg_data.get("date", 0)
 
     payload = {
-        "character_stats": state["character_stats"],
-        "character_info": character_info,
         "available_public_jobs": available_public_jobs,
+        "health": health,
+        "experience": studyXp,
+        "education": education,
     }
     cv = await cv_generator.ainvoke(payload)
 
     logger.info(f"📃 CV: {cv}")
 
-    if "instance" in state and state["instance"]:
-        await state["instance"].send_message(
+    job_detail = make_api_request_sync_backend(
+        "GET", f"/publicWork/getById/{cv.job_id}"
+    )
+    job_name = job_detail.get("data", {}).get("jobName", "")
+    cv_request = {
+        "jobid": cv.job_id,
+        "characterId": user_id,
+        "CV_content": cv.cv,
+        "week": week,
+        "health": health,
+        "studyxp": studyXp,
+        "date": date,
+        "jobName": job_name,
+        "election_status": "not_yet",
+    }
+    make_api_request_sync("POST", "/cv/", data=cv_request)
+
+    mayor_decision = await generate_mayor_decision(
+        cv, user_id, studyXp, education, date
+    )
+    if instance:
+        await instance.send_message(
             {
-                "characterId": state["userid"],
-                "messageName": "cv_submission",
-                "messageCode": 9,
-                "data": {"jobId": cv.job_id, "cv": cv.cv},
+                "characterId": user_id,
+                "messageName": "mayor_decision",
+                "messageCode": 10,
+                "data": {"jobId": cv.job_id, "cv": cv.cv, **mayor_decision},
             }
         )
-    return {"decision": {"cv": cv.cv, "newJobId": cv.job_id}}
 
 
-async def generate_mayor_decision(state: RunningState):
-    # 1. 获取state中的一些用于判断工作变更的信息，如cv、个人资料、jobId
-    # 2. 获取目前职位的具体情况
-    # 3. 获取职位的限制条件
-    # 4. 设置随机数种子，增加决策的灵活性
-    # 5. 根据这些信息生成决策，包括审核结果、评语
-    # 6. 将简历、结果、评语返回发送给游戏端
-    job_id = state["decision"]["newJobId"]
-    public_work_task = make_api_request_async_backend(
-        "GET", f"/publicWork/getById/{job_id}"
-    )
-    character_info_task = make_api_request_async_backend(
-        "GET", f"/characters/getById/{state['userid']}"
-    )
-    public_work_info_response, character_info_response = await asyncio.gather(
-        public_work_task, character_info_task
-    )
-    public_work_info = public_work_info_response.get("data", {})
-    character_info = character_info_response.get("data", {})
-    experience = character_info.get("experience", {})
-    education = character_info.get("education", {})
+async def generate_mayor_decision(
+    cv: CV, user_id: int, experience: int, education: str, week: int = 0
+):
+    public_work_info = make_api_request_sync_backend(
+        "GET", f"/publicWork/getById/{cv.job_id}"
+    ).get("data", {})
 
     check_result = make_api_request_sync_backend(
         "POST",
         "/publicWork/checkWork",
         data={
-            "characterId": state["userid"],
-            "newJobId": job_id,
+            "characterId": user_id,
+            "newJobId": cv.job_id,
             "experience": experience,
             "education": education,
         },
@@ -367,8 +372,7 @@ async def generate_mayor_decision(state: RunningState):
     code = check_result.get("code", 0)
     message = check_result.get("message", "")
     payload = {
-        "character_stats": state["character_stats"],
-        "cv": state["decision"]["cv"],
+        "cv": cv.cv,
         "public_work_info": public_work_info,
         "meet_requirements": {"meet": code == 1, "message": message},
     }
@@ -376,23 +380,20 @@ async def generate_mayor_decision(state: RunningState):
     logger.info(f"🧔 Mayor decision: {mayor_decision.decision}")
     logger.info(f"🧔 Mayor comments: {mayor_decision.comments}")
 
-    if "instance" in state and state["instance"]:
-        await state["instance"].send_message(
-            {
-                "characterId": state["userid"],
-                "messageName": "mayor_decision",
-                "messageCode": 10,
-                "data": {
-                    "decision": mayor_decision.decision,
-                    "comments": mayor_decision.comments,
-                },
-            }
-        )
+    make_api_request_sync(
+        "PUT",
+        "/cv/election_status",
+        data={
+            "characterId": user_id,
+            "jobid": cv.job_id,
+            "week": week,
+            "election_status": mayor_decision.decision,
+        },
+    )
+
     return {
-        "decision": {
-            "mayor_decision": mayor_decision.decision,
-            "mayor_comments": mayor_decision.comments,
-        }
+        "mayor_decision": mayor_decision.decision,
+        "mayor_comments": mayor_decision.comments,
     }
 
 

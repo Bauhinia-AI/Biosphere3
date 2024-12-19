@@ -8,6 +8,10 @@ conversation_topic_planner_prompt = ChatPromptTemplate.from_template(
     Your current personality is: {personality}.
     Based on your profile, generate 5 topics for today's conversation.
     The topics should be related to the daily objectives and profile.
+    
+    These are your topic plan for yesterday {past_topics}.
+    Today's topic plan should be different from your yesterday plan.
+    
     There are more requirements. Consider all these requirements carefully.
     1.Randomly add at most one casual topics. Try to combine the casual topic with the profile and personality.
     The casual topics could be, for example, weather, food, emotion, clothing, health condition, education, product prize.

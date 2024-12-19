@@ -25,7 +25,6 @@ class ConversationTask(TypedDict):
     to_id: int
     start_time: str
     topic: str
-    dialogue: List[dict]
     Finish: List[bool]
 
 
@@ -48,7 +47,8 @@ class RunningConversation(TypedDict):
     to_id: int
     start_time: str
     latest_message: Dict[str, str]  # 回复的消息，如果真人接管，为空
-    dialogue: List[dict]
+    send_gametime: list
+    send_realtime: str
     Finish: List[bool]
 
 

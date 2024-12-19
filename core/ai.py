@@ -202,6 +202,7 @@ def main():
         filter=lambda record: record["extra"].get("conversation_instance") == True,
         format="{time} {level} {message}",
     )
+
     environment = "production" if sys.platform.startswith("linux") else "development"
     config = ConfigLoader(environment)
     server = AI_WS_Server(config)

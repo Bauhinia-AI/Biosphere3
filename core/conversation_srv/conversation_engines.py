@@ -16,7 +16,12 @@ import random
 import numpy as np
 
 
-os.environ["OPENAI_API_KEY"] = "sk-7MoETArh2eJxUpCQjEzX2jEyq5nOoo2N61ppykI9NHRc4wKE"
+logger.add(
+        "conversation_engines.log",
+        format="{time} {level} {message}",
+    )
+
+os.environ["OPENAI_API_KEY"] = "sk-ZOddtpHNiVHy0PpEKYAKXCVROeolEdjXiqYYE7E9hLDLjZ1n"
 
 conversation_topic_planner = conversation_topic_planner_prompt | ChatOpenAI(
     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
@@ -79,7 +84,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
     logger.info(f"User {state['userid']} current daily objectives are: {memory}")
 
     # 获取角色弧光
-    arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
+    arc_response = make_api_request_sync("GET", "/character_arc/with_changes", params={"characterId": state["userid"], "k": 1})
     if not arc_response["data"]:
         arc_data = []
     else:
@@ -93,6 +98,17 @@ async def generate_daily_conversation_plan(state: ConversationState):
     else:
         topic_requirement = topic_response["data"][0]["topic_requirements"]
 
+    # 查看过去的对话主题
+    current_day, current_hour, current_minute = calculate_game_time(datetime.now())
+    get_conversation_memory_params = {"characterId": state['userid'], "day": current_day-1}
+    past_topic_response = make_api_request_sync(
+        "GET", "/conversation_memory/", params=get_conversation_memory_params
+    )
+    if not past_topic_response["data"]:
+        past_topics = []
+    else:
+        past_topics = past_topic_response["data"][0]["topic_plan"]
+
     # 生成对话主题列表
     retry_count = 0
     while retry_count < 3:
@@ -102,7 +118,8 @@ async def generate_daily_conversation_plan(state: ConversationState):
                     "character_stats": state["character_stats"],
                     "memory": memory,
                     "personality": arc_data,
-                    "requirements": topic_requirement
+                    "requirements": topic_requirement,
+                    "past_topics": past_topics
                 }
             )
             break
@@ -122,10 +139,17 @@ async def generate_daily_conversation_plan(state: ConversationState):
     try:
         start_time_list = generate_talk_time(5, state['userid'])
         if not start_time_list:
-            raise ValueError("POWER IS NOT ENOUGH!")
+            raise ValueError("It's too late. I should start socializing next day.")
+        elif start_time_list == ["000"]:
+            start_time_list = []
+            raise ValueError("RUNNING OUT OF POWER!")
     except ValueError as e:
         logger.error(f"⛔ User {state['userid']} Error in planning conversation: {e}")
 
+    logger.info(f"User {state['userid']} planned start time is {start_time_list}")
+
+    plan_topic = []
+    plan_time = []
     if start_time_list:
         for index, start_time in enumerate(start_time_list):
             # start_time = start_time_list[index]
@@ -136,16 +160,55 @@ async def generate_daily_conversation_plan(state: ConversationState):
                 to_id=0,  # talk["userid"],
                 start_time=start_time,
                 topic=talk,
-                dialogue=[],  # [{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
                 Finish=[False, False]
             )
+            plan_topic.append(talk)
+            plan_time.append(start_time)
             conversation_plan.conversations.append(single_conversation)
 
         # 更新每日计划到state
         state["daily_task"] = conversation_plan.conversations
 
-        logger.info(f"🧠 DAILY CONVERSATION PLAN GENERATED...")
-        logger.info(f"Daily conversation plan of User {state['userid']}: {state['daily_task']}")
+        # 更新每日计划到数据库
+        current_day, current_hour, current_minute = calculate_game_time(datetime.now())
+        get_conversation_memory_params = {"characterId": state["userid"], "day": current_day}
+        memory_response = make_api_request_sync(
+            "GET", "/conversation_memory/", params=get_conversation_memory_params
+        )
+        if not memory_response["data"]:
+            store_conversation_memory_data = {
+                "characterId": state["userid"],
+                "day": current_day,
+                "topic_plan": plan_topic,
+                "time_list": plan_time,
+                "started": [],
+            }
+            memory_store_response = make_api_request_sync(
+                "POST", "/conversation_memory/", data=store_conversation_memory_data
+            )
+            logger.info(f"User {state['userid']} conversation plan stored: {memory_store_response['message']}")
+        else:
+            old_topic = memory_response["data"][0]["topic_plan"]
+            old_time = memory_response["data"][0]["time_list"]
+            if not memory_response["data"][0]["started"]:
+                point = -1
+            else:
+                point = old_time.index(memory_response["data"][0]["started"][-1]["time"])
+            update_conversation_memory_data = {
+                "characterId": state["userid"],
+                "day": current_day,
+                "update_fields": {
+                    "topic_plan": old_topic[0:point+1]+plan_topic,
+                    "time_list": old_time[0:point+1]+plan_time
+                }
+            }
+            memory_update_response = make_api_request_sync(
+                "PUT", "/conversation_memory/", data=update_conversation_memory_data
+            )
+            logger.info(f"User {state['userid']} conversation plan updated: {memory_update_response['message']}")
+
+        logger.info(f"🧠 NEW CONVERSATION PLAN GENERATED...")
+        logger.info(f"New conversation plan of User {state['userid']}: {state['daily_task']}")
     return state
 
 
@@ -210,8 +273,8 @@ async def start_conversation(state: ConversationState):
         "characterId": state["userid"],
         "day": current_time[0]
     }
-    talked_response = make_api_request_sync("GET", "/conversations/by_id_and_day", params=talked_data)
-    talked = talked_response["data"]
+    talked_response = make_api_request_sync("GET", "/conversation_memory/", params=talked_data)
+    talked = talked_response["data"][0]["started"]
 
     logger.info(f"🧠 CHECKING WHETHER TO START THE CONVERSATION ...")
 
@@ -245,6 +308,7 @@ async def start_conversation(state: ConversationState):
         for item in encounter_response["data"]:
             if item["count"] != 0:
                 candidate_list.append(item['to_id'])
+        logger.info(f"User {state['userid']} candidate list for this conversation is {candidate_list}")
 
         if not candidate_list:
             character_rag_data = {
@@ -307,7 +371,7 @@ async def start_conversation(state: ConversationState):
                 break
 
         # 获取角色弧光
-        arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
+        arc_response = make_api_request_sync("GET", "/character_arc/with_changes", params={"characterId": state["userid"], "k": 1})
         if not arc_response["data"]:
             arc_data = []
         else:
@@ -332,19 +396,49 @@ async def start_conversation(state: ConversationState):
                 retry_count += 1
                 continue
 
+        current_realtime = datetime.now()
+        current_day, current_hour, current_minute = calculate_game_time(current_realtime)
+        send_gametime = [current_day, f"{current_hour:02}" + ":" + f"{current_minute:02}"]
+        send_realtime = f"{current_realtime.year}-{current_realtime.month}-{current_realtime.day} {current_realtime.hour}:{current_realtime.minute:02}"
         talk_message = RunningConversation(
             from_id=current_talk["from_id"],
             to_id=current_topic_list["userid"],
             start_time=current_talk["start_time"],
             latest_message={state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]},
-            dialogue=[{state["character_stats"]["characterName"]: pre_single_conversation["first_sentence"]}],
+            send_gametime=send_gametime,
+            send_realtime=send_realtime,
             Finish=[False, False]
         )
         logger.info(f"User {state['userid']}: to start a conversation {talk_message}.")
+
         # 发送消息
         await send_conversation_message(state, talk_message)
 
         logger.info(f"The conversation FROM {current_talk['from_id']} at GAME TIME {current_talk['start_time']} on topic {current_talk['topic']} has started.")
+
+        # 存储到数据库
+        store_conversation_data = {
+            "from_id": current_talk["from_id"],
+            "to_id": current_topic_list["userid"],
+            "start_time": current_talk["start_time"],
+            "start_day": current_day,
+            "message": pre_single_conversation["first_sentence"],
+            "send_gametime": send_gametime,
+            "send_realtime": send_realtime,
+        }
+        store_response = make_api_request_sync("POST", "/conversation/", data=store_conversation_data)
+        logger.info(f"User {state['userid']} conversation message stored: {store_response['message']}")
+
+        # 更新计划
+        add_started_data = {
+            "characterId": state['userid'],
+            "day": current_day,
+            "add_started": {"time": current_talk["start_time"], "topic": current_talk["topic"]},
+        }
+        start_add_response = make_api_request_sync(
+            "PUT", "/conversation_memory/", data=add_started_data
+        )
+        logger.info(f"User {state['userid']} conversation memory added: {start_add_response['message']}")
     else:
         logger.info(f"The conversation FROM {current_talk['from_id']} at GAME TIME {current_talk['start_time']} on topic {current_talk['topic']} is canceled after check.")
 
@@ -360,7 +454,6 @@ async def start_conversation(state: ConversationState):
 # 收到消息生成回复
 async def generate_response(state: ConversationState):
     question_item = await state["waiting_response"].get()
-    dialogue = question_item.copy()
 
     if question_item is None:
         logger.error(f"User {state['userid']}: No conversation is waiting for reply.")
@@ -376,7 +469,14 @@ async def generate_response(state: ConversationState):
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
 
     question = question_item["latest_message"]
-    history = question_item["dialogue"]
+
+    # 获取历史，从数据库
+    history = reset_conversation_history(question_item["start_time"],
+                                         question_item["send_gametime"][0],
+                                         question_item["from_id"],
+                                         question_item["to_id"],
+                                         list(question.keys())[0],
+                                         state["character_stats"]["characterName"])
 
     # 获得印象，从数据库
     impression_query_data = {
@@ -393,7 +493,7 @@ async def generate_response(state: ConversationState):
     logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {current_impression}")
 
     # 获取角色弧光
-    arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
+    arc_response = make_api_request_sync("GET", "/character_arc/with_changes", params={"characterId": state["userid"], "k": 1})
     if not arc_response["data"]:
         arc_data = []
     else:
@@ -403,9 +503,20 @@ async def generate_response(state: ConversationState):
     # 获取对话prompt
     prompt_response = make_api_request_sync("GET", "/conversation_prompt/", params={"characterId": state["userid"]})
     if not prompt_response:
-        prompt = {}
+        others = {}
     else:
-        prompt = prompt_response["data"]
+        prompt = prompt_response["data"][0]
+        relation = prompt["relation"]
+        emotion = prompt["emotion"]
+        personality = prompt['personality']
+        hap = prompt['habits_and_preferences']
+        others = {
+            "how you treat others": relation,
+            "your own emotion": emotion,
+            "your own personality": personality,
+            "information you want to share": hap
+        }
+    logger.info(f"User {state['userid']} current conversation prompt is {others}")
 
     retry_count = 0
     while retry_count < 3:
@@ -418,7 +529,7 @@ async def generate_response(state: ConversationState):
                     "history": history,
                     "impact": state["prompt"]["impression_impact"],
                     "personality": arc_data,
-                    "others": prompt
+                    "others": others
                 }
             )
             break
@@ -439,16 +550,33 @@ async def generate_response(state: ConversationState):
 
     # 重组格式
     latest_message = {state["character_stats"]["characterName"]: conversation_response["response"]}
-    dialogue["dialogue"].append(latest_message)
+    current_realtime = datetime.now()
+    current_day, current_hour, current_minute = calculate_game_time(current_realtime)
+    send_gametime = [current_day, f"{current_hour:02}" + ":" + f"{current_minute:02}"]
+    send_realtime = f"{current_realtime.year}-{current_realtime.month}-{current_realtime.day} {current_realtime.hour}:{current_realtime.minute:02}"
     response_message = RunningConversation(
         from_id=question_item["to_id"],
         to_id=question_item["from_id"],
         start_time=question_item["start_time"],
         latest_message={state["character_stats"]["characterName"]: conversation_response["response"]},
-        dialogue=dialogue["dialogue"],
+        send_gametime=send_gametime,
+        send_realtime=send_realtime,
         Finish=before_finish
     )
     logger.info(f"A new response message has been generated {response_message}")
+
+    # 存储到数据库
+    store_conversation_data = {
+        "from_id": question_item["to_id"],
+        "to_id": question_item["from_id"],
+        "start_time": question_item["start_time"],
+        "start_day": question_item["send_gametime"][0],
+        "message": conversation_response["response"],
+        "send_gametime": send_gametime,
+        "send_realtime": send_realtime,
+    }
+    store_response = make_api_request_sync("POST", "/conversation/", data=store_conversation_data)
+    logger.info(f"User {state['userid']} conversation message stored: {store_response['message']}")
 
     # 发送消息
     await send_conversation_message(state, response_message)
@@ -474,9 +602,17 @@ async def check_conversation_state(state: ConversationState, message: RunningCon
     elif message["Finish"] == [True, True]:
         logger.info(f"🧠 SOME CONVERSATIONS ARE FINISHED. UPDATING IMPRESSION...")
         game_time = calculate_game_time(real_time=datetime.now())
+        history = reset_conversation_history(
+            start_time=message["start_time"],
+            start_day=game_time[0],
+            id1=message["from_id"],
+            id2=message["to_id"],
+            name1=list(message["latest_message"].keys())[0],
+            name2=state["character_stats"]["characterName"]
+        )
         conversation = {
             "characterIds": [message["from_id"], message["to_id"]],
-            "dialogue": message["dialogue"],
+            "dialogue": history,
             "start_time": message["start_time"],
             "start_day": game_time[0]
         }
@@ -486,10 +622,7 @@ async def check_conversation_state(state: ConversationState, message: RunningCon
 # 处理已经结束的对话，包括生成印象，储存到数据库
 async def handling_finished_conversation(conversation):  # conversation = character_ids[], dialogue, start_time
     # 储存对话到数据库
-    stored_conversation_response = make_api_request_sync("POST", "/conversations/", data=conversation)
     logger.info(f"Conversation between Users {conversation['characterIds']} started at {conversation['start_time']} is finished.")
-    logger.info(conversation["dialogue"])
-    logger.info(stored_conversation_response["message"])
 
     stored_impression = await update_impression(conversation["characterIds"][0], conversation["characterIds"][1], conversation["dialogue"])
     updated_intimacy = await update_intimacy(conversation["characterIds"][0], conversation["characterIds"][1], conversation["dialogue"])
@@ -553,50 +686,6 @@ async def update_impression(id1: int, id2: int, conversation):
     store_impression2_response = make_api_request_sync("POST", "/impressions/", data=document2)
     logger.info(f"From User {id2} to User {id1}: {store_impression2_response['message']}.")
     return {"new impressions": [impression.impression1, impression.impression2]}
-
-
-async def generate_knowledge(state: ConversationState):
-    profile = state["character_stats"]
-
-    # 获得当天所有通话的记录
-    current_time = calculate_game_time(real_time=datetime.now())
-    talked_data = {
-        "characterId": state["userid"],
-        "day": current_time[0]
-    }
-    talked_response = make_api_request_sync("POST", "/conversations/get_by_id_and_day", data=talked_data)
-    if talked_response["data"] is None:
-        conversation_list = []
-    else:
-        conversation_list = talked_response["data"]
-    # conversation_list = []
-
-    logger.info(f"🧠 REFLECTING ON TODAY'S CONVERSATIONS...")
-
-    # 对话反思
-    knowledge = knowledge_generator.invoke(
-        {
-            "player": profile,
-            "conversation_list": conversation_list
-        }
-    )
-
-    # 存储到数据库知识表
-    updated_knowledge_data = {
-        "characterId": state["userid"],
-        "day": current_time[0],
-        "environment_information": knowledge.environment_information,
-        "personal_information": knowledge.personal_information
-    }
-    knowledge_response = make_api_request_sync("POST", "/knowledge/update", data=updated_knowledge_data)
-
-    # logger
-    logger.info(f"{state['userid']} have learned something from the environment.")
-    logger.info(knowledge.environment_information)
-    logger.info(f"{state['userid']} have learned something about himself/herself.")
-    logger.info(knowledge.personal_information)
-
-    return {"environment knowledge": knowledge.environment_information, "personal knowledge": knowledge.personal_information}
 
 
 # 用于定时处理只读列表中的所有通话，每个一段时间认为通话已经结束，进入结束对话流程
@@ -790,9 +879,9 @@ def generate_talk_time(k: int, id: int):
     endpoint = "/characterPower/getByCharacterId/" + str(id)
     power_check = make_backend_api_request_sync("GET", endpoint=endpoint)
     if not power_check["data"]:
-        return []
+        return ["000"]
     elif power_check["data"]["currentPower"] < 5:
-        return []
+        return ["000"]
     power_minute = power_check["data"]["currentPower"]
 
     largest_minute = (24-hour)*60+(0-minute)
@@ -822,3 +911,45 @@ def generate_talk_time(k: int, id: int):
 
     return time_list
 
+
+# 获取有某人参与的对话历史，start_time识别，重组格式带人名
+def reset_conversation_history(start_time, start_day, id1, id2, name1, name2):
+    # 获取历史，从数据库
+    get_conversation_params = {
+        "from_id": id1,
+        "to_id": id2,
+        "start_day": start_day,
+        "start_time": start_time,
+    }
+    from_response = make_api_request_sync("GET", "/conversation/", params=get_conversation_params)
+    get_conversation_params = {
+        "from_id": id2,
+        "to_id": id1,
+        "start_day": start_day,
+        "start_time": start_time,
+    }
+    to_response = make_api_request_sync("GET", "/conversation/", params=get_conversation_params)
+    if not from_response["data"] and not to_response["data"]:
+        history = []
+    elif not to_response["data"]:
+        history = [{name1: t["message"]} for t in from_response["data"]]
+    elif not from_response["data"]:
+        history = [{name2: t["message"]} for t in to_response["data"]]
+    else:
+        if len(from_response["data"]) >= len(to_response["data"]):
+            first = from_response["data"][::-1]
+            first_name = name1
+            second = to_response["data"][::-1]
+            second_name = name2
+        else:
+            second = from_response["data"][::-1]
+            second_name = name1
+            first = to_response["data"][::-1]
+            first_name = name2
+        history = []
+        for i in range(len(second)):
+            history.append({first_name: first[i]["message"]})
+            history.append({second_name: second[i]["message"]})
+        for j in range(len(first[len(second):])):
+            history.append({first_name: first[len(second)+j]['message']})
+    return history

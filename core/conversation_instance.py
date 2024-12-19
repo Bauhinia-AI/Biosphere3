@@ -8,32 +8,6 @@ from pprint import pprint
 
 
 class ConversationInstance:
-    # def __init__(self, user_id, websocket=None):
-    #     self.user_id = user_id
-    #     self.websocket = websocket
-    #     self.plan_signal = False  # 对话规划的信号
-    #     self.is_initial = (
-    #         True  # 控制对话规划的发生时间，设定为收到第一条消息，而不是加载实例的时候
-    #     )
-
-    #     # 初始化对话实例
-    #     self.state = initialize_conversation_state(self.user_id, self.websocket)
-
-    #     # 数据竞争时，锁住state
-    #     # self.state_lock = asyncio.Lock()
-    #     # self.websocket_lock = asyncio.Lock()
-
-    #     self.graph = start_conversation_workflow()
-    #     self.graph_config = {"recursion_limit": 1000}
-
-    #     # 三个协程
-    #     # self.listener_task = asyncio.create_task(self.listener())
-    #     self.msg_processor_task = asyncio.create_task(self.msg_processor())
-    #     self.reply_message_task = asyncio.create_task(self.reply_message())
-    #     self.clear_readonly_task = asyncio.create_task(self.clear_readonly())
-    #     self.plan_start_task = asyncio.create_task(self.run_workflow())
-    #     # self.plan_start_task = None
-    #     self.logger.info(f"User {self.user_id} conversation client initialized")
     def __init__(self, user_id, websocket=None):
         self.user_id = user_id
         self.websocket = websocket
@@ -72,11 +46,11 @@ class ConversationInstance:
             current_day = current_time[0]
             check_data = {"characterId": self.user_id, "day": current_day}
             check_response = make_api_request_sync(
-                "GET", "/conversations/by_id_and_day", params=check_data
+                "GET", "/conversation_memory/", params=check_data
             )
             if not check_response["data"]:
                 self.plan_signal = True
-            elif len(check_response["data"]) < 3:
+            elif len(check_response["data"][0]["started"]) < 3:
                 self.plan_signal = True
             self.is_initial = False
         websocket = self.state["websocket"]
@@ -104,7 +78,7 @@ class ConversationInstance:
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
             message_code = msg.get("messageCode")
-            self.logger.info(f"💬 CONVERSATION_INSTANCE: User {self.user_id}: received message: {msg}")
+            self.logger.info(f"💬 CONVERSATION_INSTANCE: User {self.user_id}: received {message_name} message: {msg}")
             if message_name == "gameTime":
                 data = msg.get("data")
                 time_object = datetime.strptime(data["gameTime"], "%H:%M")
@@ -129,13 +103,16 @@ class ConversationInstance:
 
                 # 存储对话到数据库
                 readonly_data = {
-                    "characterIds": [msg["data"]["from_id"], msg["data"]["to_id"]],
-                    "dialogue": msg["data"]["dialogue"],
+                    "from_id": msg["data"]["from_id"],
+                    "to_id": msg["data"]["to_id"],
+                    "message": list(msg["data"]["latest_message"].values())[0],
                     "start_day": current_time[0],
                     "start_time": msg["data"]["start_time"],
+                    "send_gametime": msg["data"]["send_gametime"],
+                    "send_realtime": msg["data"]["send_realtime"]
                 }
                 readonly_response = make_api_request_sync(
-                    "POST", "/conversations/", data=readonly_data
+                    "POST", "/conversation/", data=readonly_data
                 )
                 self.logger.info(
                     f"A read-only conversation is saved to database: {readonly_response['message']}"
@@ -163,19 +140,14 @@ class ConversationInstance:
                             ],
                             "start_time": msg["data"]["start_time"],
                             "start_day": current_time[0],
-                            "dialogue": msg["data"]["dialogue"],
+                            "dialogue": [msg["data"]["latest_message"]],
                         }
                     )
                     self.logger.info(
                         f"User {self.user_id}: A new conversation event just happened."
                     )
                 else:
-                    self.state["ongoing_task"][search_result[0]] = {
-                        "characterIds": [msg["data"]["from_id"], msg["data"]["to_id"]],
-                        "start_time": msg["data"]["start_time"],
-                        "start_day": current_time[0],
-                        "dialogue": msg["data"]["dialogue"],
-                    }
+                    self.state["ongoing_task"][search_result[0]]["dialogue"].append(msg["data"]["latest_message"])
                     self.logger.info(
                         f"User {self.user_id}: An existing conversation event continues."
                     )
@@ -224,7 +196,7 @@ class ConversationInstance:
             if len(self.state["ongoing_task"]) != 0:
                 self.logger.info(f"🏃 User {self.user_id}: handling read-only messages...")
                 await handling_readonly_conversation(self.state)
-            await asyncio.sleep(120)  # 每隔2分钟处理一次
+            await asyncio.sleep(300)  # 每隔5分钟处理一次
 
     # 唤醒规划和主动对话模块
     async def run_workflow(self):

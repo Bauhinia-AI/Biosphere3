@@ -1128,7 +1128,17 @@ class DomainSpecificQueries:
             collection_name=config.conversation_prompt_collection_name,
             query=query,
         )
-
+        # 如果没有找到文档，设置默认值
+        if not documents:
+            documents = [
+                {
+                    "topic_requirements": "",
+                    "relation": "",
+                    "emotion": "You are happy.",
+                    "personality": "Introversion",
+                    "habits_and_preferences": "",
+                }
+            ]
         # 添加固定内容到每个文档
         fixed_content = {
             "topic_factor": "The topics should be related to the daily objectives, your current personality and profile.",
@@ -1464,50 +1474,50 @@ if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试存储多条工作经历
-    print("存储多条工作经历...")
-    characterId = 1
-    job_entries = [
-        {"jobid": 101, "start_date": 20231001},
-        {"jobid": 102, "start_date": 20231101},
-        {"jobid": 103, "start_date": 20231201},
-    ]
+    # # 测试存储多条工作经历
+    # print("存储多条工作经历...")
+    # characterId = 1
+    # job_entries = [
+    #     {"jobid": 101, "start_date": 20231001},
+    #     {"jobid": 102, "start_date": 20231101},
+    #     {"jobid": 103, "start_date": 20231201},
+    # ]
 
-    for entry in job_entries:
-        inserted_id = queries.store_work_experience(
-            characterId, entry["jobid"], entry["start_date"]
-        )
-        print(f"插入成功，文档 ID：{inserted_id}")
+    # for entry in job_entries:
+    #     inserted_id = queries.store_work_experience(
+    #         characterId, entry["jobid"], entry["start_date"]
+    #     )
+    #     print(f"插入成功，文档 ID：{inserted_id}")
 
-    # 测试获取所有工作经历
-    print("\n获取所有工作经历...")
-    all_work_experiences = queries.get_all_work_experiences(characterId)
-    print("所有工作经历：", all_work_experiences)
+    # # 测试获取所有工作经历
+    # print("\n获取所有工作经历...")
+    # all_work_experiences = queries.get_all_work_experiences(characterId)
+    # print("所有工作经历：", all_work_experiences)
 
-    # 测试获取当前工作经历
-    print("\n获取当前工作经历...")
-    current_work_experience = queries.get_current_work_experience(characterId)
-    print("当前工作经历：", current_work_experience)
+    # # 测试获取当前工作经历
+    # print("\n获取当前工作经历...")
+    # current_work_experience = queries.get_current_work_experience(characterId)
+    # print("当前工作经历：", current_work_experience)
 
-    # 测试更新当前工作经历
-    print("\n更新当前工作经历...")
-    if current_work_experience:
-        jobid = current_work_experience["jobid"]
-        additional_work = 8
-        additional_salary = 1500.0
-        update_result = queries.update_work_experience(
-            characterId, jobid, additional_work, additional_salary
-        )
-        print(f"更新成功，修改了 {update_result} 个文档。")
+    # # 测试更新当前工作经历
+    # print("\n更新当前工作经历...")
+    # if current_work_experience:
+    #     jobid = current_work_experience["jobid"]
+    #     additional_work = 8
+    #     additional_salary = 1500.0
+    #     update_result = queries.update_work_experience(
+    #         characterId, jobid, additional_work, additional_salary
+    #     )
+    #     print(f"更新成功，修改了 {update_result} 个文档。")
 
-        # 再次获取当前工作经历以验证更新
-        print("\n更新后的当前工作经历...")
-        updated_current_work_experience = queries.get_current_work_experience(
-            characterId
-        )
-        print("更新后的当前工作经历：", updated_current_work_experience)
-    else:
-        print("没有找到当前工作经历进行更新。")
+    #     # 再次获取当前工作经历以验证更新
+    #     print("\n更新后的当前工作经历...")
+    #     updated_current_work_experience = queries.get_current_work_experience(
+    #         characterId
+    #     )
+    #     print("更新后的当前工作经历：", updated_current_work_experience)
+    # else:
+    #     print("没有找到当前工作经历进行更新。")
 
     # # 测试存储 memory
     # print("存储 memory...")
@@ -1681,7 +1691,7 @@ if __name__ == "__main__":
 
     # # 测试 get_conversation_prompt 方法
     # print("\n获取对话提示...")
-    # conversation_prompts = queries.get_conversation_prompt(characterId=1)
+    # conversation_prompts = queries.get_conversation_prompt(characterId=1000)
     # print("获取的对话提示：", conversation_prompts)
 
     # # 测试 update_conversation_prompt 方法

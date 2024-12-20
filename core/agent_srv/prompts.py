@@ -71,6 +71,8 @@ meta_action_sequence_prompt = ChatPromptTemplate.from_template(
     {daily_objective}
     think step by step to come up with a player action sequence ONLY associated with the available actions:
     {tool_functions}, which also includes some corresponding parameters,
+    and consider the specific actions available to the player's role:
+    {role_specific_actions}
     and the available locations:
     {locations}
  

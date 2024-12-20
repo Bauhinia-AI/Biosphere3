@@ -1,5 +1,6 @@
 import os
 import asyncio
+import json
 from dotenv import load_dotenv
 from loguru import logger
 from langchain_openai import ChatOpenAI
@@ -141,6 +142,21 @@ async def generate_detailed_plan(state: RunningState):
 
 
 async def generate_meta_action_sequence(state: RunningState):
+    response = make_api_request_sync_backend(
+        "GET", f"/freelanceWork/getById/{state['userid']}"
+    )
+    freelancejob_data = response.get("data", {})
+    if freelancejob_data:
+        job_name = freelancejob_data.get("jobName", "")
+    else:
+        job_name = "Farmer"  # 如果没有特定工作，就默认是农民
+    try:
+        with open("core/files/skill2actions.json", "r") as f:
+            skills = json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load skill actions: {e}")
+    role_specific_actions = format_role_actions(job_name, skills)
+
     payload = {
         "daily_objective": (
             state["decision"]["daily_objective"][-1]
@@ -148,6 +164,7 @@ async def generate_meta_action_sequence(state: RunningState):
             else []
         ),
         "tool_functions": state["meta"]["tool_functions"],
+        "role_specific_actions": role_specific_actions,
         "locations": state["meta"]["available_locations"],
         "inventory": state["character_stats"]["inventory"],
         "market_data": state["public_data"]["market_data"],
@@ -413,6 +430,27 @@ async def generate_character_arc(state: RunningState):
         }
     )
     return {"Character_Stats": {"character_arc": dict(character_arc)}}
+
+
+def format_role_actions(role, data):
+    role_data = data.get(role, {})
+    actions = role_data.get("actions", [])
+    materials = role_data.get("materials", {})
+
+    # Format the actions
+    action_str = (
+        f"1. craft [itemType:string] [num:int]: Craft a certain number of items.\n"
+    )
+    action_str += "Constraints: Item must be in ItemType: ("
+    action_str += ", ".join([action.split()[1] for action in actions])
+    action_str += ") and you should have enough materials.\nHere's the rule:\n"
+
+    # Format the materials
+    for item, constraints in materials.items():
+        constraint_str = "None" if not constraints else ", ".join(constraints)
+        action_str += f"- {item}: {constraint_str}\n"
+
+    return action_str
 
 
 async def main():

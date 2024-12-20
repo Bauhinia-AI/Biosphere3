@@ -1,0 +1,105 @@
+{
+    "Farmer": {
+        "actions": [
+            "craft apple <num>",
+            "craft wheat <num>",
+            "craft pear <num>",
+            "craft rice <num>",
+            "craft chicken <num>",
+            "craft beef <num>",
+            "craft fish <num>"
+        ],
+        "cost": 5,
+        "materials": {
+            "apple": [],
+            "wheat": [],
+            "pear": [],
+            "rice": [],
+            "chicken": ["2 feed"],
+            "beef": ["5 feed"],
+            "fish": []
+        }
+    },
+    "FoodFactoryOwner": {
+        "actions": [
+            "craft feed <num>",
+            "craft flour <num>",
+            "craft bread <num>",
+            "craft apple_pie <num>",
+            "craft fruit_salad <num>",
+            "craft chicken_salad <num>",
+            "craft beef_rice <num>",
+            "craft sushi <num>"
+        ],
+        "cost": 10,
+        "materials": {
+            "feed": ["2 rice"],
+            "flour": ["2 wheat"],
+            "bread": ["2 flour"],
+            "apple_pie": ["1 apple", "1 flour"],
+            "fruit_salad": ["1 apple", "1 pear"],
+            "chicken_salad": ["2 chicken", "1 fruit_salad"],
+            "beef_rice": ["1 beef", "2 rice"],
+            "sushi": ["1 fish", "1 rice"]
+        }
+    },
+    "FactoryOwner": {
+        "actions": [
+            "craft iron_ore <num>",
+            "craft timber <num>",
+            "craft copper_ore <num>",
+            "craft silicon_ore <num>"
+        ],
+        "cost": 5,
+        "materials": {
+            "iron_ore": [],
+            "timber": [],
+            "copper_ore": [],
+            "silicon_ore": []
+        }
+    },
+    "MineOwner": {
+        "actions": [
+            "craft iron_ingots <num>",
+            "craft wooden_boards <num>",
+            "craft copper_ingots <num>",
+            "craft pure_silicon <num>",
+            "craft pickaxes <num>",
+            "craft iron_plates <num>",
+            "craft paper_pulp <num>",
+            "craft books <num>",
+            "craft copper_wire <num>",
+            "craft transistors <num>"
+        ],
+        "cost": 10,
+        "materials": {
+            "iron_ingots": ["5 iron_ore"],
+            "wooden_boards": ["5 wood"],
+            "copper_ingots": ["5 copper_ore"],
+            "pure_silicon": ["5 silicon_ore"],
+            "pickaxes": ["1 iron_ingots", "2 wood_planks"],
+            "iron_plates": ["2 iron_ingots"],
+            "paper_pulp": ["2 wood_planks"],
+            "books": ["5 paper_pulp"],
+            "copper_wire": ["2 copper_ingots"],
+            "transistors": ["2 pure_silicon"]
+        }
+    },
+    "Scientist": {
+        "actions": [
+            "craft circuit_board <num>",
+            "craft a100 <num>",
+            "craft h100 <num>",
+            "craft h200 <num>",
+            "craft b200 <num>"
+        ],
+        "cost": 20,
+        "materials": {
+            "circuit_board": ["2 iron_plates", "3 copper_wire"],
+            "a100": ["4 circuit_board", "4 transistors"],
+            "h100": ["4 a100"],
+            "h200": ["4 h100"],
+            "b200": ["4 h200"]
+        }
+    }
+}

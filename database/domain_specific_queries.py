@@ -1075,6 +1075,72 @@ class DomainSpecificQueries:
             collection_name=config.agent_prompt_collection_name,
             query=query,
         )
+        # 如果没有找到文档，返回默认值
+        if not documents:
+            documents = [
+                {
+                    "characterId": characterId,
+                    "daily_goal": "sleep well",
+                    "refer_to_previous": True,
+                    "life_style": "Busy",
+                    "daily_objective_ar": "",
+                    "task_priority": [],
+                    "max_actions": 10,
+                    "meta_seq_ar": "",
+                    "replan_time_limit": 1,
+                    "meta_seq_adjuster_ar": "",
+                    "focus_topic": [],
+                    "depth_of_reflection": "Deep",
+                    "reflection_ar": "",
+                    "level_of_detail": "Shallow",
+                    "tone_and_style": "Gentle",
+                }
+            ]
+
+        # 添加固定内容到每个文档
+        fixed_content = {
+            "randomness": True,
+            "tool_functions": [
+                "1. goto [placeName:string]: Go to a specified location.",
+                "2. pickapple [number:int]: Pick an apple, costing energy.",
+                "3. gofishing [hours:int]: Fish for fish, costing energy.",
+                "4. gomining [hours:int]: Mine for ore, costing energy.",
+                "5. harvest [hours:int]: Harvest crops, costing energy.",
+                "6. buy [itemType:string] [amount:int]: Purchase items, costing money.",
+                "7. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.",
+                "8. sleep [hours:int]: Sleep to recover energy and health.",
+                "9. study [hours:int]: Study to achieve a higher degree, will cost money.",
+            ],
+            "restrictions": [
+                "1. goto [placeName:string]: Must be in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).",
+                "2. pickapple [number:int]: Must have enough energy and be in the orchard.",
+                "3. gofishing [hours:int]: Must have enough energy and be in the fishing area.",
+                "4. gomining [hours:int]: Must have enough energy and be in the mine.",
+                "5. harvest [hours:int]: Must have enough energy and be in the harvest area.",
+                "6. buy [itemType:string] [amount:int]: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)",
+                "7. sell [itemType:string] [amount:int]: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)",
+                "8. sleep [hours:int]: Must be at home.",
+                "9. study [hours:int]: Must be in school and have enough money.",
+            ],
+            "available_locations": [
+                "1. school",
+                "2. workshop",
+                "3. home",
+                "4. farm",
+                "5. mall",
+                "6. square",
+                "7. hospital",
+                "8. fruit",
+                "9. harvest",
+                "10. fishing",
+                "11. mine",
+                "12. orchard",
+            ],
+        }
+
+        for document in documents:
+            document.update(fixed_content)
+
         return documents
 
     def update_agent_prompt(self, characterId, update_fields):

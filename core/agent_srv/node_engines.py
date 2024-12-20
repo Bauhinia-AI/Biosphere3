@@ -145,7 +145,11 @@ async def generate_meta_action_sequence(state: RunningState):
     response = make_api_request_sync_backend(
         "GET", f"/freelanceWork/getById/{state['userid']}"
     )
-    job_name = response.get("data", {}).get("jobName", "")
+    freelancejob_data = response.get("data", {})
+    if freelancejob_data:
+        job_name = freelancejob_data.get("jobName", "")
+    else:
+        job_name = "Farmer"  # 如果没有特定工作，就默认是农民
     try:
         with open("core/files/skill2actions.json", "r") as f:
             skills = json.load(f)

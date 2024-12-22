@@ -1453,7 +1453,39 @@ class DomainSpecificQueries:
             collection_name=config.conversation_memory_collection_name,
             query=query,
         )
+        # 如果没有找到文档，返回默认值
+        if not documents:
+            return [
+                {
+                    "characterId": characterId,
+                    "day": day,
+                    "topic_plan": [],
+                    "time_list": [],
+                    "started": [],
+                }
+            ]
+
         return documents
+
+    def get_memory(self, characterId, day, count=1):
+        # 获取 conversation_memory
+        conversation_memory = self.get_conversation_memory(characterId, day)
+        if conversation_memory:
+            conversation_memory = conversation_memory[0]  # 只获取第一个
+        else:
+            conversation_memory = {}
+
+        # 获取 decision
+        decision = self.get_decision(characterId, count)
+        if decision:
+            decision = decision[0]  # 只获取第一个
+        else:
+            decision = {}
+
+        # 合并两个字典
+        combined_memory = {**conversation_memory, **decision}
+
+        return combined_memory
 
     def update_conversation_memory(
         self, characterId, day, update_fields=None, add_started=None
@@ -1540,6 +1572,16 @@ if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
+    # 测试 get_memory 函数
+    print("测试 get_memory 函数...")
+    characterId = 1
+    day = 1
+    count = 1
+
+    # 假设已经有一些数据存储在数据库中
+    combined_memory = queries.get_memory(characterId, day, count)
+    print("合并后的 memory 数据：", combined_memory)
+
     # # 测试存储多条工作经历
     # print("存储多条工作经历...")
     # characterId = 1
@@ -1587,7 +1629,7 @@ if __name__ == "__main__":
 
     # # 测试存储 memory
     # print("存储 memory...")
-    # characterId = 10
+    # characterId = 1
     # day = 1
     # topic_plan = [
     #     "Talk about weather",

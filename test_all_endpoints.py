@@ -1047,17 +1047,29 @@ def test_work_experience_update():
     print(json.dumps(response, indent=4))
 
 
+def test_get_memory_api():
+    print("Testing Get Memory API...")
+    get_memory_params = {"characterId": 1, "day": 1, "count": 5}
+    response = make_api_request_sync(
+        "GET", "/conversation_memory/memory", params=get_memory_params
+    )
+    print(json.dumps(response, indent=4))
+
+
 def main():
-    # Test work experience endpoints
-    test_work_experience_store()
-    time.sleep(1)
-    test_work_experience_get_all()
-    time.sleep(1)
-    test_work_experience_get_current()
-    time.sleep(1)
-    test_work_experience_update()
-    time.sleep(1)
-    test_work_experience_get_all()
+
+    test_get_memory_api()
+
+    # # Test work experience endpoints
+    # test_work_experience_store()
+    # time.sleep(1)
+    # test_work_experience_get_all()
+    # time.sleep(1)
+    # test_work_experience_get_current()
+    # time.sleep(1)
+    # test_work_experience_update()
+    # time.sleep(1)
+    # test_work_experience_get_all()
 
     # # Test conversation memory endpoints
     # test_conversation_memory_store()

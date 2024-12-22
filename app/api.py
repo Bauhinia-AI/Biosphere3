@@ -2039,7 +2039,23 @@ def get_conversation_memory_api(characterId: int, day: Optional[int] = None):
     else:
         raise HTTPException(status_code=404, detail="No conversation memory found.")
 
-
+@conversation_memory_router.get("/memory", response_model=StandardResponse)
+def get_memory_api(characterId: int, day: int, count: Optional[int] = 1):
+    memory_data = retry_operation(
+        domain_queries.get_memory,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+        day=day,
+        count=count,
+    )
+    if memory_data:
+        return success_response(
+            data=memory_data, message="Memory data retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No memory data found.")
+    
 @conversation_memory_router.put("/", response_model=StandardResponse)
 def update_conversation_memory_api(request: UpdateConversationMemoryRequest):
     result = retry_operation(

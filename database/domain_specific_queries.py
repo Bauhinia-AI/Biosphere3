@@ -1145,6 +1145,39 @@ class DomainSpecificQueries:
 
     def update_agent_prompt(self, characterId, update_fields):
         query = {"characterId": characterId}
+
+        # 检查是否存在文档
+        existing_documents = self.db_utils.find_documents(
+            collection_name=config.agent_prompt_collection_name,
+            query=query,
+        )
+
+        # 如果没有找到文档，先插入默认值
+        if not existing_documents:
+            default_document = {
+                "characterId": characterId,
+                "daily_goal": "sleep well",
+                "refer_to_previous": True,
+                "life_style": "Busy",
+                "daily_objective_ar": "",
+                "task_priority": [],
+                "max_actions": 10,
+                "meta_seq_ar": "",
+                "replan_time_limit": 1,
+                "meta_seq_adjuster_ar": "",
+                "focus_topic": [],
+                "depth_of_reflection": "Deep",
+                "reflection_ar": "",
+                "level_of_detail": "Shallow",
+                "tone_and_style": "Gentle",
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            self.db_utils.insert_document(
+                config.agent_prompt_collection_name, default_document
+            )
+
+        # 更新文档
         update_data = {"$set": update_fields}
         update_data["$set"]["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         result = self.db_utils.update_documents(
@@ -1223,6 +1256,30 @@ class DomainSpecificQueries:
 
     def update_conversation_prompt(self, characterId, update_fields):
         query = {"characterId": characterId}
+
+        # 检查是否存在文档
+        existing_documents = self.db_utils.find_documents(
+            collection_name=config.conversation_prompt_collection_name,
+            query=query,
+        )
+
+        # 如果没有找到文档，先插入默认值
+        if not existing_documents:
+            default_document = {
+                "characterId": characterId,
+                "topic_requirements": "",
+                "relation": "",
+                "emotion": "You are happy.",
+                "personality": "Introversion",
+                "habits_and_preferences": "",
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            }
+            self.db_utils.insert_document(
+                config.conversation_prompt_collection_name, default_document
+            )
+
+        # 更新文档
         update_data = {"$set": update_fields}
         update_data["$set"]["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         result = self.db_utils.update_documents(
@@ -1493,10 +1550,25 @@ class DomainSpecificQueries:
         # 确保 update_fields 和 add_started 不能同时存在
         if update_fields is not None and add_started is not None:
             raise ValueError("只能提供 update_fields 或 add_started 中的一个。")
-
         # 构建查询条件
         query = {"characterId": characterId, "day": day}
-
+        # 检查是否存在文档
+        existing_documents = self.db_utils.find_documents(
+            collection_name=config.conversation_memory_collection_name,
+            query=query,
+        )
+        # 如果没有找到文档，先插入默认值
+        if not existing_documents:
+            default_document = {
+                "characterId": characterId,
+                "day": day,
+                "topic_plan": [],
+                "time_list": [],
+                "started": [],
+            }
+            self.db_utils.insert_document(
+                config.conversation_memory_collection_name, default_document
+            )
         # 构建更新操作
         update = {}
         if update_fields is not None:
@@ -1505,14 +1577,12 @@ class DomainSpecificQueries:
             update = {"$push": {"started": add_started}}
         else:
             raise ValueError("必须提供 update_fields 或 add_started。")
-
         # 执行更新操作
         result = self.db_utils.update_documents(
             collection_name=config.conversation_memory_collection_name,
             query=query,
             update=update,
         )
-
         return result
 
     def store_work_experience(self, characterId, jobid, start_date):
@@ -1572,15 +1642,15 @@ if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试 get_memory 函数
-    print("测试 get_memory 函数...")
-    characterId = 1
-    day = 1
-    count = 1
+    # # 测试 get_memory 函数
+    # print("测试 get_memory 函数...")
+    # characterId = 1
+    # day = 1
+    # count = 1
 
-    # 假设已经有一些数据存储在数据库中
-    combined_memory = queries.get_memory(characterId, day, count)
-    print("合并后的 memory 数据：", combined_memory)
+    # # 假设已经有一些数据存储在数据库中
+    # combined_memory = queries.get_memory(characterId, day, count)
+    # print("合并后的 memory 数据：", combined_memory)
 
     # # 测试存储多条工作经历
     # print("存储多条工作经历...")
@@ -1805,7 +1875,7 @@ if __name__ == "__main__":
     # # 测试 update_conversation_prompt 方法
     # print("\n更新对话提示...")
     # update_result = queries.update_conversation_prompt(
-    #     characterId=1,
+    #     characterId=1111,
     #     update_fields={"emotion": "Excited", "relation": "Best Friend"}
     # )
     # print(f"更新成功，修改了 {update_result} 个文档。")

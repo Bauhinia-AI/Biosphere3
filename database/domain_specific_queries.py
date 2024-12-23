@@ -1459,8 +1459,10 @@ class DomainSpecificQueries:
         query = {}
 
         # 根据提供的参数构建查询条件
-        if from_id is not None and to_id is not None:
+        if from_id is not None:
             query["from_id"] = from_id
+
+        if to_id is not None:
             query["to_id"] = to_id
 
         if start_day is not None:
@@ -1639,8 +1641,15 @@ class DomainSpecificQueries:
 
 
 if __name__ == "__main__":
-    db_utils = MongoDBUtils()
-    queries = DomainSpecificQueries(db_utils=db_utils)
+   db_utils = MongoDBUtils()
+   queries = DomainSpecificQueries(db_utils=db_utils)
+
+
+    # 测试 get_conversation 函数
+   print("测试 get_conversation 函数...")
+   from_id = 1
+   conversations = queries.get_conversation(from_id=from_id)
+   print(f"从 ID 为 {from_id} 的对话记录：", conversations)
 
     # # 测试 get_memory 函数
     # print("测试 get_memory 函数...")

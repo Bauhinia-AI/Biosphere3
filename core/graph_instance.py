@@ -239,19 +239,12 @@ class LangGraphInstance:
 
             if event == "PLAN":
                 return "Objectives_planner"
-
-            # elif event == "JOB_HUNTING":
-            #     return "Change_Job"
-
             elif event == "CHARACTER_ARC":
                 return "Character_Arc"
-
             elif event == "REPLAN":
                 return "Replan_Action"
-
             elif event == "DAILY_REFLECTION":
                 return "Daily_Reflection"
-
             else:
                 self.logger.error(f"User {self.user_id}: Unknown event: {event}")
             # await self.state['message_queue'].task_done()
@@ -261,11 +254,8 @@ class LangGraphInstance:
         workflow.add_node("Sensing_Route", sensing_environment)
         workflow.add_node("Objectives_planner", generate_daily_objective)
         workflow.add_node("meta_action_sequence", generate_meta_action_sequence)
-        # workflow.add_node("Change_Job", generate_change_job_cv)
-        # workflow.add_node("Mayor_Decision", generate_mayor_decision)
         workflow.add_node("Character_Arc", generate_character_arc)
         workflow.add_node("Daily_Reflection", generate_daily_reflection)
-        # workflow.add_node("adjust_meta_action_sequence", adjust_meta_action_sequence)
 
         workflow.add_node("Replan_Action", replan_action)
 
@@ -277,11 +267,8 @@ class LangGraphInstance:
         # 定义工作流的路径
         workflow.add_edge("Objectives_planner", "meta_action_sequence")
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
-        # workflow.add_edge("Change_Job", "Mayor_Decision")
-        # workflow.add_edge("Mayor_Decision", "Sensing_Route")
         workflow.add_edge("Character_Arc", "Sensing_Route")
         workflow.add_edge("Daily_Reflection", "Sensing_Route")
-        # workflow.add_edge("meta_action_sequence", "adjust_meta_action_sequence")
 
         return workflow.compile()
 
@@ -327,7 +314,3 @@ class LangGraphInstance:
                 pass
             except Exception as e:
                 self.logger.error(f"User {self.user_id}: Error sending message: {e}")
-
-
-if __name__ == "__main__":
-    pass

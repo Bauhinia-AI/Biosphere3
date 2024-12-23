@@ -533,6 +533,12 @@ class StoreConversationRequest(BaseModel):
     send_realtime: str
 
 
+class GetConversationByListRequest(BaseModel):
+    characterIds: List[int]
+    time: Optional[str] = None
+    k: Optional[int] = None
+
+
 class StoreConversationMemoryRequest(BaseModel):
     characterId: int
     day: int
@@ -1974,6 +1980,22 @@ def get_conversation_api(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@conversation_router.post("/by_list", response_model=StandardResponse)
+def get_conversation_by_list_api(request: GetConversationByListRequest):
+    try:
+        conversations = domain_queries.get_conversation_by_list(
+            characterIds=request.characterIds, time=request.time, k=request.k
+        )
+        if conversations:
+            return success_response(
+                data=conversations, message="Conversations retrieved successfully."
+            )
+        else:
+            raise HTTPException(status_code=404, detail="No conversations found.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @conversation_router.post("/", response_model=StandardResponse)
 def store_conversation_api(request: StoreConversationRequest):
     try:
@@ -2039,6 +2061,7 @@ def get_conversation_memory_api(characterId: int, day: Optional[int] = None):
     else:
         raise HTTPException(status_code=404, detail="No conversation memory found.")
 
+
 @conversation_memory_router.get("/memory", response_model=StandardResponse)
 def get_memory_api(characterId: int, day: int, count: Optional[int] = 1):
     memory_data = retry_operation(
@@ -2055,7 +2078,8 @@ def get_memory_api(characterId: int, day: int, count: Optional[int] = 1):
         )
     else:
         raise HTTPException(status_code=404, detail="No memory data found.")
-    
+
+
 @conversation_memory_router.put("/", response_model=StandardResponse)
 def update_conversation_memory_api(request: UpdateConversationMemoryRequest):
     result = retry_operation(

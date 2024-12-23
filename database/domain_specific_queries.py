@@ -1483,6 +1483,24 @@ class DomainSpecificQueries:
         )
         return documents
 
+    def get_conversation_by_list(self, characterIds, time=None, k=None):
+        query = {
+            "$or": [
+                {"from_id": characterIds[0], "to_id": characterIds[1]},
+                {"from_id": characterIds[1], "to_id": characterIds[0]},
+            ]
+        }
+        if time is not None:
+            query["send_realtime"] = {"$gt": time}  # 查询在指定时间之后的记录
+        # 执行查询
+        documents = self.db_utils.find_documents(
+            collection_name=config.conversation_collection_name,
+            query=query,
+            limit=k if k is not None else 0,  # 如果 k 为 None，则不限制数量
+            sort=[("send_realtime", DESCENDING)],  # 按创建时间降序排列
+        )
+        return documents
+
     def store_conversation_memory(
         self, characterId, day, topic_plan=None, time_list=None, started=None
     ):
@@ -1641,503 +1659,511 @@ class DomainSpecificQueries:
 
 
 if __name__ == "__main__":
-   db_utils = MongoDBUtils()
-   queries = DomainSpecificQueries(db_utils=db_utils)
-
-
-    # 测试 get_conversation 函数
-   print("测试 get_conversation 函数...")
-   from_id = 1
-   conversations = queries.get_conversation(from_id=from_id)
-   print(f"从 ID 为 {from_id} 的对话记录：", conversations)
-
-    # # 测试 get_memory 函数
-    # print("测试 get_memory 函数...")
-    # characterId = 1
-    # day = 1
-    # count = 1
-
-    # # 假设已经有一些数据存储在数据库中
-    # combined_memory = queries.get_memory(characterId, day, count)
-    # print("合并后的 memory 数据：", combined_memory)
-
-    # # 测试存储多条工作经历
-    # print("存储多条工作经历...")
-    # characterId = 1
-    # job_entries = [
-    #     {"jobid": 101, "start_date": 20231001},
-    #     {"jobid": 102, "start_date": 20231101},
-    #     {"jobid": 103, "start_date": 20231201},
-    # ]
-
-    # for entry in job_entries:
-    #     inserted_id = queries.store_work_experience(
-    #         characterId, entry["jobid"], entry["start_date"]
-    #     )
-    #     print(f"插入成功，文档 ID：{inserted_id}")
-
-    # # 测试获取所有工作经历
-    # print("\n获取所有工作经历...")
-    # all_work_experiences = queries.get_all_work_experiences(characterId)
-    # print("所有工作经历：", all_work_experiences)
-
-    # # 测试获取当前工作经历
-    # print("\n获取当前工作经历...")
-    # current_work_experience = queries.get_current_work_experience(characterId)
-    # print("当前工作经历：", current_work_experience)
-
-    # # 测试更新当前工作经历
-    # print("\n更新当前工作经历...")
-    # if current_work_experience:
-    #     jobid = current_work_experience["jobid"]
-    #     additional_work = 8
-    #     additional_salary = 1500.0
-    #     update_result = queries.update_work_experience(
-    #         characterId, jobid, additional_work, additional_salary
-    #     )
-    #     print(f"更新成功，修改了 {update_result} 个文档。")
-
-    #     # 再次获取当前工作经历以验证更新
-    #     print("\n更新后的当前工作经历...")
-    #     updated_current_work_experience = queries.get_current_work_experience(
-    #         characterId
-    #     )
-    #     print("更新后的当前工作经历：", updated_current_work_experience)
-    # else:
-    #     print("没有找到当前工作经历进行更新。")
-
-    # # 测试存储 memory
-    # print("存储 memory...")
-    # characterId = 1
-    # day = 1
-    # topic_plan = [
-    #     "Talk about weather",
-    #     "Talk about food",
-    #     "Talk about clothing",
-    #     "Are you happy",
-    #     "How to study",
-    # ]
-    # time_list = ["09:00", "12:00", "15:00"]
-    # # started = [{"topic": "Talk about weather", "time": "10:00"}]
-    # # inserted_id = queries.store_memory(characterId, day, topic_plan, time_list, started)
-    # inserted_id = queries.store_conversation_memory(
-    #     characterId, day, topic_plan, time_list
-    # )
-    # print(f"插入成功，文档 ID：{inserted_id}")
-
-    # # 测试获取 memory
-    # print("\n获取 memory...")
-    # documents = queries.get_conversation_memory(characterId, day)
-    # print("获取的 memory 文档：", documents)
-
-    # # 测试更新 memory
-    # print("\n更新 memory...")
-    # # update_fields = {"topic_plan": ["更新后的计划讨论主题"]}
-    # add_started = {"topic": "Talk about weather", "time": "10:00"}
-    # update_result = queries.update_conversation_memory(
-    #     characterId, day, add_started=add_started
-    # )
-    # # update_result = queries.update_memory(characterId, day, update_fields)
-    # print(f"更新成功，修改了 {update_result} 个文档。")
-
-    # # 再次获取以验证更新
-    # print("\n更新后的 memory...")
-    # updated_documents = queries.get_conversation_memory(characterId, day)
-    # print("更新后的 memory 文档：", updated_documents)
-
-    # # 测试存储 current_pointer
-    # print("存储 current_pointer...")
-    # characterId = 1
-    # current_pointer = "pointer_1"
-    # inserted_id = queries.store_current_pointer(characterId, current_pointer)
-    # print(f"插入成功，文档 ID：{inserted_id}")
-
-    # # 测试获取 current_pointer
-    # print("\n获取 current_pointer...")
-    # documents = queries.get_current_pointer(characterId)
-    # print("获取的 current_pointer 文档：", documents)
-
-    # # 测试更新 current_pointer
-    # print("\n更新 current_pointer...")
-    # new_pointer = "pointer_2"
-    # update_result = queries.update_current_pointer(characterId, new_pointer)
-    # print(f"更新成功，修改了 {update_result} 个文档。")
-
-    # # 再次获取以验证更新
-    # print("\n更新后的 current_pointer...")
-    # updated_documents = queries.get_current_pointer(characterId)
-    # print("更新后的 current_pointer 文档：", updated_documents)
-
-    # # 测试删除 current_pointer
-    # print("\n删除 current_pointer...")
-    # delete_result = queries.delete_current_pointer(characterId)
-    # print(f"删除成功，删除了 {delete_result} 个文档。")
-
-    # # 验证删除
-    # print("\n验证删除后的 current_pointer...")
-    # deleted_documents = queries.get_current_pointer(characterId)
-    # print("删除后的 current_pointer 文档：", deleted_documents)
-
-    # print("存储决策数据...")
-
-    # characterId = 2
-    # # 创建多条测试文档，使其有不同的列表数量和时间戳
-    # # doc1: 较早的文档
-    # queries.store_decision(
-    #     characterId=characterId,
-    #     need_replan=True,
-    #     action_description=["desc1_1", "desc1_2"],
-    #     action_result=["res1_1"],
-    #     new_plan=["plan1_1", "plan1_2", "plan1_3"],
-    #     daily_objective=["obj1_1"],
-    #     meta_seq=["meta1_1", "meta1_2"],
-    #     reflection=["ref1_1", "ref1_2", "ref1_3"],
-    # )
-    # time.sleep(1)
-
-    # # doc2: 较新的文档，增加更多元素
-    # queries.store_decision(
-    #     characterId=characterId,
-    #     need_replan=False,
-    #     action_description=["desc2_1", "desc2_2", "desc2_3"],
-    #     action_result=["res2_1", "res2_2"],
-    #     new_plan=["plan2_1"],
-    #     daily_objective=["obj2_1", "obj2_2"],
-    #     meta_seq=["meta2_1"],
-    #     reflection=["ref2_1"],
-    # )
-    # time.sleep(1)
-
-    # # doc3: 最新的文档
-    # queries.store_decision(
-    #     characterId=characterId,
-    #     need_replan=True,
-    #     action_description=["desc3_1"],
-    #     action_result=["res3_1", "res3_2", "res3_3"],
-    #     new_plan=["plan3_1", "plan3_2"],
-    #     daily_objective=["obj3_1", "obj3_2", "obj3_3"],
-    #     meta_seq=["meta3_1", "meta3_2", "meta3_3", "meta3_4"],
-    #     reflection=["ref3_1"],
-    # )
-    # time.sleep(1)
-
-    # print("测试 get_decision 不带 count 参数（返回最新文档）...")
-    # latest_docs = queries.get_decision(characterId=characterId)
-    # for doc in latest_docs:
-    #     print("---- 最新文档(不带count) ----")
-    #     print(doc)
-
-    # print("\n测试 get_decision 带 count 参数 = 3 ...")
-    # # 我们要求每个列表字段都至少返回3个，如果最新文档不够，则从历史文档补充
-    # limited_docs = queries.get_decision(characterId=characterId, count=10)
-    # for doc in limited_docs:
-    #     print("---- 限定数量的最新文档 ----")
-    #     print("action_description:", doc["action_description"])
-    #     print("action_result:", doc["action_result"])
-    #     print("new_plan:", doc["new_plan"])
-    #     print("daily_objective:", doc["daily_objective"])
-    #     print("meta_seq:", doc["meta_seq"])
-    #     print("reflection:", doc["reflection"])
-    #     print(doc)
-
-    # # 存储多个简历，包含不同的 election_status
-    # print("存储简历...")
-    # statuses = ["not_yet", "failed", "succeeded"]
-    # job_names = ["工程师", "设计师", "产品经理"]  # 新增的 jobName 列表
-    # for i, (status, job_name) in enumerate(zip(statuses, job_names), start=1):
-    #     inserted_id = queries.store_cv(
-    #         jobid=100 + i,
-    #         characterId=1,
-    #         CV_content=f"这是简历内容示例 {i}",
-    #         week=12 + i,
-    #         health=80 + i * 5,
-    #         studyxp=150 + i * 10,
-    #         date=20231015 + i,
-    #         election_status=status,
-    #         jobName=job_name,  # 传递 jobName
-    #     )
-    #     print(f"插入成功，文档 ID：{inserted_id}")
-
-    # # 测试获取简历
-    # print("获取简历...")
-    # documents = queries.get_cv(characterId=1)
-    # for doc in documents:
-    #     print(doc)
-
-    # # 测试 store_conversation_prompt 方法
-    # print("存储对话提示...")
-    # inserted_id = queries.store_conversation_prompt(
-    #     characterId=1,
-    #     topic_requirements="Discuss future plans",
-    #     relation="Friend",
-    #     emotion="Happy",
-    #     personality="Introversion",
-    #     habits_and_preferences="Likes to talk about technology",
-    # )
-    # print(f"插入成功，文档 ID：{inserted_id}")
-
-    # # 测试 get_conversation_prompt 方法
-    # print("\n获取对话提示...")
-    # conversation_prompts = queries.get_conversation_prompt(characterId=1000)
-    # print("获取的对话提示：", conversation_prompts)
-
-    # # 测试 update_conversation_prompt 方法
-    # print("\n更新对话提示...")
-    # update_result = queries.update_conversation_prompt(
-    #     characterId=1111,
-    #     update_fields={"emotion": "Excited", "relation": "Best Friend"}
-    # )
-    # print(f"更新成功，修改了 {update_result} 个文档。")
-
-    # # 再次获取以验证更新
-    # print("\n更新后的对话提示...")
-    # updated_conversation_prompts = queries.get_conversation_prompt(characterId=1)
-    # print("更新后的对话提示：", updated_conversation_prompts)
-
-    # # 测试 delete_conversation_prompt 方法
-    # print("\n删除对话提示...")
-    # delete_result = queries.delete_conversation_prompt(characterId=1)
-    # print(f"删除成功，删除了 {delete_result} 个文档。")
-
-    # # 验证删除
-    # print("\n验证删除后的对话提示...")
-    # deleted_conversation_prompts = queries.get_conversation_prompt(characterId=1)
-    # print("删除后的对话提示：", deleted_conversation_prompts)
-
-    # # 测试 get_intimacy 函数
-    # print("查询 from_id=1 的所有对话记录:")
-    # print(queries.get_conversations_containing_characterId(1, 0))
-
-    # # 测试 get_intimacy 函数
-    # print("查询 from_id=1 的所有记录:")
-    # print(queries.get_intimacy(from_id=1))
-
-    # # 插入更多数据：亲密度从 40 到 90
-    # print("插入数据...")
-    # for i in range(1, 6):
-    #     queries.store_intimacy(i, i + 1, intimacy_level=40 + i * 10)
-    # print(queries.get_intimacy())
-
-    # # 测试 decrease_all_intimacy_levels：递减所有亲密度大于 50 的记录
-    # print("\n执行 decrease_all_intimacy_levels...")
-    # decrease_count = queries.decrease_all_intimacy_levels()
-    # print(f"递减成功，更新了 {decrease_count} 个文档。")
-    # print(queries.get_intimacy())
-
-    # # 插入数据：亲密度为 50，relationship 由系统自动计算
-    # print("插入数据...")
-    # inserted_id = queries.store_intimacy(1, 2, intimacy_level=50)
-    # print(f"插入成功，文档 ID：{inserted_id}")
-
-    # # 获取数据：查询 from_id=1 和 to_id=2 的亲密度
-    # print("\n获取数据...")
-    # intimacy_records = queries.get_intimacy(1, 2)
-    # print(intimacy_records)
-
-    # # 更新数据：将亲密度更新为 80
-    # print("\n更新数据...")
-    # updated_count = queries.update_intimacy(1, 2, new_intimacy_level=80)
-    # print(f"更新成功，修改了 {updated_count} 个文档。")
-
-    # # 再次获取数据：查询更新后的亲密度
-    # print("\n更新后的数据...")
-    # updated_records = queries.get_intimacy(1, 2)
-    # print(updated_records)
-
-    # # 测试 get_personality_sample 方法
-    # personality_sample = queries.get_personality_sample()
-    # print("随机抽取的性格特征样本:", personality_sample)
-
-    # # 测试 get_long_term_goal_sample 方法
-    # long_term_goal_sample = queries.get_long_term_goal_sample()
-    # print("随机抽取的长期目标样本:", long_term_goal_sample)
-
-    # # 测试 get_short_term_goal_sample 方法
-    # short_term_goal_sample = queries.get_short_term_goal_sample()
-    # print("随机抽取的短期目标样本:", short_term_goal_sample)
-
-    # # 测试 get_language_style_sample 方法
-    # language_style_sample = queries.get_language_style_sample()
-    # print("随机抽取的语言风格样本:", language_style_sample)
-
-    # # 测试 get_biography_sample 方法
-    # biography_sample = queries.get_biography_sample()
-    # print("随机抽取的传记样本:", biography_sample)
-
-    # print(queries.get_conversations_with_characterIds(characterIds_list=[1, 5], k=1))
-    # print(queries.get_character_RAG(2, "study with my friends", 3))
-
-    # print(queries.get_conversations_containing_characterId(2, 2))
-
-    # # 测试 update_character 方法
-    # test_characterId = 1
-
-    # # 获取更新前的 character 数据
-    # print("character 数据更新前:")
-    # original_character = queries.get_character(test_characterId)
-    # print(original_character)
-
-    # # 获取更新后的 character 数据
-    # print("\ncharacter 数据更新后:")
-    # updated_character = queries.get_character(test_characterId)
-    # print(updated_character)
-
-    # # 测试获取相遇次数
-    # character_ids = [1, 2]
-    # encounter_count = queries.get_encounter_count(character_ids)
-    # print(f"Initial encounter count for {character_ids}: {encounter_count}")
-
-    # # 测试增量更新相遇次数
-    # if encounter_count:
-    #     new_count = encounter_count[0]["count"] + 1
-    #     result = queries.update_encounter_count(character_ids, new_count)
-    #     print(
-    #         f"Incremented encounter count for {character_ids}: {new_count}, Result: {result}"
-    #     )
-    # else:
-    #     print(f"No encounter count found for {character_ids} to increment.")
-
-    # # 测试直接更新相遇次数为指定值
-    # specified_count = 5
-    # result = queries.update_encounter_count(character_ids, specified_count)
-    # print(
-    #     f"Updated encounter count for {character_ids} to {specified_count}, Result: {result}"
-    # )
-
-    # # 测试获取当前好感度
-    # from_id = 1
-    # to_id = 2
-    # current_intimacy = queries.get_intimacy(from_id, to_id)
-    # print(f"Initial intimacy level from {from_id} to {to_id}: {current_intimacy}")
-
-    # # 测试更新好感度为新值
-    # new_intimacy_level = 7
-    # result = queries.update_intimacy(from_id, to_id, new_intimacy_level)
-    # print(
-    #     f"Updated intimacy level from {from_id} to {to_id} to {new_intimacy_level}, Result: {result}"
-    # )
-
-    # # 再次获取以验证更新
-    # updated_intimacy = queries.get_intimacy(from_id, to_id)
-    # print(f"Updated intimacy level from {from_id} to {to_id}: {updated_intimacy}")
-
-    # # 测试更新 meta_sequence
-    # character_id = 102  # 假设的 characterId
-    # update_meta_seq = ["scout_area()", "gather_resources()", "set_up_camp()"]
-
-    # # 执行更新操作
-    # modified_count = queries.update_meta_seq(character_id, update_meta_seq)
-    # print(
-    #     f"Updated meta_sequence for characterId {character_id}, Modified Count: {modified_count}"
-    # )
-    # queries.store_encounter_count(1, 5, 1)
-    # print(queries.get_encounters_by_from_id(1, 1))
-
-    # character_list = [2, 3, 4]
-    # print(queries.get_character_RAG_in_list(1, character_list, "探索森林", 2))
-
-    # # 示例数据存储
-    # character_id = 1
-    # # category_data = [
-    # #     {"item": "skill", "origin_value": "beginner"},
-    # #     {"item": "emotion", "origin_value": "neutral"},
-    # # ]
-
-    # # # 存储角色弧光信息
-    # # queries.store_character_arc(character_id, category_data)
-
-    # # 存储角色弧光变化信息
-    # queries.store_character_arc_change(
-    #     characterId=character_id,
-    #     item="skill",
-    #     cause="参加职业培训2",
-    #     context="在朋友的建议下参加了当地的职业技能培训班2",
-    #     change="获得新技能2",
-    # )
-
-    # queries.store_character_arc_change(
-    #     characterId=character_id,
-    #     item="emotion",
-    #     cause="收到好消息2",
-    #     context="得知自己通过了考试2",
-    #     change="略微积极2",
-    # )
-
-    # # 获取角色弧光信息及其变化过程
-    # k = 2  # 选择变化过程的数量
-    # arc_with_changes = queries.get_character_arc_with_changes(character_id, k)
-    # print(arc_with_changes)
-
-    # # 存储测试数据
-    # queries.store_intimacy(from_id=10, to_id=20, intimacy_level=75)
-    # queries.store_intimacy(from_id=10, to_id=30, intimacy_level=50)
-    # queries.store_intimacy(from_id=20, to_id=10, intimacy_level=60)
-    # queries.store_intimacy(from_id=30, to_id=10, intimacy_level=80)
-
-    # # 测试 get_intimacy 函数
-    # print("查询 from_id=1 的所有记录:")
-    # print(queries.get_intimacy(from_id=10))
-
-    # print("\n查询 to_id=1 的所有记录:")
-    # print(queries.get_intimacy(to_id=10))
-
-    # print("\n查询 intimacy_level 在 60 到 80 之间的记录:")
-    # print(queries.get_intimacy(intimacy_level_min=60, intimacy_level_max=80))
-
-    # print("\n查询 from_id=1 且 intimacy_level 在 60 到 80 之间的记录:")
-    # print(
-    #     queries.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80)
-    # )
-
-    # # 存储一些测试数据
-    # print("存储测试数据:")
-    # queries.store_cv(jobid=1, characterId=101, CV_content="CV内容1", week=1)
-    # queries.store_cv(jobid=1, characterId=102, CV_content="CV内容2", week=2)
-    # queries.store_cv(jobid=2, characterId=101, CV_content="CV内容3", week=1)
-    # queries.store_cv(jobid=2, characterId=103, CV_content="CV内容4", week=3)
-
-    # # 更新选举状态
-    # print("\n更新选举状态:")
-    # queries.update_election_status(
-    #     characterId=101, election_status="succeeded", jobid=1, week=1
-    # )
-    # queries.update_election_status(characterId=102, election_status="failed", jobid=1)
-    # queries.update_election_status(
-    #     characterId=103, election_status="succeeded", jobid=2
-    # )
-
-    # # 测试 get_cv 方法
-    # print("\n测试 get_cv 方法:")
-
-    # # 查询所有最新周的数据
-    # print("\n查询所有的数据:")
-    # print(queries.get_cv())
-
-    # # 查询特定 jobid 的所有最新周的数据
-    # print("\n查询 jobid=1 的所有的数据:")
-    # print(queries.get_cv(jobid=1))
-
-    # # 查询特定 characterId 的所有最新周的数据
-    # print("\n查询 characterId=101 的所有的数据:")
-    # print(queries.get_cv(characterId=101))
-
-    # # 查询特定 week 的数据
-    # print("\n查询 week=1 的数据:")
-    # print(queries.get_cv(week=1))
-
-    # # 查询特定选举状态的数据
-    # print("\n查询选举状态为 'succeeded' 的数据:")
-    # print(queries.get_cv(election_status="succeeded"))
-
-    # # 查询特定 jobid 和选举状态的数据
-    # print("\n查询 jobid=1 且选举状态为 'failed' 的数据:")
-    # print(queries.get_cv(jobid=1, election_status="failed"))
-
-    # # 查询特定 characterId 和 week 的数据
-    # print("\n查询 characterId=101 且 week=1 的数据:")
-    # print(queries.get_cv(characterId=101, week=1))
-
-    # # 测试获取所有角色
-    # print("获取所有角色:")
-    # all_characters = queries.get_character()
-    # print(all_characters)
+    db_utils = MongoDBUtils()
+    queries = DomainSpecificQueries(db_utils=db_utils)
+
+    # 测试 get_conversation_by_list 方法
+    print("测试 get_conversation_by_list 方法...")
+    characterIds = [1, 2]  # 示例角色ID
+    time = "2023-10-01 12:00:00"  # 示例时间
+    conversations = queries.get_conversation_by_list(characterIds, time=time, k=5)
+    #    conversations = queries.get_conversation_by_list(character_ids, k=5)
+    #    conversations = queries.get_conversation_by_list(character_ids)
+    print(f"角色 {characterIds} 的对话记录：", conversations)
+
+#     # 测试 get_conversation 函数
+#    print("测试 get_conversation 函数...")
+#    from_id = 1
+#    conversations = queries.get_conversation(from_id=from_id)
+#    print(f"从 ID 为 {from_id} 的对话记录：", conversations)
+
+# # 测试 get_memory 函数
+# print("测试 get_memory 函数...")
+# characterId = 1
+# day = 1
+# count = 1
+
+# # 假设已经有一些数据存储在数据库中
+# combined_memory = queries.get_memory(characterId, day, count)
+# print("合并后的 memory 数据：", combined_memory)
+
+# # 测试存储多条工作经历
+# print("存储多条工作经历...")
+# characterId = 1
+# job_entries = [
+#     {"jobid": 101, "start_date": 20231001},
+#     {"jobid": 102, "start_date": 20231101},
+#     {"jobid": 103, "start_date": 20231201},
+# ]
+
+# for entry in job_entries:
+#     inserted_id = queries.store_work_experience(
+#         characterId, entry["jobid"], entry["start_date"]
+#     )
+#     print(f"插入成功，文档 ID：{inserted_id}")
+
+# # 测试获取所有工作经历
+# print("\n获取所有工作经历...")
+# all_work_experiences = queries.get_all_work_experiences(characterId)
+# print("所有工作经历：", all_work_experiences)
+
+# # 测试获取当前工作经历
+# print("\n获取当前工作经历...")
+# current_work_experience = queries.get_current_work_experience(characterId)
+# print("当前工作经历：", current_work_experience)
+
+# # 测试更新当前工作经历
+# print("\n更新当前工作经历...")
+# if current_work_experience:
+#     jobid = current_work_experience["jobid"]
+#     additional_work = 8
+#     additional_salary = 1500.0
+#     update_result = queries.update_work_experience(
+#         characterId, jobid, additional_work, additional_salary
+#     )
+#     print(f"更新成功，修改了 {update_result} 个文档。")
+
+#     # 再次获取当前工作经历以验证更新
+#     print("\n更新后的当前工作经历...")
+#     updated_current_work_experience = queries.get_current_work_experience(
+#         characterId
+#     )
+#     print("更新后的当前工作经历：", updated_current_work_experience)
+# else:
+#     print("没有找到当前工作经历进行更新。")
+
+# # 测试存储 memory
+# print("存储 memory...")
+# characterId = 1
+# day = 1
+# topic_plan = [
+#     "Talk about weather",
+#     "Talk about food",
+#     "Talk about clothing",
+#     "Are you happy",
+#     "How to study",
+# ]
+# time_list = ["09:00", "12:00", "15:00"]
+# # started = [{"topic": "Talk about weather", "time": "10:00"}]
+# # inserted_id = queries.store_memory(characterId, day, topic_plan, time_list, started)
+# inserted_id = queries.store_conversation_memory(
+#     characterId, day, topic_plan, time_list
+# )
+# print(f"插入成功，文档 ID：{inserted_id}")
+
+# # 测试获取 memory
+# print("\n获取 memory...")
+# documents = queries.get_conversation_memory(characterId, day)
+# print("获取的 memory 文档：", documents)
+
+# # 测试更新 memory
+# print("\n更新 memory...")
+# # update_fields = {"topic_plan": ["更新后的计划讨论主题"]}
+# add_started = {"topic": "Talk about weather", "time": "10:00"}
+# update_result = queries.update_conversation_memory(
+#     characterId, day, add_started=add_started
+# )
+# # update_result = queries.update_memory(characterId, day, update_fields)
+# print(f"更新成功，修改了 {update_result} 个文档。")
+
+# # 再次获取以验证更新
+# print("\n更新后的 memory...")
+# updated_documents = queries.get_conversation_memory(characterId, day)
+# print("更新后的 memory 文档：", updated_documents)
+
+# # 测试存储 current_pointer
+# print("存储 current_pointer...")
+# characterId = 1
+# current_pointer = "pointer_1"
+# inserted_id = queries.store_current_pointer(characterId, current_pointer)
+# print(f"插入成功，文档 ID：{inserted_id}")
+
+# # 测试获取 current_pointer
+# print("\n获取 current_pointer...")
+# documents = queries.get_current_pointer(characterId)
+# print("获取的 current_pointer 文档：", documents)
+
+# # 测试更新 current_pointer
+# print("\n更新 current_pointer...")
+# new_pointer = "pointer_2"
+# update_result = queries.update_current_pointer(characterId, new_pointer)
+# print(f"更新成功，修改了 {update_result} 个文档。")
+
+# # 再次获取以验证更新
+# print("\n更新后的 current_pointer...")
+# updated_documents = queries.get_current_pointer(characterId)
+# print("更新后的 current_pointer 文档：", updated_documents)
+
+# # 测试删除 current_pointer
+# print("\n删除 current_pointer...")
+# delete_result = queries.delete_current_pointer(characterId)
+# print(f"删除成功，删除了 {delete_result} 个文档。")
+
+# # 验证删除
+# print("\n验证删除后的 current_pointer...")
+# deleted_documents = queries.get_current_pointer(characterId)
+# print("删除后的 current_pointer 文档：", deleted_documents)
+
+# print("存储决策数据...")
+
+# characterId = 2
+# # 创建多条测试文档，使其有不同的列表数量和时间戳
+# # doc1: 较早的文档
+# queries.store_decision(
+#     characterId=characterId,
+#     need_replan=True,
+#     action_description=["desc1_1", "desc1_2"],
+#     action_result=["res1_1"],
+#     new_plan=["plan1_1", "plan1_2", "plan1_3"],
+#     daily_objective=["obj1_1"],
+#     meta_seq=["meta1_1", "meta1_2"],
+#     reflection=["ref1_1", "ref1_2", "ref1_3"],
+# )
+# time.sleep(1)
+
+# # doc2: 较新的文档，增加更多元素
+# queries.store_decision(
+#     characterId=characterId,
+#     need_replan=False,
+#     action_description=["desc2_1", "desc2_2", "desc2_3"],
+#     action_result=["res2_1", "res2_2"],
+#     new_plan=["plan2_1"],
+#     daily_objective=["obj2_1", "obj2_2"],
+#     meta_seq=["meta2_1"],
+#     reflection=["ref2_1"],
+# )
+# time.sleep(1)
+
+# # doc3: 最新的文档
+# queries.store_decision(
+#     characterId=characterId,
+#     need_replan=True,
+#     action_description=["desc3_1"],
+#     action_result=["res3_1", "res3_2", "res3_3"],
+#     new_plan=["plan3_1", "plan3_2"],
+#     daily_objective=["obj3_1", "obj3_2", "obj3_3"],
+#     meta_seq=["meta3_1", "meta3_2", "meta3_3", "meta3_4"],
+#     reflection=["ref3_1"],
+# )
+# time.sleep(1)
+
+# print("测试 get_decision 不带 count 参数（返回最新文档）...")
+# latest_docs = queries.get_decision(characterId=characterId)
+# for doc in latest_docs:
+#     print("---- 最新文档(不带count) ----")
+#     print(doc)
+
+# print("\n测试 get_decision 带 count 参数 = 3 ...")
+# # 我们要求每个列表字段都至少返回3个，如果最新文档不够，则从历史文档补充
+# limited_docs = queries.get_decision(characterId=characterId, count=10)
+# for doc in limited_docs:
+#     print("---- 限定数量的最新文档 ----")
+#     print("action_description:", doc["action_description"])
+#     print("action_result:", doc["action_result"])
+#     print("new_plan:", doc["new_plan"])
+#     print("daily_objective:", doc["daily_objective"])
+#     print("meta_seq:", doc["meta_seq"])
+#     print("reflection:", doc["reflection"])
+#     print(doc)
+
+# # 存储多个简历，包含不同的 election_status
+# print("存储简历...")
+# statuses = ["not_yet", "failed", "succeeded"]
+# job_names = ["工程师", "设计师", "产品经理"]  # 新增的 jobName 列表
+# for i, (status, job_name) in enumerate(zip(statuses, job_names), start=1):
+#     inserted_id = queries.store_cv(
+#         jobid=100 + i,
+#         characterId=1,
+#         CV_content=f"这是简历内容示例 {i}",
+#         week=12 + i,
+#         health=80 + i * 5,
+#         studyxp=150 + i * 10,
+#         date=20231015 + i,
+#         election_status=status,
+#         jobName=job_name,  # 传递 jobName
+#     )
+#     print(f"插入成功，文档 ID：{inserted_id}")
+
+# # 测试获取简历
+# print("获取简历...")
+# documents = queries.get_cv(characterId=1)
+# for doc in documents:
+#     print(doc)
+
+# # 测试 store_conversation_prompt 方法
+# print("存储对话提示...")
+# inserted_id = queries.store_conversation_prompt(
+#     characterId=1,
+#     topic_requirements="Discuss future plans",
+#     relation="Friend",
+#     emotion="Happy",
+#     personality="Introversion",
+#     habits_and_preferences="Likes to talk about technology",
+# )
+# print(f"插入成功，文档 ID：{inserted_id}")
+
+# # 测试 get_conversation_prompt 方法
+# print("\n获取对话提示...")
+# conversation_prompts = queries.get_conversation_prompt(characterId=1000)
+# print("获取的对话提示：", conversation_prompts)
+
+# # 测试 update_conversation_prompt 方法
+# print("\n更新对话提示...")
+# update_result = queries.update_conversation_prompt(
+#     characterId=1111,
+#     update_fields={"emotion": "Excited", "relation": "Best Friend"}
+# )
+# print(f"更新成功，修改了 {update_result} 个文档。")
+
+# # 再次获取以验证更新
+# print("\n更新后的对话提示...")
+# updated_conversation_prompts = queries.get_conversation_prompt(characterId=1)
+# print("更新后的对话提示：", updated_conversation_prompts)
+
+# # 测试 delete_conversation_prompt 方法
+# print("\n删除对话提示...")
+# delete_result = queries.delete_conversation_prompt(characterId=1)
+# print(f"删除成功，删除了 {delete_result} 个文档。")
+
+# # 验证删除
+# print("\n验证删除后的对话提示...")
+# deleted_conversation_prompts = queries.get_conversation_prompt(characterId=1)
+# print("删除后的对话提示：", deleted_conversation_prompts)
+
+# # 测试 get_intimacy 函数
+# print("查询 from_id=1 的所有对话记录:")
+# print(queries.get_conversations_containing_characterId(1, 0))
+
+# # 测试 get_intimacy 函数
+# print("查询 from_id=1 的所有记录:")
+# print(queries.get_intimacy(from_id=1))
+
+# # 插入更多数据：亲密度从 40 到 90
+# print("插入数据...")
+# for i in range(1, 6):
+#     queries.store_intimacy(i, i + 1, intimacy_level=40 + i * 10)
+# print(queries.get_intimacy())
+
+# # 测试 decrease_all_intimacy_levels：递减所有亲密度大于 50 的记录
+# print("\n执行 decrease_all_intimacy_levels...")
+# decrease_count = queries.decrease_all_intimacy_levels()
+# print(f"递减成功，更新了 {decrease_count} 个文档。")
+# print(queries.get_intimacy())
+
+# # 插入数据：亲密度为 50，relationship 由系统自动计算
+# print("插入数据...")
+# inserted_id = queries.store_intimacy(1, 2, intimacy_level=50)
+# print(f"插入成功，文档 ID：{inserted_id}")
+
+# # 获取数据：查询 from_id=1 和 to_id=2 的亲密度
+# print("\n获取数据...")
+# intimacy_records = queries.get_intimacy(1, 2)
+# print(intimacy_records)
+
+# # 更新数据：将亲密度更新为 80
+# print("\n更新数据...")
+# updated_count = queries.update_intimacy(1, 2, new_intimacy_level=80)
+# print(f"更新成功，修改了 {updated_count} 个文档。")
+
+# # 再次获取数据：查询更新后的亲密度
+# print("\n更新后的数据...")
+# updated_records = queries.get_intimacy(1, 2)
+# print(updated_records)
+
+# # 测试 get_personality_sample 方法
+# personality_sample = queries.get_personality_sample()
+# print("随机抽取的性格特征样本:", personality_sample)
+
+# # 测试 get_long_term_goal_sample 方法
+# long_term_goal_sample = queries.get_long_term_goal_sample()
+# print("随机抽取的长期目标样本:", long_term_goal_sample)
+
+# # 测试 get_short_term_goal_sample 方法
+# short_term_goal_sample = queries.get_short_term_goal_sample()
+# print("随机抽取的短期目标样本:", short_term_goal_sample)
+
+# # 测试 get_language_style_sample 方法
+# language_style_sample = queries.get_language_style_sample()
+# print("随机抽取的语言风格样本:", language_style_sample)
+
+# # 测试 get_biography_sample 方法
+# biography_sample = queries.get_biography_sample()
+# print("随机抽取的传记样本:", biography_sample)
+
+# print(queries.get_conversations_with_characterIds(characterIds_list=[1, 5], k=1))
+# print(queries.get_character_RAG(2, "study with my friends", 3))
+
+# print(queries.get_conversations_containing_characterId(2, 2))
+
+# # 测试 update_character 方法
+# test_characterId = 1
+
+# # 获取更新前的 character 数据
+# print("character 数据更新前:")
+# original_character = queries.get_character(test_characterId)
+# print(original_character)
+
+# # 获取更新后的 character 数据
+# print("\ncharacter 数据更新后:")
+# updated_character = queries.get_character(test_characterId)
+# print(updated_character)
+
+# # 测试获取相遇次数
+# character_ids = [1, 2]
+# encounter_count = queries.get_encounter_count(character_ids)
+# print(f"Initial encounter count for {character_ids}: {encounter_count}")
+
+# # 测试增量更新相遇次数
+# if encounter_count:
+#     new_count = encounter_count[0]["count"] + 1
+#     result = queries.update_encounter_count(character_ids, new_count)
+#     print(
+#         f"Incremented encounter count for {character_ids}: {new_count}, Result: {result}"
+#     )
+# else:
+#     print(f"No encounter count found for {character_ids} to increment.")
+
+# # 测试直接更新相遇次数为指定值
+# specified_count = 5
+# result = queries.update_encounter_count(character_ids, specified_count)
+# print(
+#     f"Updated encounter count for {character_ids} to {specified_count}, Result: {result}"
+# )
+
+# # 测试获取当前好感度
+# from_id = 1
+# to_id = 2
+# current_intimacy = queries.get_intimacy(from_id, to_id)
+# print(f"Initial intimacy level from {from_id} to {to_id}: {current_intimacy}")
+
+# # 测试更新好感度为新值
+# new_intimacy_level = 7
+# result = queries.update_intimacy(from_id, to_id, new_intimacy_level)
+# print(
+#     f"Updated intimacy level from {from_id} to {to_id} to {new_intimacy_level}, Result: {result}"
+# )
+
+# # 再次获取以验证更新
+# updated_intimacy = queries.get_intimacy(from_id, to_id)
+# print(f"Updated intimacy level from {from_id} to {to_id}: {updated_intimacy}")
+
+# # 测试更新 meta_sequence
+# character_id = 102  # 假设的 characterId
+# update_meta_seq = ["scout_area()", "gather_resources()", "set_up_camp()"]
+
+# # 执行更新操作
+# modified_count = queries.update_meta_seq(character_id, update_meta_seq)
+# print(
+#     f"Updated meta_sequence for characterId {character_id}, Modified Count: {modified_count}"
+# )
+# queries.store_encounter_count(1, 5, 1)
+# print(queries.get_encounters_by_from_id(1, 1))
+
+# character_list = [2, 3, 4]
+# print(queries.get_character_RAG_in_list(1, character_list, "探索森林", 2))
+
+# # 示例数据存储
+# character_id = 1
+# # category_data = [
+# #     {"item": "skill", "origin_value": "beginner"},
+# #     {"item": "emotion", "origin_value": "neutral"},
+# # ]
+
+# # # 存储角色弧光信息
+# # queries.store_character_arc(character_id, category_data)
+
+# # 存储角色弧光变化信息
+# queries.store_character_arc_change(
+#     characterId=character_id,
+#     item="skill",
+#     cause="参加职业培训2",
+#     context="在朋友的建议下参加了当地的职业技能培训班2",
+#     change="获得新技能2",
+# )
+
+# queries.store_character_arc_change(
+#     characterId=character_id,
+#     item="emotion",
+#     cause="收到好消息2",
+#     context="得知自己通过了考试2",
+#     change="略微积极2",
+# )
+
+# # 获取角色弧光信息及其变化过程
+# k = 2  # 选择变化过程的数量
+# arc_with_changes = queries.get_character_arc_with_changes(character_id, k)
+# print(arc_with_changes)
+
+# # 存储测试数据
+# queries.store_intimacy(from_id=10, to_id=20, intimacy_level=75)
+# queries.store_intimacy(from_id=10, to_id=30, intimacy_level=50)
+# queries.store_intimacy(from_id=20, to_id=10, intimacy_level=60)
+# queries.store_intimacy(from_id=30, to_id=10, intimacy_level=80)
+
+# # 测试 get_intimacy 函数
+# print("查询 from_id=1 的所有记录:")
+# print(queries.get_intimacy(from_id=10))
+
+# print("\n查询 to_id=1 的所有记录:")
+# print(queries.get_intimacy(to_id=10))
+
+# print("\n查询 intimacy_level 在 60 到 80 之间的记录:")
+# print(queries.get_intimacy(intimacy_level_min=60, intimacy_level_max=80))
+
+# print("\n查询 from_id=1 且 intimacy_level 在 60 到 80 之间的记录:")
+# print(
+#     queries.get_intimacy(from_id=10, intimacy_level_min=60, intimacy_level_max=80)
+# )
+
+# # 存储一些测试数据
+# print("存储测试数据:")
+# queries.store_cv(jobid=1, characterId=101, CV_content="CV内容1", week=1)
+# queries.store_cv(jobid=1, characterId=102, CV_content="CV内容2", week=2)
+# queries.store_cv(jobid=2, characterId=101, CV_content="CV内容3", week=1)
+# queries.store_cv(jobid=2, characterId=103, CV_content="CV内容4", week=3)
+
+# # 更新选举状态
+# print("\n更新选举状态:")
+# queries.update_election_status(
+#     characterId=101, election_status="succeeded", jobid=1, week=1
+# )
+# queries.update_election_status(characterId=102, election_status="failed", jobid=1)
+# queries.update_election_status(
+#     characterId=103, election_status="succeeded", jobid=2
+# )
+
+# # 测试 get_cv 方法
+# print("\n测试 get_cv 方法:")
+
+# # 查询所有最新周的数据
+# print("\n查询所有的数据:")
+# print(queries.get_cv())
+
+# # 查询特定 jobid 的所有最新周的数据
+# print("\n查询 jobid=1 的所有的数据:")
+# print(queries.get_cv(jobid=1))
+
+# # 查询特定 characterId 的所有最新周的数据
+# print("\n查询 characterId=101 的所有的数据:")
+# print(queries.get_cv(characterId=101))
+
+# # 查询特定 week 的数据
+# print("\n查询 week=1 的数据:")
+# print(queries.get_cv(week=1))
+
+# # 查询特定选举状态的数据
+# print("\n查询选举状态为 'succeeded' 的数据:")
+# print(queries.get_cv(election_status="succeeded"))
+
+# # 查询特定 jobid 和选举状态的数据
+# print("\n查询 jobid=1 且选举状态为 'failed' 的数据:")
+# print(queries.get_cv(jobid=1, election_status="failed"))
+
+# # 查询特定 characterId 和 week 的数据
+# print("\n查询 characterId=101 且 week=1 的数据:")
+# print(queries.get_cv(characterId=101, week=1))
+
+# # 测试获取所有角色
+# print("获取所有角色:")
+# all_characters = queries.get_character()
+# print(all_characters)

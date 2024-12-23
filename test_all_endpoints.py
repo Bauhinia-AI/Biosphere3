@@ -952,6 +952,21 @@ def test_conversation_get():
     print(json.dumps(response, indent=4))
 
 
+def test_get_conversation_by_list():
+   print("Testing Get Conversation By List...")
+   get_conversation_by_list_data = {
+       "characterIds": [1, 2],
+       "time": "2023-10-01 12:00:00",
+       "k": 5,
+   }
+   response = make_api_request_sync(
+       "POST",
+       "/conversation/by_list",
+       data=get_conversation_by_list_data,
+   )
+   print(json.dumps(response, indent=4))
+
+
 def test_conversation_memory_store():
     print("Testing Conversation Memory Store...")
     store_conversation_memory_data = {
@@ -1058,7 +1073,9 @@ def test_get_memory_api():
 
 def main():
 
-    test_get_memory_api()
+    test_get_conversation_by_list()
+
+    # test_get_memory_api()
 
     # # Test work experience endpoints
     # test_work_experience_store()

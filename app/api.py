@@ -403,39 +403,6 @@ class UpdatecharacterRequest(BaseModel):
     update_fields: dict
 
 
-class CharacterArcRequest(BaseModel):
-    characterId: int
-    category: List[Dict[str, str]]
-
-
-class CharacterArcChangeRequest(BaseModel):
-    characterId: int
-    item: str
-    cause: str
-    context: str
-    change: str
-
-
-class GetCharacterArcRequest(BaseModel):
-    characterId: int
-
-
-class GetCharacterArcWithChangesRequest(BaseModel):
-    characterId: int
-    k: Optional[int] = 1
-
-
-class UpdateCharacterArcRequest(BaseModel):
-    characterId: int
-    category: List[Dict[str, str]]
-
-
-class GetCharacterArcChangesRequest(BaseModel):
-    characterId: int
-    item: str
-    k: Optional[int] = 1
-
-
 class SampleItem(str, Enum):
     relationship = "relationship"
     personality = "personality"
@@ -565,6 +532,15 @@ class UpdateWorkExperienceRequest(BaseModel):
     jobid: int
     additional_work: int
     additional_salary: float
+
+
+class StoreCharacterArcRequest(BaseModel):
+    characterId: int
+    belief: Optional[str] = None
+    mood: Optional[str] = None
+    values: Optional[str] = None
+    habits: Optional[str] = None
+    personality: Optional[str] = None
 
 
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
@@ -1495,119 +1471,6 @@ def update_character_api(request: UpdatecharacterRequest):
         raise HTTPException(status_code=404, detail="No character was updated.")
 
 
-character_arc_router = APIRouter(prefix="/character_arc", tags=["Character Arc"])
-
-
-@character_arc_router.post("/", response_model=StandardResponse)
-def store_character_arc_api(request: CharacterArcRequest):
-    inserted_id = retry_operation(
-        domain_queries.store_character_arc,
-        retries=3,
-        delay=2,
-        characterId=request.characterId,
-        category=request.category,
-    )
-    if inserted_id:
-        return success_response(
-            data=str(inserted_id), message="Character arc stored successfully."
-        )
-    else:
-        raise HTTPException(status_code=500, detail="Failed to store character arc.")
-
-
-@character_arc_router.get("/", response_model=StandardResponse)
-def get_character_arc_api(characterId: int):
-    arc = retry_operation(
-        domain_queries.get_character_arc,
-        retries=3,
-        delay=2,
-        characterId=characterId,
-    )
-    if arc:
-        return success_response(
-            data=arc, message="Character arc retrieved successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No character arc found.")
-
-
-@character_arc_router.get("/with_changes", response_model=StandardResponse)
-def get_character_arc_with_changes_api(characterId: int, k: int = 1):
-    arc_with_changes = retry_operation(
-        domain_queries.get_character_arc_with_changes,
-        retries=3,
-        delay=2,
-        characterId=characterId,
-        k=k,
-    )
-    if arc_with_changes:
-        return success_response(
-            data=arc_with_changes,
-            message="Character arc with changes retrieved successfully.",
-        )
-    else:
-        raise HTTPException(
-            status_code=404, detail="No character arc with changes found."
-        )
-
-
-@character_arc_router.put("/", response_model=StandardResponse)
-def update_character_arc_api(request: UpdateCharacterArcRequest):
-    result = retry_operation(
-        domain_queries.update_character_arc,
-        retries=3,
-        delay=2,
-        characterId=request.characterId,
-        category=request.category,
-    )
-    if result:
-        return success_response(
-            data=result, message="Character arc updated successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No character arc was updated.")
-
-
-@character_arc_router.post("/change", response_model=StandardResponse)
-def store_character_arc_change_api(request: CharacterArcChangeRequest):
-    inserted_id = retry_operation(
-        domain_queries.store_character_arc_change,
-        retries=3,
-        delay=2,
-        characterId=request.characterId,
-        item=request.item,
-        cause=request.cause,
-        context=request.context,
-        change=request.change,
-    )
-    if inserted_id:
-        return success_response(
-            data=str(inserted_id), message="Character arc change stored successfully."
-        )
-    else:
-        raise HTTPException(
-            status_code=500, detail="Failed to store character arc change."
-        )
-
-
-@character_arc_router.get("/changes", response_model=StandardResponse)
-def get_character_arc_changes_api(characterId: int, item: str, k: int = 1):
-    changes = retry_operation(
-        domain_queries.get_character_arc_changes,
-        retries=3,
-        delay=2,
-        characterId=characterId,
-        item=item,
-        k=k,
-    )
-    if changes:
-        return success_response(
-            data=changes, message="Character arc changes retrieved successfully."
-        )
-    else:
-        raise HTTPException(status_code=404, detail="No character arc changes found.")
-
-
 sample_router = APIRouter(prefix="/sample", tags=["Sample"])
 
 
@@ -2174,6 +2037,44 @@ def update_work_experience_api(request: UpdateWorkExperienceRequest):
             status_code=404, detail="No work experience found to update."
         )
 
+character_arc_router = APIRouter(prefix="/character_arc", tags=["Character Arc"])
+
+@character_arc_router.post("/", response_model=StandardResponse)
+def store_character_arc_api(request: StoreCharacterArcRequest):
+    inserted_id = retry_operation(
+        domain_queries.store_character_arc,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        belief=request.belief,
+        mood=request.mood,
+        values=request.values,
+        habits=request.habits,
+        personality=request.personality,
+    )
+    if inserted_id:
+        return success_response(
+            data=str(inserted_id), message="Character arc stored successfully."
+        )
+    else:
+        raise HTTPException(status_code=500, detail="Failed to store character arc.")
+
+@character_arc_router.get("/", response_model=StandardResponse)
+def get_character_arc_api(characterId: int, k: Optional[int] = None):
+    character_arcs = retry_operation(
+        domain_queries.get_character_arc,
+        retries=3,
+        delay=2,
+        characterId=characterId,
+        k=k,
+    )
+    if character_arcs:
+        return success_response(
+            data=character_arcs, message="Character arcs retrieved successfully."
+        )
+    else:
+        raise HTTPException(status_code=404, detail="No character arcs found.")
+
 
 app.include_router(vector_search_router)
 app.include_router(impressions_router)
@@ -2188,7 +2089,6 @@ app.include_router(characters_router)
 app.include_router(encounter_count_router)
 app.include_router(intimacy_router)
 app.include_router(knowledge_router)
-app.include_router(character_arc_router)
 app.include_router(sample_router)
 app.include_router(agent_prompt_router)
 app.include_router(conversation_prompt_router)
@@ -2198,6 +2098,7 @@ app.include_router(current_pointer_router)
 app.include_router(conversation_router)
 app.include_router(conversation_memory_router)
 app.include_router(work_experience_router)
+app.include_router(character_arc_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

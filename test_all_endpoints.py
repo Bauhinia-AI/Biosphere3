@@ -1070,10 +1070,33 @@ def test_get_memory_api():
     )
     print(json.dumps(response, indent=4))
 
+def test_character_arc_store():
+    print("Testing Character Arc Store...")
+    store_character_arc_data = {
+        "characterId": 101,
+        "belief": "Believe in teamwork",
+        "mood": "Happy",
+        "values": "Honesty, Integrity",
+        "habits": "Reading, Jogging",
+        "personality": "Introverted",
+    }
+    response = make_api_request_sync("POST", "/character_arc/", data=store_character_arc_data)
+    print(json.dumps(response, indent=4))
+
+
+def test_character_arc_get():
+    print("Testing Character Arc Get...")
+    get_character_arc_params = {"characterId": 101, "k": 3}
+    response = make_api_request_sync("GET", "/character_arc/", params=get_character_arc_params)
+    print(json.dumps(response, indent=4))
 
 def main():
 
-    test_get_conversation_by_list()
+    test_character_arc_store()
+    time.sleep(1)  # 等待数据写入
+    test_character_arc_get()
+
+    # test_get_conversation_by_list()
 
     # test_get_memory_api()
 

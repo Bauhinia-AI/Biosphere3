@@ -767,129 +767,6 @@ class DomainSpecificQueries:
         )
         return result
 
-    def store_character_arc(self, characterId, category):
-        document = {
-            "characterId": characterId,
-            "category": category,
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        inserted_id = self.db_utils.insert_document(
-            config.character_arc_collection_name, document
-        )
-        return inserted_id
-
-    def get_character_arc(self, characterId):
-        query = {"characterId": characterId}
-        documents = self.db_utils.find_documents(
-            collection_name=config.character_arc_collection_name,
-            query=query,
-        )
-        return documents
-
-    def get_character_arc_with_changes(self, characterId, k):
-        # 获取角色弧光信息
-        arc_documents = self.get_character_arc(characterId)
-        if not arc_documents:
-            return None
-
-        # 获取角色弧光变化信息
-        arc_changes = {}
-        for category in arc_documents[0]["category"]:
-            item = category["item"]
-            changes = self.get_character_arc_changes(characterId, item, k)
-            arc_changes[item] = changes
-
-        # 组合角色弧光信息和变化过程
-        combined_result = {"characterId": characterId, "category": []}
-
-        for category in arc_documents[0]["category"]:
-            item = category["item"]
-            origin_value = category["origin_value"]
-            change_process = [
-                {
-                    "cause": change["cause"],
-                    "context": change["context"],
-                    "change": change["change"],
-                    "created_at": change["created_at"],
-                }
-                for change in arc_changes.get(item, [])
-            ]
-
-            combined_result["category"].append(
-                {
-                    "item": item,
-                    "origin_value": origin_value,
-                    "change_process": change_process,
-                }
-            )
-
-        return combined_result
-
-    def update_character_arc(self, characterId, category):
-        query = {"characterId": characterId}
-        update_data = {
-            "$set": {
-                "category": category,
-                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        }
-        result = self.db_utils.update_documents(
-            collection_name=config.character_arc_collection_name,
-            query=query,
-            update=update_data,
-            upsert=False,
-            multi=False,
-        )
-        return result
-
-    def store_character_arc_change(self, characterId, item, cause, context, change):
-        document = {
-            "characterId": characterId,
-            "item": item,
-            "cause": cause,
-            "context": context,
-            "change": change,
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        }
-        inserted_id = self.db_utils.insert_document(
-            config.character_arc_change_collection_name, document
-        )
-        return inserted_id
-
-    def get_character_arc_changes(self, characterId, item, k):
-        query = {"characterId": characterId, "item": item}
-
-        # 获取所有符合条件的文档
-        all_documents = list(
-            self.db_utils.find_documents(
-                collection_name=config.character_arc_change_collection_name,
-                query=query,
-                sort=[("created_at", DESCENDING)],
-            )
-        )
-
-        # 确保包含最新的文档
-        if not all_documents:
-            return []
-
-        latest_document = all_documents[0]
-
-        # 随机选择 k-1 个文档
-        if len(all_documents) > 1:
-            random_documents = random.sample(
-                all_documents[1:], min(k - 1, len(all_documents) - 1)
-            )
-        else:
-            random_documents = []
-
-        # 将最新的文档添加到选择的文档列表中
-        selected_documents = random_documents + [latest_document]
-
-        # 按照创建时间从旧到新排序
-        selected_documents.sort(key=lambda doc: doc["created_at"])
-
-        return selected_documents
-
     def get_relationship_sample(self):
         profile_sample = self.db_utils.find_one(
             collection_name=config.profile_sample_collection_name
@@ -1657,19 +1534,77 @@ class DomainSpecificQueries:
         )
         return result
 
+    def store_character_arc(
+        self,
+        characterId,
+        belief=None,
+        mood=None,
+        values=None,
+        habits=None,
+        personality=None,
+    ):
+        document = {
+            "characterId": characterId,
+            "belief": belief,
+            "mood": mood,
+            "values": values,
+            "habits": habits,
+            "personality": personality,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        inserted_id = self.db_utils.insert_document(
+            config.character_arc_collection_name, document
+        )
+        return inserted_id
+
+    def get_character_arc(self, characterId, k=None):
+        query = {"characterId": characterId}
+        documents = self.db_utils.find_documents(
+            collection_name=config.character_arc_collection_name,
+            query=query,
+            sort=[("created_at", DESCENDING)],  # 按创建时间降序排列
+            limit=k if k is not None else 0,  # 如果 k 为 None，则不限制数量
+        )
+        return documents
+
 
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试 get_conversation_by_list 方法
-    print("测试 get_conversation_by_list 方法...")
-    characterIds = [1, 2]  # 示例角色ID
-    time = "2023-10-01 12:00:00"  # 示例时间
-    conversations = queries.get_conversation_by_list(characterIds, time=time, k=5)
-    #    conversations = queries.get_conversation_by_list(character_ids, k=5)
-    #    conversations = queries.get_conversation_by_list(character_ids)
-    print(f"角色 {characterIds} 的对话记录：", conversations)
+    # 测试 store_character_arc 方法
+    print("存储 character_arc...")
+    characterId = 1
+    belief = "Believe in teamwork"
+    mood = "Happy"
+    values = "Honesty, Integrity"
+    habits = "Reading, Jogging"
+    personality = "Introverted"
+    
+    inserted_id = queries.store_character_arc(
+        characterId=characterId,
+        belief=belief,
+        mood=mood,
+        values=values,
+        habits=habits,
+        personality=personality
+    )
+    print(f"插入成功，文档 ID：{inserted_id}")
+
+    # 测试 get_character_arc 方法
+    print("\n获取 character_arc...")
+    k = 3  # 获取最新的3个文档
+    character_arcs = queries.get_character_arc(characterId=characterId, k=k)
+    print(f"获取的 character_arc 文档：{character_arcs}")
+
+    # # 测试 get_conversation_by_list 方法
+    # print("测试 get_conversation_by_list 方法...")
+    # characterIds = [1, 2]  # 示例角色ID
+    # time = "2023-10-01 12:00:00"  # 示例时间
+    # conversations = queries.get_conversation_by_list(characterIds, time=time, k=5)
+    # #    conversations = queries.get_conversation_by_list(character_ids, k=5)
+    # #    conversations = queries.get_conversation_by_list(character_ids)
+    # print(f"角色 {characterIds} 的对话记录：", conversations)
 
 #     # 测试 get_conversation 函数
 #    print("测试 get_conversation 函数...")
@@ -2061,38 +1996,6 @@ if __name__ == "__main__":
 
 # character_list = [2, 3, 4]
 # print(queries.get_character_RAG_in_list(1, character_list, "探索森林", 2))
-
-# # 示例数据存储
-# character_id = 1
-# # category_data = [
-# #     {"item": "skill", "origin_value": "beginner"},
-# #     {"item": "emotion", "origin_value": "neutral"},
-# # ]
-
-# # # 存储角色弧光信息
-# # queries.store_character_arc(character_id, category_data)
-
-# # 存储角色弧光变化信息
-# queries.store_character_arc_change(
-#     characterId=character_id,
-#     item="skill",
-#     cause="参加职业培训2",
-#     context="在朋友的建议下参加了当地的职业技能培训班2",
-#     change="获得新技能2",
-# )
-
-# queries.store_character_arc_change(
-#     characterId=character_id,
-#     item="emotion",
-#     cause="收到好消息2",
-#     context="得知自己通过了考试2",
-#     change="略微积极2",
-# )
-
-# # 获取角色弧光信息及其变化过程
-# k = 2  # 选择变化过程的数量
-# arc_with_changes = queries.get_character_arc_with_changes(character_id, k)
-# print(arc_with_changes)
 
 # # 存储测试数据
 # queries.store_intimacy(from_id=10, to_id=20, intimacy_level=75)

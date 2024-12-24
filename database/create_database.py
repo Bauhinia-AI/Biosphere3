@@ -196,12 +196,9 @@ if __name__ == "__main__":
     #     config.intimacy_collection_name, unique_index_fields=["from_id", "to_id"]
     # )
     # app.setup_database(config.knowledge_collection_name)
-    # app.setup_database(
-    #     config.character_arc_collection_name, unique_index_fields=["characterId"]
-    # )
-    # app.setup_database(
-    #     config.character_arc_change_collection_name,
-    # )
+    app.setup_database(
+        config.character_arc_collection_name, unique_index_fields=["characterId"]
+    )
     # app.setup_database(config.profile_sample_collection_name)
     # app.setup_database(
     #     config.agent_prompt_collection_name, unique_index_fields=["characterId"]
@@ -211,7 +208,7 @@ if __name__ == "__main__":
     # )
     # app.setup_database(config.decision_collection_name)
     # app.setup_database(config.current_pointer_collection_name)
-    app.setup_database(config.conversation_memory_collection_name)
+    # app.setup_database(config.conversation_memory_collection_name)
 
     # # Import data
     # app.import_data_into_collection(

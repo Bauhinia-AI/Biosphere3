@@ -433,79 +433,6 @@ validators = {
             },
         }
     },
-    "character_arc": {
-        "$jsonSchema": {
-            "bsonType": "object",
-            "required": ["characterId", "category", "created_at"],
-            "properties": {
-                "characterId": {
-                    "bsonType": "int",
-                    "description": "角色ID, 必须为整数且为必填项",
-                },
-                "category": {
-                    "bsonType": "array",
-                    "description": "角色弧光的类别列表, 必须为对象数组且为必填项",
-                    "items": {
-                        "bsonType": "object",
-                        "required": ["item", "origin_value"],
-                        "properties": {
-                            "item": {
-                                "bsonType": "string",
-                                "description": "类别项, 必须为字符串",
-                            },
-                            "origin_value": {
-                                "bsonType": "string",
-                                "description": "原始值, 必须为字符串",
-                            },
-                        },
-                    },
-                },
-                "created_at": {
-                    "bsonType": "string",
-                    "description": "创建时间, 必须为字符串且为必填项",
-                },
-            },
-        }
-    },
-    "character_arc_change": {
-        "$jsonSchema": {
-            "bsonType": "object",
-            "required": [
-                "characterId",
-                "item",
-                "cause",
-                "context",
-                "change",
-                "created_at",
-            ],
-            "properties": {
-                "characterId": {
-                    "bsonType": "int",
-                    "description": "角色ID, 必须为整数且为必填项",
-                },
-                "item": {
-                    "bsonType": "string",
-                    "description": "类别项, 必须为字符串且为必填项",
-                },
-                "cause": {
-                    "bsonType": "string",
-                    "description": "变化原因, 必须为字符串且为必填项",
-                },
-                "context": {
-                    "bsonType": "string",
-                    "description": "变化发生的背景, 必须为字符串且为必填项",
-                },
-                "change": {
-                    "bsonType": "string",
-                    "description": "情绪的变化, 必须为字符串且为必填项",
-                },
-                "created_at": {
-                    "bsonType": "string",
-                    "description": "创建时间, 必须为字符串且为必填项",
-                },
-            },
-        }
-    },
     "profile_sample": {
         "$jsonSchema": {
             "bsonType": "object",
@@ -872,6 +799,42 @@ validators = {
                 "total_salary": {
                     "bsonType": "double",
                     "description": "获取的总薪资, 必须为浮点数且为必填项",
+                },
+            },
+        }
+    },
+    "character_arc": {
+        "$jsonSchema": {
+            "bsonType": "object",
+            "required": ["characterId"],
+            "properties": {
+                "characterId": {
+                    "bsonType": "int",
+                    "description": "character ID,必须为整数且为必填项",
+                },
+                "belief": {
+                    "bsonType": "string",
+                    "description": "belief",
+                },
+                "mood": {
+                    "bsonType": "string",
+                    "description": "mood",
+                },
+                "values": {
+                    "bsonType": "string",
+                    "description": "values",
+                },
+                "habits": {
+                    "bsonType": "string",
+                    "description": "habits",
+                },
+                "personality": {
+                    "bsonType": "string",
+                    "description": "personality",
+                },
+                "created_at": {
+                    "bsonType": "string",
+                    "description": "创建时间, 必须为字符串且为必填项",
                 },
             },
         }

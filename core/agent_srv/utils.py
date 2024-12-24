@@ -184,6 +184,34 @@ def get_market_data_from_db(fields: list = ["ore", "apple", "wheat", "fish"]):
     return market_data_dict
 
 
+async def get_prompt_data_from_db(userid: int):
+    # Prompt data
+    prompt_response = await fetch_json_async(
+        url=f"{AGENT_BACKEND_URL}/agent_prompt/?characterId={userid}",
+        timeout=GAME_BACKEND_TIMEOUT,
+        _logger=logger,
+        error_message="Failed to get prompt data from game backend",
+    )
+    dict = prompt_response[0] if prompt_response else {}
+    fields = [
+        "daily_goal",
+        "refer_to_previous",
+        "life_style",
+        "daily_objective_ar",
+        "task_priority",
+        "max_actions",
+        "meta_seq_ar",
+        "replan_time_limit",
+        "meta_seq_adjuster_ar",
+        "focus_topic",
+        "depth_of_reflection",
+        "reflection_ar",
+        "level_of_detail",
+        "tone_and_style",
+    ]
+    return {key: dict[key] for key in fields if key in dict}
+
+
 async def fetch_game_db_character_response_async(userid: int) -> dict:
     """
     Asynchronously fetches character data from the game database.
@@ -282,6 +310,8 @@ async def get_initial_state_from_db(userid, websocket):
     market_data = get_market_data_from_db()
     # 获取角色数据
     character_data = await get_character_data_async(userid)
+    # 获取prompt数据
+    prompt_data = await get_prompt_data_from_db(userid)
     state = {
         "userid": userid,
         "character_stats": character_data,
@@ -313,22 +343,7 @@ async def get_initial_state_from_db(userid, websocket):
                 "orchard",
             ],
         },
-        "prompts": {
-            "daily_goal": "",
-            "refer_to_previous": False,
-            "life_style": "Casual",
-            "daily_objective_ar": "",
-            "task_priority": [],
-            "max_actions": 10,
-            "meta_seq_ar": "",
-            "replan_time_limit": 3,
-            "meta_seq_adjuster_ar": "",
-            "focus_topic": [],
-            "depth_of_reflection": "Moderate",
-            "reflection_ar": "",
-            "level_of_detail": "Moderate",
-            "tone_and_style": "",
-        },
+        "prompts": prompt_data,
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
         "false_action_queue": asyncio.Queue(),

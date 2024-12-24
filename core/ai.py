@@ -50,15 +50,12 @@ class AI_WS_Server:
 
             character.log_message("received", response)
 
-            # 处理消息循环
             while True:
                 try:
                     message = await websocket.recv()
                     data = json.loads(message)
-
                     character.log_message("sent", message)
-
-                    # 处理心跳消息
+                    # Handle heartbeat message
                     if data.get("messageName") == "heartbeat":
                         character.update_heartbeat()
                         heartbeat_response = self.create_message(
@@ -67,8 +64,8 @@ class AI_WS_Server:
                         await websocket.send(heartbeat_response)
                         character.log_message("received", heartbeat_response)
                         continue
-
-                    else:  # 处理其他消息：放到对应agent和conversation agent的消息队列
+                    # Handle other messages
+                    else:
                         message_queue = agent_instance.state["message_queue"]
 
                         await asyncio.gather(
@@ -120,9 +117,8 @@ class AI_WS_Server:
         if self.character_manager.has_hosted_character(character_id):
             self.character_manager.unhost_character(character_id)
 
-        # 使用异步工厂方法创建 LangGraphInstance 实例
         agent_instance = await LangGraphInstance.create(character_id, websocket)
-        # 在initialize_connection中：
+
         conversation_instance = await ConversationInstance.create(
             character_id, websocket
         )
@@ -157,11 +153,11 @@ class AI_WS_Server:
         )
 
     async def run(self):
-        # 启动心跳监控
+        # Heartbeat Monitor
         if self.config.get("monitor_trigger"):
             await self.character_manager.start_monitoring()
 
-        # 启动 HTTP 监控服务器
+        # HTTP Monitor
         if self.config.get("dashboard_trigger"):
             http_host = self.config.get("http_monitor_host")
             http_port = self.config.get("http_monitor_port")
@@ -171,7 +167,7 @@ class AI_WS_Server:
         ws_host = self.config.get("websocket_host")
         ws_port = self.config.get("websocket_port")
 
-        # 根据开关确定是否用SSL/TLS
+        # SSL Configuration
         if self.config.get("ssl_trigger"):
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
             ssl_context.load_cert_chain(

@@ -1,5 +1,4 @@
 import os
-import asyncio
 import json
 from dotenv import load_dotenv
 from loguru import logger
@@ -7,7 +6,6 @@ from langchain_openai import ChatOpenAI
 
 from core.agent_srv.node_model import (
     DailyObjective,
-    DetailedPlan,
     MetaActionSequence,
     CV,
     MayorDecision,
@@ -31,17 +29,6 @@ obj_planner = obj_planner_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=1.5
 ).with_structured_output(DailyObjective)
 
-descritor = describe_action_result_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0
-)
-# replanner = replanner_prompt | ChatOpenAI(
-#     base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
-# ).with_structured_output(Act)
-
-detail_planner = detail_planner_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0
-).with_structured_output(DetailedPlan)
-
 meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
@@ -49,6 +36,14 @@ meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
 meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
+
+character_arc_generator = generate_character_arc_prompt | ChatOpenAI(
+    base_url=base_url, model="gpt-4o-mini", temperature=0.5
+).with_structured_output(CharacterArc)
+
+daily_reflection_generator = daily_reflection_prompt | ChatOpenAI(
+    base_url=base_url, model="gpt-4o-mini", temperature=1
+).with_structured_output(Reflection)
 
 cv_generator = generate_cv_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=0.7
@@ -58,45 +53,40 @@ mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
     base_url=base_url, model="gpt-4o-mini", temperature=0.5
 ).with_structured_output(MayorDecision)
 
-character_arc_generator = generate_character_arc_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0.5
-).with_structured_output(CharacterArc)
-
-daily_reflection_generator = generate_daily_reflection_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=1
-).with_structured_output(Reflection)
-
 
 async def generate_daily_reflection(state: RunningState):
-    daily_reflection = await daily_reflection_generator.ainvoke(
-        {
-            "character_stats": state["character_stats"],
-            "daily_objectives": state["decision"]["daily_objective"],
-            "failed_actions": str(state["false_action_queue"]),
-        }
-    )
+    payload = {
+        "character_stats": state["character_stats"],
+        "daily_objectives": state["decision"]["daily_objective"],
+        "failed_actions": str(state["false_action_queue"]),
+        "additional_requirements": state["prompts"]["daily_reflection_ar"],
+        "focus_topic": state["prompts"]["focus_topic"],
+        "depth_of_reflection": state["prompts"]["depth_of_reflection"],
+        "level_of_detail": state["prompts"]["level_of_detail"],
+        "tone_and_style": state["prompts"]["tone_and_style"],
+    }
+    daily_reflection = await daily_reflection_generator.ainvoke(payload)
+
+    full_prompt = daily_reflection_prompt.format(**payload)
+    logger.info("======generate_daily_reflection======\n" + full_prompt)
+
     return {"decision": {"daily_reflection": daily_reflection.reflection}}
 
 
 async def generate_daily_objective(state: RunningState):
-    # BUG 这里如果检验失败会报错，需要重试
-    # 重试一次
-    # 获取最新的prompt数据
+    response = make_api_request_sync_backend(
+        "GET", f"/characters/getByIdS/{state['userid']}"
+    )
+    skill_list = response.get("data", {}).get("skillList", [])
+    skill_name = [skill["skillName"] for skill in skill_list]
+    try:
+        with open("core/files/skill2actions.json", "r") as f:
+            skills = json.load(f)
+    except Exception as e:
+        logger.error(f"Failed to load skill actions: {e}")
+    role_specific_actions = format_role_actions(skill_name, skills)
+    state["meta"]["tool_functions"] += role_specific_actions
 
-    # try:
-    #     prompt = await make_api_request_async_backend(
-    #         "GET", f"/agent_prompt/?characterId={state['userid']}"
-    #     )
-    #     logger.info(f"🔍 Prompt: {prompt}")
-    #     prompt_data = prompt.get("data", [{}])[0]  # 如果data为空，返回一个空字典
-    #     state["prompts"] = {
-    #         key: prompt_data[key]
-    #         for key in prompt_data
-    #         if key not in ["characterId", "created_at", "updated_at"]
-    #     }
-    # except (IndexError, KeyError) as e:
-    #     logger.error(f"⛔ Error retrieving prompt data: {e}")
-    #     state["prompts"] = {}  # 设置一个默认值或处理逻辑
     retry_count = 0
     payload = {
         "character_stats": state["character_stats"],
@@ -120,7 +110,8 @@ async def generate_daily_objective(state: RunningState):
             )
             retry_count += 1
             continue
-
+    full_prompt = obj_planner_prompt.format(**payload)
+    logger.info("======generate_daily_objective======\n" + full_prompt)
     # Store daily objectives in database
     daily_objective_data = {
         "characterId": state["userid"],
@@ -135,28 +126,7 @@ async def generate_daily_objective(state: RunningState):
     return {"decision": {"daily_objective": [planner_response.objectives]}}
 
 
-async def generate_detailed_plan(state: RunningState):
-    detailed_plan = await detail_planner.ainvoke(state)
-
-    return {"plan": detailed_plan.detailed_plan}
-
-
 async def generate_meta_action_sequence(state: RunningState):
-    response = make_api_request_sync_backend(
-        "GET", f"/freelanceWork/getById/{state['userid']}"
-    )
-    freelancejob_data = response.get("data", {})
-    if freelancejob_data:
-        job_name = freelancejob_data.get("jobName", "")
-    else:
-        job_name = "Farmer"  # 如果没有特定工作，就默认是农民
-    try:
-        with open("core/files/skill2actions.json", "r") as f:
-            skills = json.load(f)
-    except Exception as e:
-        logger.error(f"Failed to load skill actions: {e}")
-    role_specific_actions = format_role_actions(job_name, skills)
-
     payload = {
         "daily_objective": (
             state["decision"]["daily_objective"][-1]
@@ -164,7 +134,6 @@ async def generate_meta_action_sequence(state: RunningState):
             else []
         ),
         "tool_functions": state["meta"]["tool_functions"],
-        "role_specific_actions": role_specific_actions,
         "locations": state["meta"]["available_locations"],
         "inventory": state["character_stats"]["inventory"],
         "market_data": state["public_data"]["market_data"],
@@ -173,6 +142,8 @@ async def generate_meta_action_sequence(state: RunningState):
         "additional_requirements": state["prompts"]["meta_seq_ar"],
     }
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
+    full_prompt = meta_action_sequence_prompt.format(**payload)
+    logger.info("======generate_meta_action_sequence======\n" + full_prompt)
 
     await state["instance"].send_message(
         {
@@ -185,41 +156,6 @@ async def generate_meta_action_sequence(state: RunningState):
     logger.info(
         f"🧠 META_ACTION_SEQUENCE INVOKED with {meta_action_sequence.meta_action_sequence}"
     )
-    return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
-
-
-async def adjust_meta_action_sequence(state: RunningState):
-    meta_action_sequence = await meta_seq_adjuster.ainvoke(
-        {
-            "meta_seq": state["decision"]["meta_seq"][-1],
-            "tool_functions": state["meta"]["tool_functions"],
-            "locations": state["meta"]["available_locations"],
-            "failed_action": "",
-            "error_message": "",
-            "replan_time_limit": state["prompts"]["replan_time_limit"],
-            "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
-        }
-    )
-
-    logger.info(
-        f"🧠 ADJUST_META_ACTION_SEQUENCE INVOKED...with {meta_action_sequence.meta_action_sequence}"
-    )
-    await state["instance"].send_message(
-        {
-            "characterId": state["userid"],
-            "messageName": "actionList",
-            "messageCode": 6,
-            "data": {"command": meta_action_sequence.meta_action_sequence},
-        }
-    )
-    update_meta_seq_data = {
-        "characterId": state["userid"],
-        "meta_sequence": meta_action_sequence.meta_action_sequence,
-    }
-    # make_api_request_async_backend(
-    #     "POST", "/meta_sequences/update", data=update_meta_seq_data
-    # )
-
     return {"decision": {"meta_seq": meta_action_sequence.meta_action_sequence}}
 
 
@@ -432,45 +368,25 @@ async def generate_character_arc(state: RunningState):
     return {"Character_Stats": {"character_arc": dict(character_arc)}}
 
 
-def format_role_actions(role, data):
-    role_data = data.get(role, {})
-    actions = role_data.get("actions", [])
-    materials = role_data.get("materials", {})
+def format_role_actions(roles, data):
+    action_strings = ["Here are the actions you can perform based on your roles:"]
 
-    # Format the actions
-    action_str = (
-        f"1. craft [itemType:string] [num:int]: Craft a certain number of items.\n"
-    )
-    action_str += "Constraints: Item must be in ItemType: ("
-    action_str += ", ".join([action.split()[1] for action in actions])
-    action_str += ") and you should have enough materials.\nHere's the rule:\n"
+    for index, role in enumerate(roles, start=1):
+        role_data = data.get(role, {})
+        actions = role_data.get("actions", [])
+        materials = role_data.get("materials", {})
 
-    # Format the materials
-    for item, constraints in materials.items():
-        constraint_str = "None" if not constraints else ", ".join(constraints)
-        action_str += f"- {item}: {constraint_str}\n"
+        # Format the actions
+        action_str = f"{index}. craft [itemType:string] [num:int]: Craft a certain number of items.\n"
+        action_str += "Constraints: Item must be in ItemType: ("
+        action_str += ", ".join([action.split()[1] for action in actions])
+        action_str += ") and you should have enough materials.\nHere's the rule:\n"
 
-    return action_str
+        # Format the materials
+        for item, constraints in materials.items():
+            constraint_str = "None" if not constraints else ", ".join(constraints)
+            action_str += f"- {item}: {constraint_str}\n"
 
+        action_strings.append(action_str)
 
-async def main():
-    # 测试简历投递系统
-    # state = RunningState(**generate_initial_state_hardcoded(1, None))
-    # workflow = StateGraph(RunningState)
-    # workflow.add_node("generate_change_job_cv", generate_change_job_cv)
-    # workflow.add_node("generate_mayor_decision", generate_mayor_decision)
-
-    # workflow.set_entry_point("generate_change_job_cv")
-    # workflow.add_edge("generate_change_job_cv", "generate_mayor_decision")
-    # graph = workflow.compile()
-
-    # await graph.ainvoke(state)
-
-    # 测试Character Arc
-    state = RunningState(**generate_initial_state_hardcoded(1, None))
-    res = await generate_character_arc(state)
-    print(res)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+    return "\n".join(action_strings)

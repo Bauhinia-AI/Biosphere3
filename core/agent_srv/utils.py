@@ -184,6 +184,34 @@ def get_market_data_from_db(fields: list = ["ore", "apple", "wheat", "fish"]):
     return market_data_dict
 
 
+async def get_prompt_data_from_db(userid: int):
+    # Prompt data
+    prompt_response = await fetch_json_async(
+        url=f"{AGENT_BACKEND_URL}/agent_prompt/?characterId={userid}",
+        timeout=GAME_BACKEND_TIMEOUT,
+        _logger=logger,
+        error_message="Failed to get prompt data from game backend",
+    )
+    dict = prompt_response[0] if prompt_response else {}
+    fields = [
+        "daily_goal",
+        "refer_to_previous",
+        "life_style",
+        "daily_objective_ar",
+        "task_priority",
+        "max_actions",
+        "meta_seq_ar",
+        "replan_time_limit",
+        "meta_seq_adjuster_ar",
+        "focus_topic",
+        "depth_of_reflection",
+        "reflection_ar",
+        "level_of_detail",
+        "tone_and_style",
+    ]
+    return {key: dict[key] for key in fields if key in dict}
+
+
 async def fetch_game_db_character_response_async(userid: int) -> dict:
     """
     Asynchronously fetches character data from the game database.
@@ -282,6 +310,8 @@ async def get_initial_state_from_db(userid, websocket):
     market_data = get_market_data_from_db()
     # 获取角色数据
     character_data = await get_character_data_async(userid)
+    # 获取prompt数据
+    prompt_data = await get_prompt_data_from_db(userid)
     state = {
         "userid": userid,
         "character_stats": character_data,
@@ -313,22 +343,7 @@ async def get_initial_state_from_db(userid, websocket):
                 "orchard",
             ],
         },
-        "prompts": {
-            "daily_goal": "",
-            "refer_to_previous": False,
-            "life_style": "Casual",
-            "daily_objective_ar": "",
-            "task_priority": [],
-            "max_actions": 10,
-            "meta_seq_ar": "",
-            "replan_time_limit": 3,
-            "meta_seq_adjuster_ar": "",
-            "focus_topic": [],
-            "depth_of_reflection": "Moderate",
-            "reflection_ar": "",
-            "level_of_detail": "Moderate",
-            "tone_and_style": "",
-        },
+        "prompts": prompt_data,
         "message_queue": asyncio.Queue(),
         "event_queue": asyncio.Queue(),
         "false_action_queue": asyncio.Queue(),
@@ -407,27 +422,27 @@ def generate_initial_state_hardcoded(userid, websocket):
 
 
 tool_functions_easy = """
-    1. goto [placeName:string]: Go to a specified location.
-Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).\n
-    2. pickapple [number:int]: Pick an apple, costing energy.
-Constraints: Must have enough energy and be in the orchard.\n
-    3. gofishing [hours:int]: Fish for fish, costing energy.
-Constraints: Must have enough energy and be in the fishing area.\n
-    4. harvest [hours:int]: Harvest crops, costing energy.
-Constraints: Must have enough energy and be in the harvest area.\n
-    5. sleep [hours:int]: Sleep to recover energy and health.
-Constraints: Must be at home.\n
-    6. study [hours:int]: Study to achieve a higher degree, will cost money.
-Constraints: Must be in school and have enough money.\n
-    8. gomining [hours:int]: Mine for ore, costing energy.
-Constraints: Must have enough energy and be in the mine.\n
-    17. buy [itemType:string] [amount:int]: Purchase items, costing money.
-Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)\n
-    18. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
-Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)\n
-    20. showallitem: Show all items in inventory.
+1. goto [placeName:string]: Go to a specified location.
+Constraints: Must in (school,workshop,home,farm,mall,square,hospital,fruit,harvest,fishing,mine,orchard).
+2. pickapple [number:int]: Pick an apple, costing energy.
+Constraints: Must have enough energy and be in the orchard.
+3. gofishing [hours:int]: Fish for fish, costing energy.
+Constraints: Must have enough energy and be in the fishing area.
+4. harvest [hours:int]: Harvest crops, costing energy.
+Constraints: Must have enough energy and be in the harvest area.
+5. sleep [hours:int]: Sleep to recover energy and health.
+Constraints: Must be at home.
+6. study [hours:int]: Study to achieve a higher degree, will cost money.
+Constraints: Must be in school and have enough money.
+8. gomining [hours:int]: Mine for ore, costing energy.
+Constraints: Must have enough energy and be in the mine.
+17. buy [itemType:string] [amount:int]: Purchase items, costing money.
+Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM. ItemType:(ore,bread,apple,wheat,fish)
+18. sell [itemType:string] [amount:int]: Sell items for money. The ONLY way to get money.
+Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,wheat,fish)
+20. showallitem: Show all items in inventory.
 Constraints: None
-    21. getprice [itemType:string]: Get the price of an item.
+21. getprice [itemType:string]: Get the price of an item.
 Constraints: None
 """
 

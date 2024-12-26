@@ -54,7 +54,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
     # process the remaining read-only conversations from the previous day
     if len(state["ongoing_task"]) != 0:
         await handling_readonly_conversation(state)
-   # reset the task list
+    # reset the task list
     state["daily_task"] = []
 
     # update profile
@@ -80,7 +80,7 @@ async def generate_daily_conversation_plan(state: ConversationState):
     logger.info(f"User {state['userid']} current daily objectives are: {memory}")
 
     # get character_arc
-    arc_response = make_api_request_sync("GET", "/character_arc/with_changes", params={"characterId": state["userid"], "k": 1})
+    arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
     if not arc_response["data"]:
         arc_data = []
     else:
@@ -299,9 +299,10 @@ async def start_conversation(state: ConversationState):
         encounter_response = make_api_request_sync("GET", "/encounter_count/by_from_id", params=encounter_data)
 
         candidate_list = []
-        for item in encounter_response["data"]:
-            if item["count"] != 0:
-                candidate_list.append(item['to_id'])
+        if encounter_response["data"]:
+            for item in encounter_response["data"]:
+                if item["count"] != 0:
+                    candidate_list.append(item['to_id'])
         logger.info(f"User {state['userid']} candidate list for this conversation is {candidate_list}")
 
         if not candidate_list:
@@ -362,7 +363,7 @@ async def start_conversation(state: ConversationState):
                 break
 
         # get character_arc
-        arc_response = make_api_request_sync("GET", "/character_arc/with_changes", params={"characterId": state["userid"], "k": 1})
+        arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
         if not arc_response["data"]:
             arc_data = []
         else:
@@ -486,7 +487,7 @@ async def generate_response(state: ConversationState):
     logger.info(f"The current impression from User {state['userid']} to User {question_item['from_id']} is {current_impression}")
 
     # get character_arc
-    arc_response = make_api_request_sync("GET", "/character_arc/with_changes", params={"characterId": state["userid"], "k": 1})
+    arc_response = make_api_request_sync("GET", "/character_arc/", params={"characterId": state["userid"], "k": 1})
     if not arc_response["data"]:
         arc_data = []
     else:
@@ -861,13 +862,13 @@ def generate_talk_time(k: int, id: int):
     power_check = make_backend_api_request_sync("GET", endpoint=endpoint)
     if not power_check["data"]:
         return ["000"]
-    elif power_check["data"]["currentPower"] < 5:
+    elif power_check["data"]["currentPower"] < 10:
         return ["000"]
     power_minute = power_check["data"]["currentPower"]
 
     largest_minute = (24-hour)*60+(0-minute)
     power_minute = min(power_minute, largest_minute//7)
-    k = min(k, power_minute//10)    
+    k = min(k-1, power_minute//10)+1
     time_slot = power_minute//k
 
     time_list = []

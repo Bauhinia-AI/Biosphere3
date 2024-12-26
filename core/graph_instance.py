@@ -76,6 +76,7 @@ class LangGraphInstance:
             msg = await self.state["message_queue"].get()
             message_name = msg.get("messageName")
             message_code = msg.get("messageCode")
+            message_data = msg.get("data")
             if message_code >= 100:  # Ignore Conversation Messages
                 pass
             elif message_name == "actionresult":
@@ -104,6 +105,8 @@ class LangGraphInstance:
                 pprint(self.state["decision"]["action_result"])
             elif message_name == "queue_visualizer":
                 pprint(self.state["event_queue"])
+            elif message_name == "eventInfo" and message_data.get("msg") == "ActionList Empty":
+                self.schedule_event("PLAN")
             else:
                 self.logger.error(
                     f"User {self.user_id}: Unknown message: {message_name}"

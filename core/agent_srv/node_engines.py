@@ -365,6 +365,11 @@ async def generate_character_arc(state: RunningState):
             "action_results": state["decision"]["action_result"],
         }
     )
+    character_arc_data = {
+        "characterId": state["userid"],
+        **dict(character_arc),  # 使用字典解包
+    }
+    make_api_request_sync("POST", "/character_arc/", data=character_arc_data)
     return {"Character_Stats": {"character_arc": dict(character_arc)}}
 
 

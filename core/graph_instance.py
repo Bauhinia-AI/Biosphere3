@@ -20,6 +20,7 @@ from core.agent_srv.node_engines import (
     generate_change_job_cv,
     generate_character_arc,
     generate_daily_reflection,
+    generate_accommodation_decision,
 )
 from core.agent_srv.node_model import RunningState
 from core.agent_srv.utils import get_initial_state_from_db
@@ -105,8 +106,16 @@ class LangGraphInstance:
                 pprint(self.state["decision"]["action_result"])
             elif message_name == "queue_visualizer":
                 pprint(self.state["event_queue"])
-            elif message_name == "eventInfo" and message_data.get("msg") == "ActionList Empty":
+            elif (
+                message_name == "eventInfo"
+                and message_data.get("msg") == "ActionList Empty"
+            ):
                 self.schedule_event("PLAN")
+            elif (
+                message_name == "accommodation_event"
+                or message_data.get("msg") == "House rent will expire tomorrow"
+            ):
+                self.schedule_event("ACCOMMODATION_EVENT")
             else:
                 self.logger.error(
                     f"User {self.user_id}: Unknown message: {message_name}"
@@ -151,6 +160,8 @@ class LangGraphInstance:
                 return "Replan_Action"
             elif event == "DAILY_REFLECTION":
                 return "Daily_Reflection"
+            elif event == "ACCOMMODATION_EVENT":
+                return "Accommodation_Decision"
             else:
                 self.logger.error(f"User {self.user_id}: Unknown event: {event}")
 
@@ -162,6 +173,7 @@ class LangGraphInstance:
         workflow.add_node("Character_Arc", generate_character_arc)
         workflow.add_node("Daily_Reflection", generate_daily_reflection)
         workflow.add_node("Replan_Action", replan_action)
+        workflow.add_node("Accommodation_Decision", generate_accommodation_decision)
 
         workflow.set_entry_point("Sensing_Route")
 
@@ -171,6 +183,7 @@ class LangGraphInstance:
         workflow.add_edge("meta_action_sequence", "Sensing_Route")
         workflow.add_edge("Character_Arc", "Sensing_Route")
         workflow.add_edge("Daily_Reflection", "Sensing_Route")
+        workflow.add_edge("Accommodation_Decision", "Sensing_Route")
 
         return workflow.compile()
 

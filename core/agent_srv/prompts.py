@@ -219,3 +219,54 @@ If the decision is not to offer the job:
 }}
 """
 )
+
+accommodation_decision_prompt = ChatPromptTemplate.from_template(
+    """Based on the following information, decide which accommodation the user should rent next and for how many weeks (1-12).
+# Basic Information:
+    User State:
+    {character_stats}
+    Financial Status:
+    {financial_status}
+    Current Accommodation:
+    {current_accommodation}
+    Available Accommodations:
+    {available_accommodations}
+
+    Previous failed attempts:
+    {failure_reasons}
+
+# Output Format
+    Your output should be a JSON object like:
+    {{
+        "accommodation_id": <int>,  # ID of the chosen accommodation
+        "lease_weeks": <int>,       # Number of weeks to lease (1-12)
+        "comments": "<Your comments>"
+    }}
+    For example:
+    {{
+        "accommodation_id": 8,
+        "lease_weeks": 8,
+        "comments": "I can afford a Villa now, which would improve my quality of life and help me to get respect from others."
+    {{
+
+# Key Considerations for Your Decision:
+
+    Production Efficiency:
+        Production Efficiency = Health × Hunger × Energy × Wisdom.
+        Better accommodations improve maxHealth, maxEnergy, and maxHunger, boosting overall efficiency and ComputeCoin generation.
+
+    Cost-effectiveness:
+        Investing in better accommodations can prevent costly health setbacks and reduce time spent on recovery.
+        Improved recovery rates from premium accommodations allow for sustained productivity.
+
+    Risk Management:
+        Poor accommodations increase the risk of health deterioration, leading to frequent doctor visits and downtime.
+        Ensure the user has sufficient reserves for living expenses and emergencies.
+
+    Game Progress:
+        If financially stable, prioritize accommodations that maximize efficiency and align with the ultimate goal of generating ComputeCoins.
+        For tight budgets, recommend the best option within financial constraints.
+    
+# Decision:
+    """
+)

@@ -305,6 +305,31 @@ async def get_character_data_async(userid: int) -> dict:
     return character_data
 
 
+def save_decision_to_db(userid: int, decision: dict):
+    """
+    Save the decision to the game database.
+
+    Args:
+        userid (int): The ID of the user.
+        decision (dict): The decision data to save.
+    """
+    url = f"{AGENT_BACKEND_URL}/decision/"
+    decision["characterId"] = userid
+    try:
+        response = requests.post(
+            url,
+            json=decision,
+            timeout=GAME_BACKEND_TIMEOUT,
+        )
+        response.raise_for_status()
+    except requests.Timeout:
+        logger.error(f"Timeout while saving decision to {url}")
+    except requests.HTTPError as e:
+        logger.error(f"HTTP error while saving decision to {url}: {e}")
+    except JSONDecodeError:
+        logger.error(f"Failed to decode JSON from {url}")
+
+
 async def get_initial_state_from_db(userid, websocket):
     # 获取市场数据
     market_data = get_market_data_from_db()

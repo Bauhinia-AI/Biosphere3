@@ -237,6 +237,8 @@ async def send_conversation_message(state: ConversationState, conversation: Runn
 
 
 async def start_conversation(state: ConversationState):
+    if not state["daily_task"]:
+        return state
     current_talk = state["daily_task"][0]  # waiting for check
     logger.info(f"User {state['userid']}: current conversation task is {current_talk}.")
     game_start_time = current_talk["start_time"]
@@ -873,8 +875,9 @@ def generate_talk_time(k: int, id: int):
 
     time_list = []
     sorted_numbers = []
+    d = min(5, time_slot//3)
     for kk in range(k):
-        sorted_numbers.append(random.randint(kk*time_slot+5, (kk+1)*time_slot-5)*7)
+        sorted_numbers.append(random.randint(kk*time_slot+d, (kk+1)*time_slot-d)*7)
 
     # only for test, set the first conversation to happen after 5 minutes in game time
     sorted_numbers[0] = 5

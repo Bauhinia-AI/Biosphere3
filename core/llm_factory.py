@@ -1,11 +1,13 @@
 from langchain_openai import ChatOpenAI
 from collections import defaultdict
-from typing import Dict, DefaultDict
+from typing import Dict, DefaultDict, Literal
 from dotenv import load_dotenv
 import os
 from langchain.callbacks.base import BaseCallbackHandler
 
 load_dotenv()
+
+ModelType = Literal["PLAN", "CHAT"]
 
 
 class LLMSelector:
@@ -28,14 +30,22 @@ class LLMSelector:
             cls.token_usage[model_name]["total"] += token_data.get("total_tokens", 0)
 
     @classmethod
-    def get_llm(cls, model_name: str, temperature: float = 0.7):
-        # supported models: gpt-4o, gpt-4o-mini, deepseek
+    def get_llm(
+        cls, model_name: str, model_type: ModelType = "PLAN", temperature: float = 0.7
+    ):
         callbacks = [TokenUsageHandler(model_name)]
+
+        def get_api_key(model_prefix: str) -> str:
+            if model_prefix == "gpt":
+                return os.getenv(f"OPENAI_API_KEY_{model_type}")
+            elif model_prefix == "deepseek":
+                return os.getenv(f"DEEPSEEK_API_KEY_{model_type}")
+            return ""
 
         if model_name.startswith("gpt"):
             return ChatOpenAI(
                 base_url="https://api.aiproxy.io/v1",
-                api_key=os.getenv("OPENAI_API_KEY"),
+                api_key=get_api_key("gpt"),
                 model=model_name,
                 temperature=temperature,
                 callbacks=callbacks,
@@ -43,7 +53,7 @@ class LLMSelector:
         elif model_name.startswith("deepseek"):
             return ChatOpenAI(
                 base_url="https://api.deepseek.com/v1",
-                api_key=os.getenv("DEEPSEEK_API_KEY"),
+                api_key=get_api_key("deepseek"),
                 model=model_name,
                 temperature=temperature,
                 callbacks=callbacks,

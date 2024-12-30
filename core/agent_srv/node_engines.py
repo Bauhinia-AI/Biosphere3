@@ -1,8 +1,5 @@
-import os
 import json
-from dotenv import load_dotenv
 from loguru import logger
-from langchain_openai import ChatOpenAI
 
 from core.agent_srv.node_model import (
     DailyObjective,
@@ -16,46 +13,45 @@ from core.agent_srv.node_model import (
 )
 from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
+from core.llm_factory import LLMSelector
 from core.db.database_api_utils import make_api_request_sync
 from core.db.game_api_utils import (
     make_api_request_async as make_api_request_async_backend,
     make_api_request_sync as make_api_request_sync_backend,
 )
 
-load_dotenv()
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-base_url = "https://api.aiproxy.io/v1"
+llm_selector = LLMSelector()
 
-obj_planner = obj_planner_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=1.5
+obj_planner = obj_planner_prompt | llm_selector.get_llm(
+    model_name="deepseek-chat", temperature=1.5
 ).with_structured_output(DailyObjective)
 
-meta_action_sequence_planner = meta_action_sequence_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0
+meta_action_sequence_planner = meta_action_sequence_prompt | llm_selector.get_llm(
+    model_name="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
 
-meta_seq_adjuster = meta_seq_adjuster_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0
+meta_seq_adjuster = meta_seq_adjuster_prompt | llm_selector.get_llm(
+    model_name="gpt-4o-mini", temperature=0
 ).with_structured_output(MetaActionSequence)
 
-character_arc_generator = generate_character_arc_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0.5
+character_arc_generator = generate_character_arc_prompt | llm_selector.get_llm(
+    model_name="gpt-4o-mini", temperature=0.5
 ).with_structured_output(CharacterArc)
 
-daily_reflection_generator = daily_reflection_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=1
+daily_reflection_generator = daily_reflection_prompt | llm_selector.get_llm(
+    model_name="gpt-4o-mini", temperature=1
 ).with_structured_output(Reflection)
 
-cv_generator = generate_cv_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0.7
+cv_generator = generate_cv_prompt | llm_selector.get_llm(
+    model_name="gpt-4o-mini", temperature=0.7
 ).with_structured_output(CV)
 
-mayor_decision_generator = mayor_decision_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0.5
+mayor_decision_generator = mayor_decision_prompt | llm_selector.get_llm(
+    model_name="gpt-4o-mini", temperature=0.5
 ).with_structured_output(MayorDecision)
 
-accommodation_decision_generator = accommodation_decision_prompt | ChatOpenAI(
-    base_url=base_url, model="gpt-4o-mini", temperature=0.5
+accommodation_decision_generator = accommodation_decision_prompt | llm_selector.get_llm(
+    model_name="gpt-4o-mini", temperature=0.5
 ).with_structured_output(AccommodationDecision)
 
 
@@ -197,7 +193,8 @@ async def sensing_environment(state: RunningState):
     #             )
     # except Exception as e:
     #     logger.error(f"❌ User {state['userid']}: Error sensing environment - {str(e)}")
-
+    token_usage = llm_selector.get_token_usage()
+    print(token_usage)
     return {"current_pointer": "Process_Messages"}
 
 

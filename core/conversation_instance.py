@@ -52,19 +52,25 @@ class ConversationInstance:
         websocket = self.state["websocket"]
         message_queue = self.state["message_queue"]
 
-        try:
-            await message_queue.put(data)
-            self.logger.info(
-                f"👂 User {self.user_id}: Received conversation message: {data} and put into queue"
-            )
-            self.logger.info(
-                f"🧾 User {self.user_id} conversation message queue: {self.state['message_queue']}"
-            )
-        except websockets.ConnectionClosed:
-            self.logger.error(f"User {self.user_id}: WebSocket connection closed.")
+        message_code = data.get("messageCode")
+        if not message_code:
+            self.logger.error(f"User {self.user_id}: Unknown message: {data}")
+        elif message_code < 100:
+            pass  # ignore messages for agent_instance
+        else:
+            try:
+                await message_queue.put(data)
+                self.logger.info(
+                    f"👂 User {self.user_id}: Received conversation message: {data} and put into queue"
+                )
+                self.logger.info(
+                    f"🧾 User {self.user_id} conversation message queue: {self.state['message_queue']}"
+                )
+            except websockets.ConnectionClosed:
+                self.logger.error(f"User {self.user_id}: WebSocket connection closed.")
 
-        except Exception as e:
-            self.logger.error(f"User {self.user_id}: Error in listener: {e}")
+            except Exception as e:
+                self.logger.error(f"User {self.user_id}: Error in listener: {e}")
 
     # distinguishes between agent tasks, read-only tasks, and to-agent tasks
     async def msg_processor(self):
@@ -167,10 +173,6 @@ class ConversationInstance:
                 self.logger.info(
                     f"User {self.user_id}'s new prompts are: {self.state['prompt']}"
                 )
-            elif message_code < 100:
-                pass  # ignore messages for agent_instance
-            else:
-                self.logger.error(f"User {self.user_id}: Unknown message: {message_name}")
 
     # reply task
     async def reply_message(self):
@@ -200,6 +202,14 @@ class ConversationInstance:
                     )
                     await self.graph.ainvoke(self.state, config=self.graph_config)
                     self.plan_signal = False
+                    day, hour, minute = calculate_game_time(real_time=datetime.now())
+                    time_gap = (24-hour)*60*60+(0-minute)*60+100
+                    self.logger.info(
+                        f"Next planning workflow will start in {time_gap} seconds."
+                    )
+                    await asyncio.sleep(time_gap)
+                    self.logger.info(f"🏃 User {self.user_id}: IT'S A NEW DAY!")
+                    self.plan_signal = True
                 except Exception as e:
                     self.logger.error(
                         f"User {self.user_id} Error in conversation planning and starting workflow: {e}"

@@ -70,6 +70,7 @@ async def generate_daily_reflection(state: RunningState):
 
     full_prompt = daily_reflection_prompt.format(**payload)
     logger.info("======generate_daily_reflection======\n" + full_prompt)
+    state["decision"]["daily_reflection"] = daily_reflection.reflection
 
     return {"decision": {"daily_reflection": daily_reflection.reflection}}
 
@@ -113,15 +114,7 @@ async def generate_daily_objective(state: RunningState):
             continue
     full_prompt = obj_planner_prompt.format(**payload)
     logger.info("======generate_daily_objective======\n" + full_prompt)
-    # Store daily objectives in database
-    daily_objective_data = {
-        "characterId": state["userid"],
-        "objectives": planner_response.objectives,
-    }
-    # print(daily_objective_data)
-    # await make_api_request_async_backend(
-    #     "POST", "/daily_objectives/store", data=daily_objective_data
-    # )
+    state["decision"]["daily_objective"].append(planner_response.objectives)
 
     logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
     return {"decision": {"daily_objective": [planner_response.objectives]}}
@@ -145,6 +138,7 @@ async def generate_meta_action_sequence(state: RunningState):
     meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
     full_prompt = meta_action_sequence_prompt.format(**payload)
     logger.info("======generate_meta_action_sequence======\n" + full_prompt)
+    state["decision"]["meta_seq"].append(meta_action_sequence.meta_action_sequence)
 
     await state["instance"].send_message(
         {
@@ -241,6 +235,7 @@ async def replan_action(state: RunningState):
     logger.info(
         f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}"
     )
+    state["decision"]["new_plan"].append(meta_action_sequence.meta_action_sequence)
 
     # Send new action sequence to client
     await state["instance"].send_message(
@@ -382,6 +377,7 @@ async def generate_character_arc(state: RunningState):
         **dict(character_arc),
     }
     make_api_request_sync("POST", "/character_arc/", data=character_arc_data)
+    state["decision"]["action_description"].append(dict(character_arc))
     return {"Character_Stats": {"character_arc": dict(character_arc)}}
 
 

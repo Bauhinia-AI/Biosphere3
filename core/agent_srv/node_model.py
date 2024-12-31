@@ -102,8 +102,9 @@ class MetaActionSequence(BaseModel):
     """Meta action sequence to follow in future"""
 
     meta_action_sequence: List[str] = Field(description="meta action sequence")
-    action_emoji_sequence: List = Field(description="emoji sequence that describes actions")
-    state_emoji_sequence: List = Field(description="emoji sequence that shows the agent state")
+    action_emoji_sequence: List[str] = Field(description="emoji sequence that describes actions")
+    state_emoji_sequence: List[str] = Field(description="emoji sequence that describes states")
+    description_sequence: List[str] = Field(description="description sequence")
 
 
 class CV(BaseModel):

@@ -46,11 +46,18 @@ Remind:
 4. The total number of the meta actions should not exceed {max_actions}.
 
 Output Specifications:
-1. The final format should be a list of meta actions
-2. you SHOULD NOT output other formats or other description words
+You should output three lists: a meta action sequence, an action emoji sequence and a description emoji sequence.
+1. The first output should be a list of meta actions. you SHOULD NOT output other formats or other description words
+2. The second output is a list of emoji that strictly corresponding to every meta action. 
+For each meta action, you must generate one emoji and list them in the same order as the meta action.
+3. The third output is a list of emoji that describes the agent state when they are conducting each action.
+For each meta action, you must generate one emoji and list them in the same order as the meta action.
+This emoji could be a more detailed objective of the action or the agents' emotion.
 
 Example Output:
-[meta_action1 param1, meta_action2 param2, meta_action3 param3]
+meta_action:[meta_action1 param1, meta_action2 param2, meta_action3 param3]
+action_emoji:[action_emoji1, action_emoji2, action_emoji3]
+description_emoji:[state_emoji1, state_emoji2, state_emoji3]
 """
 )
 

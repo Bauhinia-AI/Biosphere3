@@ -75,18 +75,18 @@ async def generate_daily_reflection(state: RunningState):
 
 
 async def generate_daily_objective(state: RunningState):
-    response = make_api_request_sync_backend(
-        "GET", f"/characters/getByIdS/{state['userid']}"
-    )
-    skill_list = response.get("data", {}).get("skillList", [])
-    skill_name = [skill["skillName"] for skill in skill_list]
-    try:
-        with open("core/files/skill2actions.json", "r") as f:
-            skills = json.load(f)
-    except Exception as e:
-        logger.error(f"Failed to load skill actions: {e}")
-    role_specific_actions = format_role_actions(skill_name, skills)
-    state["meta"]["tool_functions"] += role_specific_actions
+    # response = make_api_request_sync_backend(
+    #     "GET", f"/characters/getByIdS/{state['userid']}"
+    # )
+    # skill_list = response.get("data", {}).get("skillList", [])
+    # skill_name = [skill["skillName"] for skill in skill_list]
+    # try:
+    #     with open("core/files/skill2actions.json", "r") as f:
+    #         skills = json.load(f)
+    # except Exception as e:
+    #     logger.error(f"Failed to load skill actions: {e}")
+    # role_specific_actions = format_role_actions(skill_name, skills)
+    # state["meta"]["tool_functions"] += role_specific_actions
 
     retry_count = 0
     payload = {
@@ -151,7 +151,11 @@ async def generate_meta_action_sequence(state: RunningState):
             "characterId": state["userid"],
             "messageName": "actionList",
             "messageCode": 6,
-            "data": {"command": meta_action_sequence.meta_action_sequence},
+            "data": {
+                "command": meta_action_sequence.meta_action_sequence,
+                "action_emoji": meta_action_sequence.action_emoji_sequence,
+                "state_emoji": meta_action_sequence.state_emoji_sequence
+            },
         }
     )
     logger.info(

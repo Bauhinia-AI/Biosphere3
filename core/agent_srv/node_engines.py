@@ -151,7 +151,12 @@ async def generate_meta_action_sequence(state: RunningState):
             "characterId": state["userid"],
             "messageName": "actionList",
             "messageCode": 6,
-            "data": {"command": meta_action_sequence.meta_action_sequence},
+            "data": {
+                "command": meta_action_sequence.meta_action_sequence,
+                "action_emoji": meta_action_sequence.action_emoji_sequence,
+                "state_emoji": meta_action_sequence.state_emoji_sequence,
+                "description": meta_action_sequence.description_sequence
+            },
         }
     )
     logger.info(
@@ -243,7 +248,12 @@ async def replan_action(state: RunningState):
             "characterId": state["userid"],
             "messageName": "actionList",
             "messageCode": 6,
-            "data": {"command": meta_action_sequence.meta_action_sequence},
+            "data": {
+                "command": meta_action_sequence.meta_action_sequence,
+                "action_emoji": meta_action_sequence.action_emoji_sequence,
+                "state_emoji": meta_action_sequence.state_emoji_sequence,
+                "description": meta_action_sequence.description_sequence
+            },
         }
     )
 

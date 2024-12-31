@@ -14,40 +14,43 @@ from core.db.game_api_utils import make_api_request_sync as make_backend_api_req
 from datetime import datetime, timedelta
 import random
 import numpy as np
-
+from core.llm_factory import LLMSelector
 
 logger.add(
         "conversation_engines.log",
         format="{time} {level} {message}",
     )
 
-conversation_topic_planner = conversation_topic_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
+llm_selector = LLMSelector()
+
+conversation_topic_planner = conversation_topic_planner_prompt | llm_selector.get_llm(
+    model_type="CHAT", model_name="gpt-4o-mini", temperature=1.
 ).with_structured_output(ConversationTopics)
 
-conversation_planner = conversation_planner_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
+conversation_planner = conversation_planner_prompt | llm_selector.get_llm(
+    model_type="CHAT", model_name="gpt-4o-mini", temperature=1.
 ).with_structured_output(PreConversationTask)
 
-conversation_check = conversation_check_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=0
+conversation_check = conversation_check_prompt | llm_selector.get_llm(
+    model_type="CHAT", model_name="gpt-4o-mini", temperature=0
 ).with_structured_output(CheckResult)
 
-conversation_responser = conversation_responser_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1
+conversation_responser = conversation_responser_prompt | llm_selector.get_llm(
+    model_type="CHAT", model_name="gpt-4o-mini", temperature=1
 ).with_structured_output(PreResponse)
 
-impression_update = impression_update_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1
+impression_update = impression_update_prompt | llm_selector.get_llm(
+    model_type="CHAT", model_name="gpt-4o-mini", temperature=1
 ).with_structured_output(ImpressionUpdate)
 
-knowledge_generator = knowledge_generator_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1
+knowledge_generator = knowledge_generator_prompt | llm_selector.get_llm(
+    model_type="CHAT", model_name="gpt-4o-mini", temperature=1
 ).with_structured_output(Knowledge)
 
-conversation_intimacy_mark = intimacy_mark_prompt | ChatOpenAI(
-    base_url="https://api.aiproxy.io/v1", model="gpt-4o-mini", temperature=1.
+conversation_intimacy_mark = intimacy_mark_prompt | llm_selector.get_llm(
+    model_type="CHAT", model_name="gpt-4o-mini", temperature=1.
 ).with_structured_output(IntimacyMark)
+
 
 
 async def generate_daily_conversation_plan(state: ConversationState):
@@ -237,6 +240,8 @@ async def send_conversation_message(state: ConversationState, conversation: Runn
 
 
 async def start_conversation(state: ConversationState):
+    if not state["daily_task"]:
+        return state
     current_talk = state["daily_task"][0]  # waiting for check
     logger.info(f"User {state['userid']}: current conversation task is {current_talk}.")
     game_start_time = current_talk["start_time"]
@@ -873,8 +878,9 @@ def generate_talk_time(k: int, id: int):
 
     time_list = []
     sorted_numbers = []
+    d = min(5, time_slot//3)
     for kk in range(k):
-        sorted_numbers.append(random.randint(kk*time_slot+5, (kk+1)*time_slot-5)*7)
+        sorted_numbers.append(random.randint(kk*time_slot+d, (kk+1)*time_slot-d)*7)
 
     # only for test, set the first conversation to happen after 5 minutes in game time
     sorted_numbers[0] = 5

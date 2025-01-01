@@ -273,19 +273,6 @@ class GetCVRequest(BaseModel):
     election_status: Optional[str] = None
 
 
-class StoreActionRequest(BaseModel):
-    characterId: int
-    action: str
-    result: Dict
-    description: str
-
-
-class GetActionRequest(BaseModel):
-    characterId: int
-    action: str
-    k: Optional[int] = 1
-
-
 class StoreDescriptorRequest(BaseModel):
     failed_action: str
     action_id: int
@@ -541,6 +528,12 @@ class StoreCharacterArcRequest(BaseModel):
     values: Optional[str] = None
     habits: Optional[str] = None
     personality: Optional[str] = None
+
+
+class StoreActionRequest(BaseModel):
+    characterId: str
+    actionName: str
+    gameTime: str
 
 
 def retry_operation(func, retries=3, delay=2, *args, **kwargs):
@@ -1034,9 +1027,8 @@ def store_action_api(request: StoreActionRequest):
         retries=3,
         delay=2,
         characterId=request.characterId,
-        action=request.action,
-        result=request.result,
-        description=request.description,
+        actionName=request.actionName,
+        gameTime=request.gameTime,
     )
     if inserted_id:
         return success_response(
@@ -1046,20 +1038,23 @@ def store_action_api(request: StoreActionRequest):
         raise HTTPException(status_code=500, detail="Failed to store action.")
 
 
-@actions_router.get("/", response_model=StandardResponse)
-def get_action_api(characterId: int, action: str, k: int = 1):
-    actions = retry_operation(
-        domain_queries.get_action,
+@actions_router.get("/counts", response_model=StandardResponse)
+def get_action_counts_api(from_time: str, to_time: str):
+    action_counts = retry_operation(
+        domain_queries.get_action_counts_in_time_range,
         retries=3,
         delay=2,
-        characterId=characterId,
-        action=action,
-        k=k,
+        from_time=from_time,
+        to_time=to_time,
     )
-    if actions:
-        return success_response(data=actions, message="Actions retrieved successfully.")
+    if action_counts:
+        return success_response(
+            data=action_counts, message="Action counts retrieved successfully."
+        )
     else:
-        raise HTTPException(status_code=404, detail="No actions found.")
+        raise HTTPException(
+            status_code=404, detail="No actions found in the specified time range."
+        )
 
 
 descriptors_router = APIRouter(prefix="/descriptors", tags=["Descriptors"])

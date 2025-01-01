@@ -181,7 +181,7 @@ if __name__ == "__main__":
     # app.setup_database(
     #     config.agent_profile_collection_name, unique_index_fields=["characterId"]
     # )
-    # app.setup_database(config.action_collection_name)
+    app.setup_database(config.action_collection_name)
     # app.setup_database(config.impression_collection_name)
     # app.setup_database(config.descriptor_collection_name)
     # app.setup_database(config.daily_objective_collection_name)
@@ -196,7 +196,7 @@ if __name__ == "__main__":
     #     config.intimacy_collection_name, unique_index_fields=["from_id", "to_id"]
     # )
     # app.setup_database(config.knowledge_collection_name)
-    app.setup_database(config.character_arc_collection_name)
+    # app.setup_database(config.character_arc_collection_name)
     # app.setup_database(config.profile_sample_collection_name)
     # app.setup_database(
     #     config.agent_prompt_collection_name, unique_index_fields=["characterId"]

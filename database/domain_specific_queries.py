@@ -549,28 +549,52 @@ class DomainSpecificQueries:
         )
         return documents
 
-    def store_action(self, characterId, action, result, description):
+    def store_action(self, characterId, actionName, gameTime):
         document = {
             "characterId": characterId,
-            "action": action,
-            "result": result,
-            "description": description,
-            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "actionName": actionName,
+            "gameTime": gameTime,
         }
         inserted_id = self.db_utils.insert_document(
             config.action_collection_name, document
         )
         return inserted_id
 
-    def get_action(self, characterId, action, k):
-        query = {"characterId": characterId, "action": action}
-        documents = self.db_utils.find_documents(
-            collection_name=config.action_collection_name,
-            query=query,
-            limit=k,
-            sort=[("created_at", DESCENDING)],
+    def get_action_counts_in_time_range(self, from_time, to_time):
+        """
+        高效统计在 [from_time, to_time) 区间内，不同地点的出现次数。
+
+        - from_time: str，开始时间（包含）
+        - to_time:   str，结束时间（不包含）
+
+        返回:
+        - dict, 如: {"Hospital": 3, "School": 1, ...}
+        """
+        # 1) 构建聚合管道 (Pipeline)
+        pipeline = [
+            {"$match": {"gameTime": {"$gte": from_time, "$lt": to_time}}},
+            {
+                "$group": {
+                    "_id": "$actionName",  # 分组键 (原始 actionName)
+                    "count": {"$sum": 1},  # 计数
+                }
+            },
+        ]
+
+        # 2) 执行聚合查询
+        results = self.db_utils.aggregate(
+            collection_name=config.action_collection_name, pipeline=pipeline
         )
-        return documents
+
+        # 3) 整理结果为 { 地点: count }
+        action_counts = {}
+        for doc in results:
+            action_name = doc["_id"] if doc["_id"] else "Unknown"
+            # 去掉前缀 "Nav"，假设前缀长度为 3
+            location = action_name[3:] if action_name.startswith("Nav") else action_name
+            action_counts[location] = doc["count"]
+
+        return action_counts
 
     def store_descriptor(self, failed_action, action_id, characterId, reflection):
         document = {
@@ -1728,6 +1752,50 @@ class DomainSpecificQueries:
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
+
+if __name__ == "__main__":
+    db_utils = MongoDBUtils()
+    queries = DomainSpecificQueries(db_utils=db_utils)
+
+    # # 1) 插入测试数据
+    # print("插入测试数据...")
+    # sample_data = [
+    #     {"characterId": "1", "actionName": "NavHospital", "gameTime": "1:08:15"},
+    #     {"characterId": "2", "actionName": "NavSchool", "gameTime": "1:09:30"},
+    #     {"characterId": "3", "actionName": "NavPark", "gameTime": "1:10:45"},
+    #     {"characterId": "4", "actionName": "NavHospital", "gameTime": "2:08:15"},
+    #     {"characterId": "5", "actionName": "NavSchool", "gameTime": "2:09:30"},
+    #     {"characterId": "6", "actionName": "NavPark", "gameTime": "2:10:45"},
+    #     {"characterId": "7", "actionName": "NavHospital", "gameTime": "2:11:15"},
+    #     {"characterId": "8", "actionName": "NavPark", "gameTime": "3:08:15"},
+    #     {"characterId": "9", "actionName": "NavSchool", "gameTime": "3:09:30"},
+    #     {"characterId": "10", "actionName": "NavHospital", "gameTime": "3:10:45"},
+    # ]
+
+    # for record in sample_data:
+    #     inserted_id = queries.store_action(record["characterId"], record["actionName"], record["gameTime"])
+    #     print(f"插入成功: {record} -> ID: {inserted_id}")
+
+    # 2) 按天数范围测试
+    print("\n按天数范围测试 (1 <= 天数 < 3)...")
+    from_time = "1:00:00"
+    to_time = "3:00:00"
+    day_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {day_result}")
+
+    # 3) 按小时范围测试
+    print("\n按小时范围测试 (2:08:00 <= 时间 < 2:11:00)...")
+    from_time = "2:08:00"
+    to_time = "2:11:00"
+    hour_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {hour_result}")
+
+    # 4) 按分钟范围测试
+    print("\n按分钟范围测试 (2:09:00 <= 时间 < 2:09:59)...")
+    from_time = "2:09:00"
+    to_time = "2:09:59"
+    minute_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
 
     # # 存储角色信息
     # print("存储角色信息...")

@@ -264,6 +264,30 @@ class MongoDBUtils:
             )
             raise
 
+    def aggregate(self, collection_name, pipeline):
+        """
+        使用给定的 pipeline 对指定的集合执行聚合操作。
+
+        :param collection_name: 字符串，集合名称
+        :param pipeline: list，MongoDB 聚合管道 (aggregation pipeline)
+        :return: list，聚合结果列表
+        """
+        try:
+            collection = self.db[collection_name]
+            results_cursor = collection.aggregate(pipeline)
+            results = list(results_cursor)  # 将 Cursor 转为列表
+            logging.info(
+                f"Executed aggregate on '{collection_name}' with pipeline: {pipeline}. "
+                f"Retrieved {len(results)} results."
+            )
+            return results
+        except PyMongoError as e:
+            logging.error(f"Error executing aggregate on '{collection_name}': {e}")
+            raise
+        except Exception as e:
+            logging.error(f"An unexpected error occurred during aggregation: {e}")
+            raise
+
 
 if __name__ == "__main__":
     try:

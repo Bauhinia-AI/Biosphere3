@@ -68,31 +68,21 @@ validators = {
             "bsonType": "object",
             "required": [
                 "characterId",
-                "action",
-                "result",
-                "description",
-                "created_at",
+                "actionName",
+                "gameTime",
             ],
             "properties": {
                 "characterId": {
-                    "bsonType": "int",
-                    "description": "character ID，必须为整数且为必填项",
+                    "bsonType": "string",
+                    "description": "character ID，必须为字符串且为必填项",
                 },
-                "action": {
+                "actionName": {
                     "bsonType": "string",
                     "description": "当前执行的动作名称，必须为字符串且为必填项",
                 },
-                "result": {
-                    "bsonType": "object",
-                    "description": "动作执行的结果对象，可以包含任意内容",
-                },
-                "description": {
+                "gameTime": {
                     "bsonType": "string",
-                    "description": "动作执行的描述，必须为字符串且为必填项",
-                },
-                "created_at": {
-                    "bsonType": "string",
-                    "description": "创建时间,必须为字符串且为必填项",
+                    "description": "游戏时间，天:时:分，必须为字符串且为必填项",
                 },
             },
         }

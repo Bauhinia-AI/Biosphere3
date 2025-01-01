@@ -286,25 +286,6 @@ def test_cv_get():
     print(json.dumps(response, indent=4))
 
 
-def test_actions_store():
-    print("Testing Actions Store...")
-    store_action_data = {
-        "characterId": 101,
-        "action": "Patrol",
-        "result": {"success": True, "area_patrolled": "North Gate"},
-        "description": "Patrolled the North Gate successfully.",
-    }
-    response = make_api_request_sync("POST", "/actions/", data=store_action_data)
-    print(json.dumps(response, indent=4))
-
-
-def test_actions_get():
-    print("Testing Actions Get...")
-    get_action_params = {"characterId": 101, "action": "Patrol", "k": 2}
-    response = make_api_request_sync("GET", "/actions/", params=get_action_params)
-    print(json.dumps(response, indent=4))
-
-
 def test_descriptors_store():
     print("Testing Descriptors Store...")
     store_descriptor_data = {
@@ -1105,9 +1086,36 @@ def test_knowledge_graph_get():
     print(json.dumps(response, indent=4))
 
 
+def test_store_action():
+    print("Testing Store Action...")
+    store_action_data = {
+        "characterId": "101",
+        "actionName": "NavHospital",
+        "gameTime": "1:10:00",
+    }
+    response = make_api_request_sync("POST", "/actions/", data=store_action_data)
+    print(json.dumps(response, indent=4))
+
+
+def test_get_action_counts():
+    print("Testing Get Action Counts...")
+    action_counts_params = {
+        "from_time": "1:00:00",
+        "to_time": "2:00:00",
+    }
+    response = make_api_request_sync("GET", "/actions/counts", params=action_counts_params)
+    print(json.dumps(response, indent=4))
+
+
 def main():
 
-    test_knowledge_graph_get()
+    # Test actions endpoints
+    test_store_action()
+    time.sleep(1)
+    test_get_action_counts()
+    time.sleep(1)
+
+    # test_knowledge_graph_get()
 
     # test_character_arc_store()
     # time.sleep(1)  # 等待数据写入

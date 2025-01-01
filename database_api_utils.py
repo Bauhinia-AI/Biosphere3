@@ -20,7 +20,7 @@ logging.basicConfig(
 )
 
 # BASE_URL = os.getenv("API_URL")
-BASE_URL = "http://localhost:8085"
+BASE_URL = os.getenv("BASE_URL")
 
 
 # 异步函数

@@ -953,18 +953,18 @@ def test_conversation_get():
 
 
 def test_get_conversation_by_list():
-   print("Testing Get Conversation By List...")
-   get_conversation_by_list_data = {
-       "characterIds": [1, 2],
-       "time": "2023-10-01 12:00:00",
-       "k": 5,
-   }
-   response = make_api_request_sync(
-       "POST",
-       "/conversation/by_list",
-       data=get_conversation_by_list_data,
-   )
-   print(json.dumps(response, indent=4))
+    print("Testing Get Conversation By List...")
+    get_conversation_by_list_data = {
+        "characterIds": [1, 2],
+        "time": "2023-10-01 12:00:00",
+        "k": 5,
+    }
+    response = make_api_request_sync(
+        "POST",
+        "/conversation/by_list",
+        data=get_conversation_by_list_data,
+    )
+    print(json.dumps(response, indent=4))
 
 
 def test_conversation_memory_store():
@@ -1070,6 +1070,7 @@ def test_get_memory_api():
     )
     print(json.dumps(response, indent=4))
 
+
 def test_character_arc_store():
     print("Testing Character Arc Store...")
     store_character_arc_data = {
@@ -1080,21 +1081,37 @@ def test_character_arc_store():
         "habits": "Reading, Jogging",
         "personality": "Introverted",
     }
-    response = make_api_request_sync("POST", "/character_arc/", data=store_character_arc_data)
+    response = make_api_request_sync(
+        "POST", "/character_arc/", data=store_character_arc_data
+    )
     print(json.dumps(response, indent=4))
 
 
 def test_character_arc_get():
     print("Testing Character Arc Get...")
     get_character_arc_params = {"characterId": 101, "k": 3}
-    response = make_api_request_sync("GET", "/character_arc/", params=get_character_arc_params)
+    response = make_api_request_sync(
+        "GET", "/character_arc/", params=get_character_arc_params
+    )
     print(json.dumps(response, indent=4))
+
+
+def test_knowledge_graph_get():
+    print("Testing Knowledge Graph Get...")
+    character_id = 100  # 使用一个有效的characterId进行测试
+    response = make_api_request_sync(
+        "GET", f"/knowledge_graph/{character_id}", params={}
+    )
+    print(json.dumps(response, indent=4))
+
 
 def main():
 
-    test_character_arc_store()
-    time.sleep(1)  # 等待数据写入
-    test_character_arc_get()
+    test_knowledge_graph_get()
+
+    # test_character_arc_store()
+    # time.sleep(1)  # 等待数据写入
+    # test_character_arc_get()
 
     # test_get_conversation_by_list()
 

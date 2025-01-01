@@ -2037,7 +2037,9 @@ def update_work_experience_api(request: UpdateWorkExperienceRequest):
             status_code=404, detail="No work experience found to update."
         )
 
+
 character_arc_router = APIRouter(prefix="/character_arc", tags=["Character Arc"])
+
 
 @character_arc_router.post("/", response_model=StandardResponse)
 def store_character_arc_api(request: StoreCharacterArcRequest):
@@ -2059,6 +2061,7 @@ def store_character_arc_api(request: StoreCharacterArcRequest):
     else:
         raise HTTPException(status_code=500, detail="Failed to store character arc.")
 
+
 @character_arc_router.get("/", response_model=StandardResponse)
 def get_character_arc_api(characterId: int, k: Optional[int] = None):
     character_arcs = retry_operation(
@@ -2074,6 +2077,21 @@ def get_character_arc_api(characterId: int, k: Optional[int] = None):
         )
     else:
         raise HTTPException(status_code=404, detail="No character arcs found.")
+
+
+knowledge_graph_router = APIRouter(prefix="/knowledge_graph", tags=["Knowledge Graph"])
+
+
+@knowledge_graph_router.get("/{character_id}", response_model=StandardResponse)
+def get_knowledge_graph_api(character_id: int):
+    try:
+        knowledge_graph_data = domain_queries.get_knowledge_graph_data(character_id)
+        return success_response(
+            data=knowledge_graph_data,
+            message="Knowledge graph data retrieved successfully.",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 app.include_router(vector_search_router)
@@ -2099,6 +2117,7 @@ app.include_router(conversation_router)
 app.include_router(conversation_memory_router)
 app.include_router(work_experience_router)
 app.include_router(character_arc_router)
+app.include_router(knowledge_graph_router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8085)

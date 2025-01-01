@@ -13,6 +13,7 @@ from database.mongo_utils import MongoDBUtils
 import random
 import bisect
 import time
+import json
 
 
 class DomainSpecificQueries:
@@ -180,6 +181,162 @@ class DomainSpecificQueries:
             collection_name=config.intimacy_collection_name, query=query
         )
         return documents
+
+    def get_knowledge_graph_data(self, character_id):
+        """
+        一次性查询出与 character_id 直接或间接相关的 intimacy 文档，
+        并将其整理成与图片所示更贴近的 JSON 格式（包含 sexType 等）。
+        """
+
+        # 1) 查找与 character_id 直接相关的文档
+        direct_query = {
+            "$or": [
+                {"from_id": character_id},
+                {"to_id": character_id},
+            ]
+        }
+        direct_docs = self.db_utils.find_documents(
+            collection_name=config.intimacy_collection_name, query=direct_query
+        )
+
+        # 收集所有相关角色ID
+        related_ids = set()
+        for doc in direct_docs:
+            related_ids.add(doc["from_id"])
+            related_ids.add(doc["to_id"])
+
+        # 若无任何直接关联，返回空图
+        if not related_ids:
+            empty_result = {"rootId": f"N{character_id}", "nodes": [], "lines": []}
+            return json.dumps(empty_result, ensure_ascii=False, indent=4)
+
+        # 2) 再查 from_id、to_id 均在 related_ids 里的文档
+        related_query = {
+            "from_id": {"$in": list(related_ids)},
+            "to_id": {"$in": list(related_ids)},
+        }
+        intimacy_docs = self.db_utils.find_documents(
+            collection_name=config.intimacy_collection_name, query=related_query
+        )
+
+        # 3) 收集所有角色ID，批量获取角色信息
+        all_ids = set()
+        for doc in intimacy_docs:
+            all_ids.add(doc["from_id"])
+            all_ids.add(doc["to_id"])
+
+        # 批量查角色信息，减少数据库调用
+        character_query = {"characterId": {"$in": list(all_ids)}}
+        character_docs = self.db_utils.find_documents(
+            collection_name=config.agent_profile_collection_name, query=character_query
+        )
+        # 用字典缓存
+        char_map = {doc["characterId"]: doc for doc in character_docs}
+
+        # 4) 组织节点 (nodes)
+        nodes = []
+        for cid in sorted(all_ids):
+            char_doc = char_map.get(cid, {})
+
+            # 角色名
+            text_value = char_doc.get("characterName", f"Character_{cid}")
+            # 头像 spriteId（这里直接返回 spriteId，也可根据你需求构造完整URL）
+            icon_value = str(char_doc.get("spriteId", "0"))
+
+            # 性别
+            gender_value = char_doc.get("gender", "")
+            if not gender_value:
+                gender_value = "未知"
+
+            # 这里可以给节点按性别设置不同颜色，也可统一
+            if gender_value == "Female":
+                node_color = "#ec6941"
+                node_border = "#ff875e"
+            elif gender_value == "Male":
+                node_color = "rgba(0,206,253,1)"  # 示例
+                node_border = "#6ec0f0"  # 示例
+            else:
+                # 未知性别时的默认颜色
+                node_color = "#cccccc"
+                node_border = "#999999"
+
+            node_data = {
+                "id": f"N{cid}",
+                "text": text_value,
+                "color": node_color,
+                "borderColor": node_border,
+                "data": {
+                    # sexType 对应 gender, 不存在则为 "未知"
+                    "sexType": gender_value
+                },
+                "icon": icon_value,
+            }
+            nodes.append(node_data)
+
+        # 5) 组织连线 (lines)
+        lines = []
+        for doc in intimacy_docs:
+            from_id = doc["from_id"]
+            to_id = doc["to_id"]
+            relationship = doc.get("relationship", "")
+            intimacy_level = doc.get("intimacy_level", 0)
+
+            # 三段渐变：0 -> #00C2FF, 50 -> #FFFFFF, 100 -> #F06E25
+            line_color = self._intimacy_level_to_color(intimacy_level)
+
+            line_data = {
+                "from": f"N{from_id}",
+                "to": f"N{to_id}",
+                "text": relationship,
+                "color": line_color,
+                "fontColor": line_color,
+                "data": {"type": relationship},
+            }
+            lines.append(line_data)
+
+        # 6) 最终结果
+        knowledge_graph = {"rootId": f"N{character_id}", "nodes": nodes, "lines": lines}
+
+        # 返回 JSON 字符串
+        return json.dumps(knowledge_graph, ensure_ascii=False, indent=4)
+
+    def _intimacy_level_to_color(self, level: int) -> str:
+        """
+        将 0~100 的亲密度映射到三段渐变：
+         - 0   -> #00C2FF (蓝)
+         - 50  -> #FFFFFF (白)
+         - 100 -> #F06E25 (橙红)
+        """
+        level = max(0, min(level, 100))
+
+        if level == 0:
+            return "#00C2FF"
+        if level == 50:
+            return "#FFFFFF"
+        if level == 100:
+            return "#F06E25"
+
+        # 0~50: 从 #00C2FF -> #FFFFFF
+        # 50~100: 从 #FFFFFF -> #F06E25
+        if level < 50:
+            start_hex, end_hex = "#00C2FF", "#FFFFFF"
+            ratio = level / 50.0
+        else:
+            start_hex, end_hex = "#FFFFFF", "#F06E25"
+            ratio = (level - 50) / 50.0
+
+        r1, g1, b1 = self._hex_to_rgb(start_hex)
+        r2, g2, b2 = self._hex_to_rgb(end_hex)
+        r = int(r1 + ratio * (r2 - r1))
+        g = int(g1 + ratio * (g2 - g1))
+        b = int(b1 + ratio * (b2 - b1))
+
+        return f"#{r:02X}{g:02X}{b:02X}"
+
+    def _hex_to_rgb(self, hex_str: str) -> tuple:
+        """#RRGGBB -> (R, G, B)"""
+        hex_str = hex_str.lstrip("#")
+        return tuple(int(hex_str[i : i + 2], 16) for i in (0, 2, 4))
 
     def update_intimacy(self, from_id, to_id, new_intimacy_level=None):
         if new_intimacy_level is None:
@@ -1572,30 +1729,66 @@ if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 测试 store_character_arc 方法
-    print("存储 character_arc...")
-    characterId = 1
-    belief = "Believe in teamwork"
-    mood = "Happy"
-    values = "Honesty, Integrity"
-    habits = "Reading, Jogging"
-    personality = "Introverted"
-    
-    inserted_id = queries.store_character_arc(
-        characterId=characterId,
-        belief=belief,
-        mood=mood,
-        values=values,
-        habits=habits,
-        personality=personality
-    )
-    print(f"插入成功，文档 ID：{inserted_id}")
+    # # 存储角色信息
+    # print("存储角色信息...")
+    # characters = [
+    #     {"characterId": 100, "characterName": "Jack", "gender": "Male"},
+    #     {"characterId": 200, "characterName": "Bella", "gender": "Female"},
+    #     {"characterId": 300, "characterName": "Mark", "gender": "Male"},
+    #     {"characterId": 400, "characterName": "Jelly", "gender": "Female"},
+    # ]
 
-    # 测试 get_character_arc 方法
-    print("\n获取 character_arc...")
-    k = 3  # 获取最新的3个文档
-    character_arcs = queries.get_character_arc(characterId=characterId, k=k)
-    print(f"获取的 character_arc 文档：{character_arcs}")
+    # for char in characters:
+    #     inserted_id = queries.store_character(
+    #         characterId=char["characterId"],
+    #         characterName=char["characterName"],
+    #         gender=char["gender"]
+    #     )
+    #     print(f"插入成功，角色 ID：{inserted_id}")
+
+    # 测试 get_k
+
+    # # 插入数据：亲密度为 50，relationship 由系统自动计算
+    # print("插入数据...")
+    # inserted_id_1_2 = queries.store_intimacy(100, 200, intimacy_level=50)
+    # print(f"插入成功，文档 ID：{inserted_id_1_2}")
+
+    # # 再插入一些测试数据，方便观察关联结果
+    # inserted_id_1_3 = queries.store_intimacy(100, 300, intimacy_level=60)
+    # inserted_id_2_3 = queries.store_intimacy(200, 300, intimacy_level=70)
+    # inserted_id_2_4 = queries.store_intimacy(200, 400, intimacy_level=40)
+    # print("插入了额外测试数据：", inserted_id_1_3, inserted_id_2_3, inserted_id_2_4)
+
+    # # 测试 get_knowledge_graph_data 方法
+    # print("测试 get_knowledge_graph_data 方法...")
+    # character_id = 100  # 替换为你想测试的角色ID
+    # knowledge_graph_data = queries.get_knowledge_graph_data(character_id)
+    # print("知识图谱数据：", knowledge_graph_data)
+
+    # # 测试 store_character_arc 方法
+    # print("存储 character_arc...")
+    # characterId = 1
+    # belief = "Believe in teamwork"
+    # mood = "Happy"
+    # values = "Honesty, Integrity"
+    # habits = "Reading, Jogging"
+    # personality = "Introverted"
+
+    # inserted_id = queries.store_character_arc(
+    #     characterId=characterId,
+    #     belief=belief,
+    #     mood=mood,
+    #     values=values,
+    #     habits=habits,
+    #     personality=personality,
+    # )
+    # print(f"插入成功，文档 ID：{inserted_id}")
+
+    # # 测试 get_character_arc 方法
+    # print("\n获取 character_arc...")
+    # k = 3  # 获取最新的3个文档
+    # character_arcs = queries.get_character_arc(characterId=characterId, k=k)
+    # print(f"获取的 character_arc 文档：{character_arcs}")
 
     # # 测试 get_conversation_by_list 方法
     # print("测试 get_conversation_by_list 方法...")

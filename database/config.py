@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # MongoDB Configuration
-db_name = "bio3agent"
+db_name = "bio3agent_live"
 # db_name = "biosphere3_test"
 cv_collection_name = "cv"
 agent_profile_collection_name = "agent_profile"

@@ -532,7 +532,7 @@ class StoreCharacterArcRequest(BaseModel):
 
 class StoreActionRequest(BaseModel):
     characterId: str
-    actionName: str
+    location: str
     gameTime: str
 
 
@@ -1027,7 +1027,7 @@ def store_action_api(request: StoreActionRequest):
         retries=3,
         delay=2,
         characterId=request.characterId,
-        actionName=request.actionName,
+        location=request.location,
         gameTime=request.gameTime,
     )
     if inserted_id:

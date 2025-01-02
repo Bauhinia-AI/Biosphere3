@@ -68,7 +68,7 @@ validators = {
             "bsonType": "object",
             "required": [
                 "characterId",
-                "actionName",
+                "location",
                 "gameTime",
             ],
             "properties": {
@@ -76,9 +76,9 @@ validators = {
                     "bsonType": "string",
                     "description": "character ID，必须为字符串且为必填项",
                 },
-                "actionName": {
+                "location": {
                     "bsonType": "string",
-                    "description": "当前执行的动作名称，必须为字符串且为必填项",
+                    "description": "当前所处的地点，必须为字符串且为必填项",
                 },
                 "gameTime": {
                     "bsonType": "string",

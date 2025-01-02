@@ -1090,7 +1090,7 @@ def test_store_action():
     print("Testing Store Action...")
     store_action_data = {
         "characterId": "101",
-        "actionName": "NavHospital",
+        "location": "Hospital",
         "gameTime": "1:10:00",
     }
     response = make_api_request_sync("POST", "/actions/", data=store_action_data)
@@ -1117,7 +1117,7 @@ def test_get_weekly_action_counts():
 
 def main():
 
-    # test_get_weekly_action_counts()
+    test_get_weekly_action_counts()
 
     # # Test actions endpoints
     # test_store_action()
@@ -1125,7 +1125,7 @@ def main():
     # test_get_action_counts()
     # time.sleep(1)
 
-    test_knowledge_graph_get()
+    # test_knowledge_graph_get()
 
     # test_character_arc_store()
     # time.sleep(1)  # 等待数据写入

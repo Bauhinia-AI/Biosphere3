@@ -1524,7 +1524,7 @@ def store_agent_prompt_api(request: AgentPromptRequest):
         characterId=request.characterId,
     )
     # 检查 existing_prompt 是否存在 "is_store" 项
-    if existing_prompt and existing_prompt.get("is_store"):
+    if existing_prompt and existing_prompt[0].get("is_store"):
         return JSONResponse(
             status_code=200,
             content={
@@ -1625,7 +1625,7 @@ def store_conversation_prompt_api(request: StoreConversationPromptRequest):
         characterId=request.characterId,
     )
     # 检查 existing_prompt 是否存在 "is_store" 项
-    if existing_prompt and existing_prompt.get("is_store"):
+    if existing_prompt and existing_prompt[0].get("is_store"):
         return JSONResponse(
             status_code=200,
             content={
@@ -1908,7 +1908,7 @@ def store_conversation_memory_api(request: StoreConversationMemoryRequest):
         day=request.day,
     )
     # 检查 existing_memory 是否存在 "is_store" 项
-    if existing_memory and existing_memory.get("is_store"):
+    if existing_memory and existing_memory[0].get("is_store"):
         return JSONResponse(
             status_code=200,
             content={

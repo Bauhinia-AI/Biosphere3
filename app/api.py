@@ -1523,7 +1523,8 @@ def store_agent_prompt_api(request: AgentPromptRequest):
         delay=2,
         characterId=request.characterId,
     )
-    if existing_prompt:
+    # 检查 existing_prompt 是否存在 "is_store" 项
+    if existing_prompt and existing_prompt.get("is_store"):
         return JSONResponse(
             status_code=200,
             content={
@@ -1623,7 +1624,8 @@ def store_conversation_prompt_api(request: StoreConversationPromptRequest):
         delay=2,
         characterId=request.characterId,
     )
-    if existing_prompt:
+    # 检查 existing_prompt 是否存在 "is_store" 项
+    if existing_prompt and existing_prompt.get("is_store"):
         return JSONResponse(
             status_code=200,
             content={
@@ -1898,6 +1900,24 @@ conversation_memory_router = APIRouter(
 
 @conversation_memory_router.post("/", response_model=StandardResponse)
 def store_conversation_memory_api(request: StoreConversationMemoryRequest):
+    existing_memory = retry_operation(
+        domain_queries.get_conversation_memory,
+        retries=3,
+        delay=2,
+        characterId=request.characterId,
+        day=request.day,
+    )
+    # 检查 existing_memory 是否存在 "is_store" 项
+    if existing_memory and existing_memory.get("is_store"):
+        return JSONResponse(
+            status_code=200,
+            content={
+                "code": 2,
+                "message": f"Conversation memory for characterId {request.characterId} on day {request.day} already exists.",
+                "data": None,
+            },
+        )
+
     inserted_id = retry_operation(
         domain_queries.store_conversation_memory,
         retries=3,

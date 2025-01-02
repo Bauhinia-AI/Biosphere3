@@ -1305,6 +1305,7 @@ class DomainSpecificQueries:
                     "reflection_ar": "",
                     "level_of_detail": "Shallow",
                     "tone_and_style": "Gentle",
+                    "is_store": False,
                 }
             ]
 
@@ -1447,6 +1448,7 @@ class DomainSpecificQueries:
                     "emotion": "You are happy.",
                     "personality": "Introversion",
                     "habits_and_preferences": "",
+                    "is_store": False,
                 }
             ]
         # 添加固定内容到每个文档
@@ -1750,6 +1752,7 @@ class DomainSpecificQueries:
                     "topic_plan": [],
                     "time_list": [],
                     "started": [],
+                    "is_store": False,
                 }
             ]
 

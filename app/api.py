@@ -1057,6 +1057,21 @@ def get_action_counts_api(from_time: str, to_time: str):
         )
 
 
+@actions_router.get("/weekly_counts", response_model=StandardResponse)
+def get_weekly_action_counts():
+    try:
+        action_counts = domain_queries.get_action_counts_in_a_week()
+        if action_counts:
+            return success_response(
+                data=action_counts,
+                message="Weekly action counts retrieved successfully.",
+            )
+        else:
+            raise HTTPException(status_code=404, detail="No action counts found.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 descriptors_router = APIRouter(prefix="/descriptors", tags=["Descriptors"])
 
 

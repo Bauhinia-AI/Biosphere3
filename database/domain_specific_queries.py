@@ -298,7 +298,7 @@ class DomainSpecificQueries:
         knowledge_graph = {"rootId": f"N{character_id}", "nodes": nodes, "lines": lines}
 
         # 返回 JSON 字符串
-        return json.dumps(knowledge_graph, ensure_ascii=False, indent=4)
+        return knowledge_graph
 
     def _intimacy_level_to_color(self, level: int) -> str:
         """
@@ -560,41 +560,227 @@ class DomainSpecificQueries:
         )
         return inserted_id
 
+
     def get_action_counts_in_time_range(self, from_time, to_time):
         """
         高效统计在 [from_time, to_time) 区间内，不同地点的出现次数。
-
-        - from_time: str，开始时间（包含）
-        - to_time:   str，结束时间（不包含）
+        固定地点列表为:
+        school, workshop, home, farm, mall, square,
+        hospital, fruit, harvest, fishing, mine, orchard
 
         返回:
-        - dict, 如: {"Hospital": 3, "School": 1, ...}
+        - dict, 如: {
+            "school": 2,
+            "workshop": 0,
+            "home": 1,
+            ...,
+        }
         """
-        # 1) 构建聚合管道 (Pipeline)
-        pipeline = [
-            {"$match": {"gameTime": {"$gte": from_time, "$lt": to_time}}},
-            {
-                "$group": {
-                    "_id": "$actionName",  # 分组键 (原始 actionName)
-                    "count": {"$sum": 1},  # 计数
-                }
-            },
+        # 1) 固定地点列表
+        ALL_LOCATIONS = [
+            "school", "workshop", "home", "farm", "mall", "square",
+            "hospital", "fruit", "harvest", "fishing", "mine", "orchard"
         ]
 
-        # 2) 执行聚合查询
-        results = self.db_utils.aggregate(
-            collection_name=config.action_collection_name, pipeline=pipeline
-        )
+        # 2) 构建聚合管道 (Pipeline)
+        pipeline = [
+            {
+                "$match": {
+                    "gameTime": {
+                        "$gte": from_time,
+                        "$lt":  to_time
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id":   "$actionName",  # 分组键 (原始 actionName, 例: "NavHospital")
+                    "count": {"$sum": 1}
+                }
+            }
+        ]
 
-        # 3) 整理结果为 { 地点: count }
+        # 3) 执行聚合查询 (减少网络传输，提高效率)
+        results = self.db_utils.aggregate(
+            collection_name=config.action_collection_name,
+            pipeline=pipeline
+        )
+        
+        # 4) 将查询到的结果转为字典 { 地点: 数量 }
+        #    去掉 "Nav" 前缀，若结果不在 ALL_LOCATIONS 中则视为其他未知地点
         action_counts = {}
         for doc in results:
-            action_name = doc["_id"] if doc["_id"] else "Unknown"
-            # 去掉前缀 "Nav"，假设前缀长度为 3
-            location = action_name[3:] if action_name.startswith("Nav") else action_name
+            original_name = doc["_id"] if doc["_id"] else "Unknown"
+            # 去掉前缀 "Nav"（如有），得到真实地点，如 "Hospital"、"School"
+            location = original_name[3:].lower() if original_name.startswith("Nav") else original_name.lower()
+
             action_counts[location] = doc["count"]
 
-        return action_counts
+        # 5) 构建最终输出: 确保所有地点都在输出中
+        #    没在统计结果中的地点默认 0
+        final_counts = {}
+        for loc in ALL_LOCATIONS:
+            final_counts[loc] = action_counts.get(loc, 0)
+
+        return final_counts
+
+
+    def get_action_counts_in_a_week(self):
+        """
+        统计最近 7 天的各地点人数：
+        - 如果数据库中天数少于 7 天，则从第 1 天补全至 7 天，空缺天数数据为 0；
+        - 如果天数多于或等于 7 天，则统计最近 7 天；
+
+        返回:
+        {
+        "xAxis": [...7天的天数...],
+        "series": [
+            { "name": 地点, "data": [7天统计值] },
+            ...
+        ]
+        }
+        """
+
+        # ============ 1) 找到数据库中最大天数 maxDay ============
+        pipeline_max_day = [
+            {
+                "$addFields": {
+                    "dayInt": {
+                        "$toInt": {
+                            "$arrayElemAt": [
+                                { "$split": ["$gameTime", ":"] },
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": None,
+                    "maxDay": { "$max": "$dayInt" }
+                }
+            }
+        ]
+
+        max_day_result = list(
+            self.db_utils.aggregate(
+                collection_name=config.action_collection_name,
+                pipeline=pipeline_max_day
+            )
+        )
+
+        if not max_day_result or max_day_result[0].get("maxDay") is None:
+            # 如果库里没有任何文档 or 没有可解析的 dayInt，直接返回全为 0 的 7 天数据
+            return {
+                "xAxis": [str(d) for d in range(1, 8)],
+                "series": [
+                    {"name": loc, "data": [0] * 7}
+                    for loc in [
+                        "school", "workshop", "home", "farm", "mall", "square",
+                        "hospital", "fruit", "harvest", "fishing", "mine", "orchard"
+                    ]
+                ]
+            }
+
+        max_day = max_day_result[0]["maxDay"]
+
+        # 确定统计的时间范围：如果 maxDay < 7，则从第 1 天补齐到 7 天
+        if max_day < 7:
+            start_day = 1
+            end_day = 7
+        else:
+            start_day = max_day - 6
+            end_day = max_day
+
+        # ============ 2) 聚合查询，统计每个地点在 [start_day..end_day] 范围内的每日数量 ============
+        pipeline_actions = [
+            {
+                "$addFields": {
+                    "dayInt": {
+                        "$toInt": {
+                            "$arrayElemAt": [
+                                { "$split": ["$gameTime", ":"] },
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+            {
+                "$match": {
+                    "dayInt": { 
+                        "$gte": start_day, 
+                        "$lte": end_day
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "day":       "$dayInt",
+                        "actionName": "$actionName"
+                    },
+                    "count": { "$sum": 1 }
+                }
+            }
+        ]
+
+        agg_results = list(
+            self.db_utils.aggregate(
+                collection_name=config.action_collection_name,
+                pipeline=pipeline_actions
+            )
+        )
+
+        # ============ 3) 构建 {day: {location: count}} 的数据结构 ============
+        ALL_LOCATIONS = [
+            "school", "workshop", "home", "farm", "mall", "square",
+            "hospital", "fruit", "harvest", "fishing", "mine", "orchard"
+        ]
+
+        # day_location_map 形如: { dayInt: { location: count, ... }, ... }
+        day_location_map = {}
+        for d in range(1, 8):  # 确保从第 1 天到第 7 天都初始化
+            day_location_map[d] = {loc: 0 for loc in ALL_LOCATIONS}
+
+        for doc in agg_results:
+            day_int = doc["_id"]["day"]
+            action_name_raw = doc["_id"]["actionName"] or "Unknown"
+            count = doc["count"]
+
+            # 去掉 "Nav" 前缀，并转小写
+            if action_name_raw.startswith("Nav"):
+                location = action_name_raw[3:].lower()
+            else:
+                location = action_name_raw.lower()
+
+            # 如果 location 不在 ALL_LOCATIONS，忽略
+            if location in day_location_map[day_int]:
+                day_location_map[day_int][location] += count
+
+        # ============ 4) 构建返回的 xAxis 和 series ============
+        # xAxis: 确保输出连续 7 天的天数
+        xAxis = [str(d) for d in range(1, 8)]
+
+        # series: [{"name": 地点, "data": [每天数据]}]
+        series = []
+        for location in ALL_LOCATIONS:
+            data = [
+                day_location_map[day].get(location, 0)
+                for day in range(1, 8)
+            ]
+            series.append({
+                "name": location,
+                "data": data
+            })
+
+        # ============ 5) 返回结果 ============
+        return {
+            "xAxis": xAxis,
+            "series": series
+        }
+
 
     def store_descriptor(self, failed_action, action_id, characterId, reflection):
         document = {
@@ -1756,6 +1942,8 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
+    
+    print(queries.get_action_counts_in_a_week())
 
     # # 1) 插入测试数据
     # print("插入测试数据...")
@@ -1776,26 +1964,26 @@ if __name__ == "__main__":
     #     inserted_id = queries.store_action(record["characterId"], record["actionName"], record["gameTime"])
     #     print(f"插入成功: {record} -> ID: {inserted_id}")
 
-    # 2) 按天数范围测试
-    print("\n按天数范围测试 (1 <= 天数 < 3)...")
-    from_time = "1:00:00"
-    to_time = "3:00:00"
-    day_result = queries.get_action_counts_in_time_range(from_time, to_time)
-    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {day_result}")
+    # # 2) 按天数范围测试
+    # print("\n按天数范围测试 (1 <= 天数 < 3)...")
+    # from_time = "1:00:00"
+    # to_time = "3:00:00"
+    # day_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {day_result}")
 
-    # 3) 按小时范围测试
-    print("\n按小时范围测试 (2:08:00 <= 时间 < 2:11:00)...")
-    from_time = "2:08:00"
-    to_time = "2:11:00"
-    hour_result = queries.get_action_counts_in_time_range(from_time, to_time)
-    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {hour_result}")
+    # # 3) 按小时范围测试
+    # print("\n按小时范围测试 (2:08:00 <= 时间 < 2:11:00)...")
+    # from_time = "2:08:00"
+    # to_time = "2:11:00"
+    # hour_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {hour_result}")
 
-    # 4) 按分钟范围测试
-    print("\n按分钟范围测试 (2:09:00 <= 时间 < 2:09:59)...")
-    from_time = "2:09:00"
-    to_time = "2:09:59"
-    minute_result = queries.get_action_counts_in_time_range(from_time, to_time)
-    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
+    # # 4) 按分钟范围测试
+    # print("\n按分钟范围测试 (2:09:00 <= 时间 < 2:09:59)...")
+    # from_time = "2:09:00"
+    # to_time = "2:09:59"
+    # minute_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
 
     # # 存储角色信息
     # print("存储角色信息...")

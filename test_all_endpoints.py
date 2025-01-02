@@ -1103,19 +1103,29 @@ def test_get_action_counts():
         "from_time": "1:00:00",
         "to_time": "2:00:00",
     }
-    response = make_api_request_sync("GET", "/actions/counts", params=action_counts_params)
+    response = make_api_request_sync(
+        "GET", "/actions/counts", params=action_counts_params
+    )
+    print(json.dumps(response, indent=4))
+
+
+def test_get_weekly_action_counts():
+    print("Testing Get Weekly Action Counts...")
+    response = make_api_request_sync("GET", "/actions/weekly_counts", params={})
     print(json.dumps(response, indent=4))
 
 
 def main():
 
-    # Test actions endpoints
-    test_store_action()
-    time.sleep(1)
-    test_get_action_counts()
-    time.sleep(1)
+    # test_get_weekly_action_counts()
 
-    # test_knowledge_graph_get()
+    # # Test actions endpoints
+    # test_store_action()
+    # time.sleep(1)
+    # test_get_action_counts()
+    # time.sleep(1)
+
+    test_knowledge_graph_get()
 
     # test_character_arc_store()
     # time.sleep(1)  # 等待数据写入

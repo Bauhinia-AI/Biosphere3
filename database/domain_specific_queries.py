@@ -270,9 +270,9 @@ class DomainSpecificQueries:
                 "borderColor": node_border,
                 "data": {
                     # sexType 对应 gender, 不存在则为 "未知"
-                    "sexType": gender_value
+                    "sexType": gender_value,
+                    "icon": icon_value,
                 },
-                "icon": icon_value,
             }
             nodes.append(node_data)
 
@@ -1962,7 +1962,7 @@ if __name__ == "__main__":
     # minute_result = queries.get_action_counts_in_time_range(from_time, to_time)
     # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
 
-    # # 获取最近7天的统计数据
+    # # 获取所有统计数据
     # print(queries.get_all_action_counts())
 
     # # 存储角色信息
@@ -1984,25 +1984,25 @@ if __name__ == "__main__":
 
     # 测试 get_k
 
-    # 插入数据：亲密度为 50，relationship 由系统自动计算
-    print("插入数据...")
-    inserted_id_1_2 = queries.store_intimacy(1, 2, intimacy_level=50)
-    print(f"插入成功，文档 ID：{inserted_id_1_2}")
+    # # 插入数据：亲密度为 50，relationship 由系统自动计算
+    # print("插入数据...")
+    # inserted_id_1_2 = queries.store_intimacy(1, 2, intimacy_level=50)
+    # print(f"插入成功，文档 ID：{inserted_id_1_2}")
 
-    queries.store_intimacy(2, 1, intimacy_level=10)
+    # queries.store_intimacy(2, 1, intimacy_level=10)
 
-    # 再插入一些测试数据，方便观察关联结果
-    inserted_id_1_3 = queries.store_intimacy(1, 3, intimacy_level=60)
-    inserted_id_2_3 = queries.store_intimacy(2, 3, intimacy_level=70)
-    queries.store_intimacy(3, 2, intimacy_level=20)
-    inserted_id_2_4 = queries.store_intimacy(2, 4, intimacy_level=40)
-    print("插入了额外测试数据")
+    # # 再插入一些测试数据，方便观察关联结果
+    # inserted_id_1_3 = queries.store_intimacy(1, 3, intimacy_level=60)
+    # inserted_id_2_3 = queries.store_intimacy(2, 3, intimacy_level=70)
+    # queries.store_intimacy(3, 2, intimacy_level=20)
+    # inserted_id_2_4 = queries.store_intimacy(2, 4, intimacy_level=40)
+    # print("插入了额外测试数据")
 
-    # 测试 get_knowledge_graph_data 方法
-    print("测试 get_knowledge_graph_data 方法...")
-    character_id = 1  # 替换为你想测试的角色ID
-    knowledge_graph_data = queries.get_knowledge_graph_data(character_id)
-    print("知识图谱数据：", knowledge_graph_data)
+    # # 测试 get_knowledge_graph_data 方法
+    # print("测试 get_knowledge_graph_data 方法...")
+    # character_id = 1  # 替换为你想测试的角色ID
+    # knowledge_graph_data = queries.get_knowledge_graph_data(character_id)
+    # print("知识图谱数据：", knowledge_graph_data)
 
     # # 测试 store_character_arc 方法
     # print("存储 character_arc...")

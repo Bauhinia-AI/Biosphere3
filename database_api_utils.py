@@ -23,7 +23,6 @@ logging.basicConfig(
 BASE_URL = os.getenv("BASE_URL")
 
 
-# 异步函数
 async def make_api_request_async(
     method: str,
     endpoint: str,
@@ -33,7 +32,8 @@ async def make_api_request_async(
     url = f"{BASE_URL}{endpoint}"
     method = method.upper()
 
-    async with httpx.AsyncClient() as client:
+    # 增加超时设置
+    async with httpx.AsyncClient(timeout=60.0) as client:  # 设置超时时间为60秒
         try:
             if method == "GET":
                 response = await client.get(url, params=params)
@@ -50,7 +50,6 @@ async def make_api_request_async(
             )
 
 
-# 同步函数
 def make_api_request_sync(
     method: str,
     endpoint: str,
@@ -60,8 +59,9 @@ def make_api_request_sync(
     url = f"{BASE_URL}{endpoint}"
     method = method.upper()
 
+    # 增加超时设置
     try:
-        with httpx.Client() as client:
+        with httpx.Client(timeout=60.0) as client:  # 设置超时时间为60秒
             if method == "GET":
                 response = client.get(url, params=params)
             else:

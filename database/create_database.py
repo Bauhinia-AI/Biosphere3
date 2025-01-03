@@ -178,10 +178,11 @@ if __name__ == "__main__":
 
     # # Setup collections
     # app.setup_database(config.cv_collection_name)
-    # app.setup_database(
-    #     config.agent_profile_collection_name, unique_index_fields=["characterId"]
-    # )
-    app.setup_database(config.action_collection_name)
+    app.setup_database(
+        config.agent_profile_collection_name,
+        unique_index_fields=["characterId", "characterName"],
+    )
+    # app.setup_database(config.action_collection_name)
     # app.setup_database(config.impression_collection_name)
     # app.setup_database(config.conversation_collection_name)
     # app.setup_database(
@@ -193,12 +194,12 @@ if __name__ == "__main__":
     # app.setup_database(config.knowledge_collection_name)
     # app.setup_database(config.character_arc_collection_name)
     # app.setup_database(config.profile_sample_collection_name)
-    # app.setup_database(
-    #     config.agent_prompt_collection_name, unique_index_fields=["characterId"]
-    # )
-    # app.setup_database(
-    #     config.conversation_prompt_collection_name, unique_index_fields=["characterId"]
-    # )
+    app.setup_database(
+        config.agent_prompt_collection_name, unique_index_fields=["characterId"]
+    )
+    app.setup_database(
+        config.conversation_prompt_collection_name, unique_index_fields=["characterId"]
+    )
     # app.setup_database(config.decision_collection_name)
     # app.setup_database(config.current_pointer_collection_name)
     # app.setup_database(config.conversation_memory_collection_name)

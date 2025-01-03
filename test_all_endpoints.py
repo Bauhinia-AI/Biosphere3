@@ -423,6 +423,13 @@ def test_characters_get():
     print(json.dumps(response, indent=4))
 
 
+def test_characters_get_k():
+    print("Testing Characters Get...")
+    get_character_params = {"k": 10}
+    response = make_api_request_sync("GET", "/characters/", params=get_character_params)
+    print(json.dumps(response, indent=4))
+
+
 def test_characters_rag():
     print("Testing Characters RAG...")
     get_character_rag_params = {"characterId": 102, "topic": "Archery", "k": 2}
@@ -1161,11 +1168,13 @@ async def test_store_conversation_prompts():
 
 def main():
 
+    test_characters_get_k()
+
     # asyncio.run(test_store_agent_profiles())
     # asyncio.run(test_store_agent_prompts())
     # asyncio.run(test_store_conversation_prompts())
 
-    test_get_all_action_counts()
+    # test_get_all_action_counts()
 
     # # Test actions endpoints
     # test_store_action()

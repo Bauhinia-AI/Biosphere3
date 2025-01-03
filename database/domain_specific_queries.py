@@ -994,7 +994,7 @@ class DomainSpecificQueries:
         )
         return inserted_id
 
-    def get_character(self, characterId=None):
+    def get_character(self, characterId=None, k=None):
         query = {}
         if characterId is not None:
             query["characterId"] = characterId
@@ -1003,6 +1003,11 @@ class DomainSpecificQueries:
             collection_name=config.agent_profile_collection_name,
             query=query,
         )
+
+        # 如果k不为None，则限制返回的文档数量
+        if k is not None:
+            documents = documents[:k]
+
         return documents
 
     def get_character_RAG(self, characterId, topic, k):

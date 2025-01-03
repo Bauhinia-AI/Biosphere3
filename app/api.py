@@ -1408,12 +1408,13 @@ def store_character_api(request: StorecharacterRequest):
 
 
 @characters_router.get("/", response_model=StandardResponse)
-def get_character_api(characterId: Optional[int] = None):
+def get_character_api(characterId: Optional[int] = None, k: Optional[int] = None):
     characters = retry_operation(
         domain_queries.get_character,
         retries=3,
         delay=2,
         characterId=characterId,
+        k=k,  # 传递参数k
     )
     if characters:
         return success_response(

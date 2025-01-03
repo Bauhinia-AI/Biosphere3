@@ -1130,12 +1130,14 @@ async def test_store_agent_profiles():
 
 
 async def store_agent_prompt(prompt):
-    response = await make_api_request_async("POST", "/agent_prompt", data=prompt)
+    response = await make_api_request_async("POST", "/agent_prompt/", data=prompt)
     print(json.dumps(response, indent=4))
 
 
 async def store_conversation_prompt(prompt):
-    response = await make_api_request_async("POST", "/conversation_prompt", data=prompt)
+    response = await make_api_request_async(
+        "POST", "/conversation_prompt/", data=prompt
+    )
     print(json.dumps(response, indent=4))
 
 
@@ -1159,8 +1161,8 @@ async def test_store_conversation_prompts():
 
 def main():
 
-    asyncio.run(test_store_agent_profiles())
-    asyncio.run(test_store_agent_prompts())
+    # asyncio.run(test_store_agent_profiles())
+    # asyncio.run(test_store_agent_prompts())
     asyncio.run(test_store_conversation_prompts())
 
     # test_get_weekly_action_counts()

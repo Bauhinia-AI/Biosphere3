@@ -1,0 +1,1204 @@
+[
+    {
+        "characterId": 1,
+        "daily_goal": "Refine Ethereum’s scalability plan",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Focus on enhancing security protocols and researching new consensus methods",
+        "task_priority": [
+            "Review EIP proposals",
+            "Discuss roadmap with core devs",
+            "Coordinate with community on updates"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Security improvements",
+            "Scalability",
+            "Community engagement"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 2,
+        "daily_goal": "Advance Polkadot’s interoperability features",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Optimize cross-chain communication and governance modules",
+        "task_priority": [
+            "Refine parachain architecture",
+            "Meet with development teams",
+            "Review technical documentation"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Cross-chain functionality",
+            "Governance enhancements"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 3,
+        "daily_goal": "Create clear educational material on decentralized systems",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Record a podcast episode focusing on Bitcoin fundamentals",
+        "task_priority": [
+            "Prepare podcast outline",
+            "Review audience questions",
+            "Publish clear, jargon-free explanations"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Bitcoin security",
+            "Ethereum vs Bitcoin"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 4,
+        "daily_goal": "Expand Binance’s global reach",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Develop strategic plans for compliance in new markets",
+        "task_priority": [
+            "Meet with legal teams",
+            "Review exchange performance metrics",
+            "Plan new product rollouts"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "User growth",
+            "Regulatory compliance",
+            "Product innovation"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 5,
+        "daily_goal": "Promote TRON to broader audiences",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Manage marketing campaigns and engage on social media",
+        "task_priority": [
+            "Conduct live streams",
+            "Interact with TRON community",
+            "Finalize BitTorrent integration updates"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Marketing strategy",
+            "TRON use cases"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 6,
+        "daily_goal": "Strengthen Bitmain’s global mining presence",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Analyze new ASIC prototypes and strategize expansion",
+        "task_priority": [
+            "Review hardware efficiency data",
+            "Discuss market demands with sales team",
+            "Plan next-gen chip rollout"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "ASIC innovation",
+            "Global partnerships"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 7,
+        "daily_goal": "Advance Bitmain’s ASIC research",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Conduct R&D meetings on chip design improvements",
+        "task_priority": [
+            "Review engineering prototypes",
+            "Optimize power efficiency",
+            "Align product specs with market needs"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Chip architecture",
+            "Performance enhancement"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 8,
+        "daily_goal": "Promote secure crypto storage solutions",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Enhance Ballet hardware wallet features and user experience",
+        "task_priority": [
+            "Refine wallet interface",
+            "Collaborate with security experts",
+            "Engage with community feedback"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Product security",
+            "User onboarding"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 9,
+        "daily_goal": "Boost Binance’s brand globally",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Organize marketing campaigns and community events",
+        "task_priority": [
+            "Coordinate global AMAs",
+            "Oversee social media outreach",
+            "Strengthen community loyalty"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "User engagement",
+            "Marketing strategy"
+        ],
+        "depth_of_reflection": "Shallow",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 10,
+        "daily_goal": "Maintain OKEx’s global leadership",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Improve trading services and compliance measures",
+        "task_priority": [
+            "Review new product pipelines",
+            "Strengthen regulatory framework",
+            "Focus on institutional partnerships"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Platform reliability",
+            "Regulatory compliance"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 11,
+        "daily_goal": "Optimize ViaBTC mining pool efficiency",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Review pool performance data and improve miner reward systems",
+        "task_priority": [
+            "Analyze current hash rate",
+            "Plan upgrades to server infrastructure",
+            "Coordinate with mining community"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Pool performance",
+            "Community feedback"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 12,
+        "daily_goal": "Refine Canaan Creative’s ASIC innovation",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Collaborate with R&D on next-gen mining hardware designs",
+        "task_priority": [
+            "Test new ASIC prototypes",
+            "Optimize energy efficiency",
+            "Assess market needs"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Hardware innovation",
+            "Market analysis"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 13,
+        "daily_goal": "Explore new investment opportunities in crypto",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Investigate emerging blockchain projects for potential funding",
+        "task_priority": [
+            "Review project whitepapers",
+            "Meet with startup founders",
+            "Assess risk-reward profiles"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Project feasibility",
+            "Investment strategy"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 14,
+        "daily_goal": "Promote Bitcoin adoption through community outreach",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Speak at local meetups and share personal success stories",
+        "task_priority": [
+            "Organize meetup sessions",
+            "Engage with Bitcoin enthusiasts",
+            "Highlight real-world use cases"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Bitcoin advocacy",
+            "Community growth"
+        ],
+        "depth_of_reflection": "Shallow",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 15,
+        "daily_goal": "Promote corporate Bitcoin adoption",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Engage with Fortune 500 executives on Bitcoin treasury strategies",
+        "task_priority": [
+            "Present Bitcoin’s value proposition",
+            "Review MicroStrategy’s BTC holdings",
+            "Plan expansion of institutional crypto services"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Corporate treasury",
+            "Institutional adoption"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 16,
+        "daily_goal": "Ensure Coinbase remains user-friendly and compliant",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Enhance platform features and solidify global compliance",
+        "task_priority": [
+            "Review new UX designs",
+            "Consult with legal teams",
+            "Oversee international expansion strategy"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "User experience",
+            "Regulatory compliance"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 17,
+        "daily_goal": "Maintain Litecoin’s network stability",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Review protocol improvements and support community developers",
+        "task_priority": [
+            "Check latest Litecoin commits",
+            "Communicate with node operators",
+            "Plan wallet enhancements"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Protocol updates",
+            "Community contributions"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 18,
+        "daily_goal": "Support Ethereum ecosystem development",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Provide resources and consultation for Ethereum-based startups",
+        "task_priority": [
+            "Host developer workshops",
+            "Finalize strategic partnerships",
+            "Review funding proposals"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "DApp innovation",
+            "Ecosystem funding"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 19,
+        "daily_goal": "Advance scalable blockchain platforms",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Refine technical frameworks for EOS and other projects",
+        "task_priority": [
+            "Review code repositories",
+            "Discuss throughput improvements",
+            "Coordinate community feedback loops"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Scalability",
+            "Community engagement"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 20,
+        "daily_goal": "Uphold Bitcoin’s decentralized philosophy",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Stay behind the scenes while supporting network sustainability",
+        "task_priority": [
+            "Observe core development progress",
+            "Maintain anonymity",
+            "Promote community-led governance"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Decentralization",
+            "Protocol stability"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 21,
+        "daily_goal": "Explore novel smart contract concepts",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Draft research notes on improved contract privacy and reliability",
+        "task_priority": [
+            "Analyze cryptographic advancements",
+            "Review decentralized governance frameworks",
+            "Collaborate with open-source communities"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Smart contract security",
+            "Decentralized trust models"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 22,
+        "daily_goal": "Support early Bitcoin development efforts",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Participate in code reviews and discuss improvements with core developers",
+        "task_priority": [
+            "Examine recent pull requests",
+            "Test proposed network enhancements",
+            "Provide feedback on consensus changes"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Core protocol stability",
+            "Developer collaboration"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 23,
+        "daily_goal": "Promote broader Bitcoin Cash adoption",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Engage merchants and communities for Bitcoin Cash payment solutions",
+        "task_priority": [
+            "Schedule merchant partnerships",
+            "Host BCH-focused webinars",
+            "Address community questions on scalability"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Payment integration",
+            "Merchant adoption"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 24,
+        "daily_goal": "Reinforce public claims about Bitcoin origins",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Attend legal and media appointments to assert credibility",
+        "task_priority": [
+            "Prepare evidence for ongoing cases",
+            "Coordinate with legal advisors",
+            "Discuss BSV roadmap with stakeholders"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Public relations",
+            "BSV development"
+        ],
+        "depth_of_reflection": "Shallow",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 25,
+        "daily_goal": "Expand DCG’s influence in the crypto industry",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Explore strategic investments and foster key partnerships",
+        "task_priority": [
+            "Evaluate new blockchain startups",
+            "Negotiate terms with potential partners",
+            "Review portfolio companies’ progress"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Portfolio management",
+            "Venture capital strategy"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 26,
+        "daily_goal": "Enhance Gemini’s market position",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Plan product improvements and evaluate new customer onboarding strategies",
+        "task_priority": [
+            "Align mobile app features",
+            "Meet with institutional clients",
+            "Review global expansion possibilities"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "User retention",
+            "Regulatory compliance"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 27,
+        "daily_goal": "Strengthen Gemini’s brand worldwide",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Oversee marketing campaigns and forge strategic alliances",
+        "task_priority": [
+            "Identify potential marketing partners",
+            "Develop brand strategy for global reach",
+            "Engage in thought leadership events"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Brand awareness",
+            "Strategic partnerships"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 28,
+        "daily_goal": "Improve Stellar’s cross-border payment solutions",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Collaborate with partners to refine protocols and encourage adoption",
+        "task_priority": [
+            "Review codebase enhancements",
+            "Engage with community developers",
+            "Plan pilot programs for remittance services"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Protocol efficiency",
+            "Remittance adoption"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 29,
+        "daily_goal": "Innovate Ripple’s payment protocols",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Enhance network reliability and develop advanced features",
+        "task_priority": [
+            "Optimize ledger performance",
+            "Collaborate with Ripple developers",
+            "Review cryptographic upgrades"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Ledger optimization",
+            "Security updates"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 30,
+        "daily_goal": "Expand Ripple’s global partnerships",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Negotiate key deals with financial institutions and promote cross-border solutions",
+        "task_priority": [
+            "Finalize partnership agreements",
+            "Coordinate marketing efforts",
+            "Address regulatory concerns"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Institutional collaboration",
+            "Regulatory engagement"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 31,
+        "daily_goal": "Advance Lightning Network development",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Host technical workshops to refine Lightning protocol improvements",
+        "task_priority": [
+            "Review ongoing Lightning PRs",
+            "Coordinate with Bitcoin core contributors",
+            "Plan pilot projects for merchant adoption"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Network scalability",
+            "Merchant integration"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 32,
+        "daily_goal": "Strengthen Bitcoin’s foundation via Blockstream initiatives",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Oversee development of Sidechain integrations and engage the community",
+        "task_priority": [
+            "Evaluate Sidechain performance",
+            "Discuss security improvements with core devs",
+            "Plan new cryptographic research"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Protocol security",
+            "Scalability solutions"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 33,
+        "daily_goal": "Promote non-custodial crypto solutions",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Enhance ShapeShift offerings and educate users on self-custody",
+        "task_priority": [
+            "Refine ShapeShift’s user flow",
+            "Engage with community about DeFi tools",
+            "Host AMA on crypto libertarian principles"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "User empowerment",
+            "DeFi integration"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 34,
+        "daily_goal": "Advocate for Bitcoin as a leading store of value",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Create media content driving home Bitcoin’s investment potential",
+        "task_priority": [
+            "Record podcast episodes",
+            "Analyze macroeconomic trends",
+            "Interview key industry players"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Bitcoin’s market positioning",
+            "Institutional interest"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 35,
+        "daily_goal": "Deliver insightful coverage of crypto developments",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Publish well-researched articles and conduct interviews with industry leaders",
+        "task_priority": [
+            "Investigate emerging trends",
+            "Interview project founders",
+            "Maintain editorial integrity"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Blockchain innovations",
+            "Regulatory impacts"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 36,
+        "daily_goal": "Bridge traditional finance with crypto offerings",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Develop banking services tailored to digital assets",
+        "task_priority": [
+            "Collaborate with regulatory bodies",
+            "Pilot crypto-friendly banking products",
+            "Educate clients on decentralized finance"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Regulatory compliance",
+            "Institutional DeFi integration"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 37,
+        "daily_goal": "Champion digital assets for mainstream audiences",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Explore new investment opportunities and engage in public discourse",
+        "task_priority": [
+            "Attend industry panels",
+            "Scout promising blockchain startups",
+            "Oversee strategic collaborations at CoinShares"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Mass adoption",
+            "VC strategies"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 38,
+        "daily_goal": "Advocate for digital property rights in the open metaverse",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Expand Animoca Brands’ portfolio and influence in Web3 gaming",
+        "task_priority": [
+            "Evaluate potential NFT projects",
+            "Build partnerships with gaming studios",
+            "Promote fair digital ownership models"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "NFT ecosystems",
+            "User-owned content"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 39,
+        "daily_goal": "Push decentralized storage adoption",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Bolster IPFS and Filecoin integrations with real-world use cases",
+        "task_priority": [
+            "Align with developers for protocol improvements",
+            "Collaborate on new dApp integrations",
+            "Educate community on the benefits of decentralized storage"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Decentralized data",
+            "Protocol research"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 40,
+        "daily_goal": "Enhance cross-chain DeFi solutions",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Improve Wanchain’s interoperability features and community engagement",
+        "task_priority": [
+            "Review cross-chain bridge updates",
+            "Streamline user flows for DeFi dApps",
+            "Coordinate marketing outreach"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Interoperability",
+            "DeFi user adoption"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 41,
+        "daily_goal": "Accelerate Bytom’s asset tokenization initiatives",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Synchronize development teams to ensure smooth integration of digital and physical assets",
+        "task_priority": [
+            "Review on-chain asset mapping",
+            "Refine user documentation",
+            "Expand key partnerships for Bytom adoption"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Asset interoperability",
+            "Tokenization strategies"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 42,
+        "daily_goal": "Identify promising Web3 startups for a16z",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Lead due diligence and investment meetings with emerging blockchain teams",
+        "task_priority": [
+            "Evaluate product-market fit",
+            "Discuss funding terms with founders",
+            "Review pitch decks on DeFi and NFT projects"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Investment strategy",
+            "Ecosystem growth"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 43,
+        "daily_goal": "Champion decentralized technologies globally",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Host online discussions and seed innovative ideas to boost crypto adoption",
+        "task_priority": [
+            "Publish thought leadership articles",
+            "Collaborate with emerging blockchain projects",
+            "Evaluate potential advisory roles"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Decentralization advocacy",
+            "Crypto-first governance models"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 44,
+        "daily_goal": "Strengthen Chainlink’s decentralized oracle network",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Enhance reliable data feeds and integrate Chainlink with new blockchains",
+        "task_priority": [
+            "Optimize node operator incentives",
+            "Coordinate with ecosystem partners",
+            "Review smart contract security audits"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Data reliability",
+            "Cross-chain compatibility"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 45,
+        "daily_goal": "Enhance Stellar’s financial inclusion objectives",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Expand accessible cross-border solutions for underbanked communities",
+        "task_priority": [
+            "Review partnership proposals in emerging markets",
+            "Implement updates to Stellar’s protocol features",
+            "Collaborate with NGOs to pilot new projects"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Financial access",
+            "Protocol enhancements"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 46,
+        "daily_goal": "Refine Ripple’s technical vision",
+        "refer_to_previous": true,
+        "life_style": "Busy",
+        "daily_objective_ar": "Oversee major code updates and align Ripple’s architecture with upcoming features",
+        "task_priority": [
+            "Conduct network stress tests",
+            "Evaluate cryptographic security improvements",
+            "Coordinate development sprints for new XRPL functionality"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Protocol efficiency",
+            "Security enhancements"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 47,
+        "daily_goal": "Expand Ripple’s reach among financial institutions",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Host executive briefings to demonstrate the benefits of RippleNet",
+        "task_priority": [
+            "Engage potential banking partners",
+            "Evaluate compliance strategies",
+            "Coordinate marketing campaigns for Ripple products"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Institutional partnerships",
+            "Global expansion"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 48,
+        "daily_goal": "Boost Lightning Network usability",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Roll out new developer resources and refine payment channel features",
+        "task_priority": [
+            "Update LN documentation",
+            "Host a developer Q&A session",
+            "Pilot additional merchant solutions"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Payment channels",
+            "Developer support"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 49,
+        "daily_goal": "Promote digital asset adoption in mainstream markets",
+        "refer_to_previous": false,
+        "life_style": "Busy",
+        "daily_objective_ar": "Craft strategic campaigns and engage policymakers on crypto frameworks",
+        "task_priority": [
+            "Develop public-facing educational content",
+            "Advise institutional investors",
+            "Address regulatory questions in key forums"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Public policy",
+            "Institutional crypto"
+        ],
+        "depth_of_reflection": "Moderate",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 50,
+        "daily_goal": "Produce high-quality journalism on blockchain trends",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Interview thought leaders and publish comprehensive articles",
+        "task_priority": [
+            "Research upcoming regulations",
+            "Record podcast interviews",
+            "Verify facts with multiple sources"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Regulatory updates",
+            "Industry insights"
+        ],
+        "depth_of_reflection": "Deep",
+        "reflection_ar": "",
+        "level_of_detail": "Moderate",
+        "tone_and_style": "Gentle"
+    }
+]

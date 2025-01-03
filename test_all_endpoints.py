@@ -1,7 +1,7 @@
 # test_all_endpoints.py
 
 import asyncio
-from database_api_utils import make_api_request_sync
+from database_api_utils import make_api_request_sync, make_api_request_async
 import json
 import time
 
@@ -1115,7 +1115,53 @@ def test_get_weekly_action_counts():
     print(json.dumps(response, indent=4))
 
 
+async def store_agent_profile(profile):
+    response = await make_api_request_async("POST", "/characters/", data=profile)
+    print(json.dumps(response, indent=4))
+
+
+async def test_store_agent_profiles():
+    print("Testing Store Agent Profiles...")
+    with open("data/AGENT_PROFILE.json", "r", encoding="utf-8") as file:
+        agent_profiles = json.load(file)
+
+    tasks = [store_agent_profile(profile) for profile in agent_profiles]
+    await asyncio.gather(*tasks)
+
+
+async def store_agent_prompt(prompt):
+    response = await make_api_request_async("POST", "/agent_prompt", data=prompt)
+    print(json.dumps(response, indent=4))
+
+
+async def store_conversation_prompt(prompt):
+    response = await make_api_request_async("POST", "/conversation_prompt", data=prompt)
+    print(json.dumps(response, indent=4))
+
+
+async def test_store_agent_prompts():
+    print("Testing Store Agent Prompts...")
+    with open("data/AGENT_PROMPT.json", "r", encoding="utf-8") as file:
+        agent_prompts = json.load(file)
+
+    tasks = [store_agent_prompt(prompt) for prompt in agent_prompts]
+    await asyncio.gather(*tasks)
+
+
+async def test_store_conversation_prompts():
+    print("Testing Store Conversation Prompts...")
+    with open("data/CONVERSATION_PROMPT.json", "r", encoding="utf-8") as file:
+        conversation_prompts = json.load(file)
+
+    tasks = [store_conversation_prompt(prompt) for prompt in conversation_prompts]
+    await asyncio.gather(*tasks)
+
+
 def main():
+
+    asyncio.run(test_store_agent_profiles())
+    asyncio.run(test_store_agent_prompts())
+    asyncio.run(test_store_conversation_prompts())
 
     # test_get_weekly_action_counts()
 

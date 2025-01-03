@@ -1913,47 +1913,47 @@ if __name__ == "__main__":
     db_utils = MongoDBUtils()
     queries = DomainSpecificQueries(db_utils=db_utils)
 
-    # 插入测试数据
-    print("插入测试数据...")
-    sample_data = [
-        {"characterId": "1", "location": "hospital", "gameTime": "1:08:15"},
-        {"characterId": "2", "location": "school", "gameTime": "1:09:30"},
-        {"characterId": "3", "location": "park", "gameTime": "1:10:45"},
-        {"characterId": "4", "location": "hospital", "gameTime": "2:08:15"},
-        {"characterId": "5", "location": "school", "gameTime": "2:09:30"},
-        {"characterId": "6", "location": "park", "gameTime": "2:10:45"},
-        {"characterId": "7", "location": "hospital", "gameTime": "2:11:15"},
-        {"characterId": "8", "location": "park", "gameTime": "3:08:15"},
-        {"characterId": "9", "location": "school", "gameTime": "3:09:30"},
-        {"characterId": "10", "location": "hospital", "gameTime": "3:10:45"},
-    ]
+    # # 插入测试数据
+    # print("插入测试数据...")
+    # sample_data = [
+    #     {"characterId": "1", "location": "hospital", "gameTime": "1:08:15"},
+    #     {"characterId": "2", "location": "school", "gameTime": "1:09:30"},
+    #     {"characterId": "3", "location": "park", "gameTime": "1:10:45"},
+    #     {"characterId": "4", "location": "hospital", "gameTime": "2:08:15"},
+    #     {"characterId": "5", "location": "school", "gameTime": "2:09:30"},
+    #     {"characterId": "6", "location": "park", "gameTime": "2:10:45"},
+    #     {"characterId": "7", "location": "hospital", "gameTime": "2:11:15"},
+    #     {"characterId": "8", "location": "park", "gameTime": "3:08:15"},
+    #     {"characterId": "9", "location": "school", "gameTime": "3:09:30"},
+    #     {"characterId": "10", "location": "hospital", "gameTime": "3:10:45"},
+    # ]
 
-    for record in sample_data:
-        inserted_id = queries.store_action(
-            record["characterId"], record["location"], record["gameTime"]
-        )
-        print(f"插入成功: {record} -> ID: {inserted_id}")
+    # for record in sample_data:
+    #     inserted_id = queries.store_action(
+    #         record["characterId"], record["location"], record["gameTime"]
+    #     )
+    #     print(f"插入成功: {record} -> ID: {inserted_id}")
 
-    # 按天数范围测试
-    print("\n按天数范围测试 (1 <= 天数 < 3)...")
-    from_time = "1:00:00"
-    to_time = "3:00:00"
-    day_result = queries.get_action_counts_in_time_range(from_time, to_time)
-    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {day_result}")
+    # # 按天数范围测试
+    # print("\n按天数范围测试 (1 <= 天数 < 3)...")
+    # from_time = "1:00:00"
+    # to_time = "3:00:00"
+    # day_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {day_result}")
 
-    # 按小时范围测试
-    print("\n按小时范围测试 (2:08:00 <= 时间 < 2:11:00)...")
-    from_time = "2:08:00"
-    to_time = "2:11:00"
-    hour_result = queries.get_action_counts_in_time_range(from_time, to_time)
-    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {hour_result}")
+    # # 按小时范围测试
+    # print("\n按小时范围测试 (2:08:00 <= 时间 < 2:11:00)...")
+    # from_time = "2:08:00"
+    # to_time = "2:11:00"
+    # hour_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {hour_result}")
 
-    # 按分钟范围测试
-    print("\n按分钟范围测试 (2:09:00 <= 时间 < 2:09:59)...")
-    from_time = "2:09:00"
-    to_time = "2:09:59"
-    minute_result = queries.get_action_counts_in_time_range(from_time, to_time)
-    print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
+    # # 按分钟范围测试
+    # print("\n按分钟范围测试 (2:09:00 <= 时间 < 2:09:59)...")
+    # from_time = "2:09:00"
+    # to_time = "2:09:59"
+    # minute_result = queries.get_action_counts_in_time_range(from_time, to_time)
+    # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
 
     # 获取最近7天的统计数据
     print(queries.get_action_counts_in_a_week())

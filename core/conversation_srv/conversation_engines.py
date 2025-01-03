@@ -52,7 +52,6 @@ conversation_intimacy_mark = intimacy_mark_prompt | llm_selector.get_llm(
 ).with_structured_output(IntimacyMark)
 
 
-
 async def generate_daily_conversation_plan(state: ConversationState):
     # process the remaining read-only conversations from the previous day
     if len(state["ongoing_task"]) != 0:
@@ -64,7 +63,10 @@ async def generate_daily_conversation_plan(state: ConversationState):
     userid = state["userid"]
     character_data = {"characterId": userid}
     profile = make_api_request_sync("GET", "/characters/", params=character_data)
-    state["character_stats"] = profile["data"][0]
+    if not profile["data"]:
+        state["character_stats"] = {}
+    else:
+        state["character_stats"] = profile["data"][0]
     logger.info(f"User {state['userid']}: {profile['message']}")
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
 
@@ -261,7 +263,10 @@ async def start_conversation(state: ConversationState):
     userid = state["userid"]
     character_data = {"characterId": userid}
     profile = make_api_request_sync("GET", "/characters/", params=character_data)
-    state["character_stats"] = profile["data"][0]
+    if not profile["data"]:
+        state["character_stats"] = {}
+    else:
+        state["character_stats"] = profile["data"][0]
     logger.info(f"User {state['userid']}: {profile['message']}")
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
 
@@ -462,7 +467,10 @@ async def generate_response(state: ConversationState):
     userid = state["userid"]
     character_data = {"characterId": userid}
     profile = make_api_request_sync("GET", "/characters/", params=character_data)
-    state["character_stats"] = profile["data"][0]
+    if not profile["data"]:
+        state["character_stats"] = {}
+    else:
+        state["character_stats"] = profile["data"][0]
     logger.info(f"User {state['userid']}: {profile['message']}")
     logger.info(f"User {state['userid']} current state is: {state['character_stats']}")
 
@@ -699,7 +707,10 @@ def initialize_conversation_state(userid, websocket) -> ConversationState:
     # get profile
     character_data = {"characterId": userid}
     profile = make_api_request_sync("GET", "/characters/", params=character_data)
-    character_stats = profile["data"][0]
+    if not profile["data"]:
+        character_stats = {}
+    else:
+        character_stats = profile["data"][0]
     logger.info(f"User {userid}: {profile['message']}")
     logger.info(f"User {userid} current state is: {character_stats}")
 

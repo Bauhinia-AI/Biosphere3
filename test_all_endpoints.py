@@ -592,14 +592,14 @@ def test_sample_get_specific():
 
 
 def test_agent_prompt_store():
-    print("Testing Agent Prompt Store...")
-    # Ensure that agent prompt does not already exist to avoid duplicate error
-    # Delete if exists
-    delete_agent_prompt_data = {"characterId": 101}
-    try:
-        make_api_request_sync("DELETE", "/agent_prompt/", data=delete_agent_prompt_data)
-    except Exception:
-        pass  # If it doesn't exist, ignore
+    # print("Testing Agent Prompt Store...")
+    # # Ensure that agent prompt does not already exist to avoid duplicate error
+    # # Delete if exists
+    # delete_agent_prompt_data = {"characterId": 101}
+    # try:
+    #     make_api_request_sync("DELETE", "/agent_prompt/", data=delete_agent_prompt_data)
+    # except Exception:
+    #     pass  # If it doesn't exist, ignore
 
     store_agent_prompt_data = {
         "characterId": 101,
@@ -1117,7 +1117,7 @@ def test_get_weekly_action_counts():
 
 def main():
 
-    test_get_weekly_action_counts()
+    # test_get_weekly_action_counts()
 
     # # Test actions endpoints
     # test_store_action()
@@ -1310,8 +1310,8 @@ def main():
     # test_sample_get_specific()
     # time.sleep(1)
 
-    # # Agent Prompt
-    # test_agent_prompt_store()
+    # Agent Prompt
+    test_agent_prompt_store()
     # time.sleep(1)
     # test_agent_prompt_get()
     # time.sleep(1)

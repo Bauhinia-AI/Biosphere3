@@ -1059,22 +1059,22 @@
     },
     {
         "characterId": 45,
-        "daily_goal": "Enhance Stellar’s financial inclusion objectives",
+        "daily_goal": "Rebuild trust in the crypto ecosystem",
         "refer_to_previous": false,
-        "life_style": "Moderate",
-        "daily_objective_ar": "Expand accessible cross-border solutions for underbanked communities",
+        "life_style": "Busy",
+        "daily_objective_ar": "Implement new compliance protocols and address concerns from the community and regulators",
         "task_priority": [
-            "Review partnership proposals in emerging markets",
-            "Implement updates to Stellar’s protocol features",
-            "Collaborate with NGOs to pilot new projects"
+            "Review legal obligations",
+            "Host internal team meetings on risk management",
+            "Outline transparent communication strategies"
         ],
         "max_actions": 10,
         "meta_seq_ar": "",
         "replan_time_limit": 1,
         "meta_seq_adjuster_ar": "",
         "focus_topic": [
-            "Financial access",
-            "Protocol enhancements"
+            "Regulatory compliance",
+            "Community trust"
         ],
         "depth_of_reflection": "Deep",
         "reflection_ar": "",
@@ -1083,22 +1083,22 @@
     },
     {
         "characterId": 46,
-        "daily_goal": "Refine Ripple’s technical vision",
-        "refer_to_previous": true,
+        "daily_goal": "Revitalize algorithmic stablecoin concepts",
+        "refer_to_previous": false,
         "life_style": "Busy",
-        "daily_objective_ar": "Oversee major code updates and align Ripple’s architecture with upcoming features",
+        "daily_objective_ar": "Refine protocol mechanisms to ensure greater stability and transparency",
         "task_priority": [
-            "Conduct network stress tests",
-            "Evaluate cryptographic security improvements",
-            "Coordinate development sprints for new XRPL functionality"
+            "Analyze prior failures for risk mitigation",
+            "Collaborate with developers on enhanced tokenomics",
+            "Reassure stakeholders with clear updates"
         ],
         "max_actions": 10,
         "meta_seq_ar": "",
         "replan_time_limit": 1,
         "meta_seq_adjuster_ar": "",
         "focus_topic": [
-            "Protocol efficiency",
-            "Security enhancements"
+            "Protocol stability",
+            "Investor relations"
         ],
         "depth_of_reflection": "Moderate",
         "reflection_ar": "",
@@ -1107,22 +1107,46 @@
     },
     {
         "characterId": 47,
-        "daily_goal": "Expand Ripple’s reach among financial institutions",
-        "refer_to_previous": false,
-        "life_style": "Busy",
-        "daily_objective_ar": "Host executive briefings to demonstrate the benefits of RippleNet",
+        "daily_goal": "Keep Dogecoin fun and community-driven",
+        "refer_to_previous": true,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Engage with Dogecoin community on social media and propose lighthearted improvements",
         "task_priority": [
-            "Engage potential banking partners",
-            "Evaluate compliance strategies",
-            "Coordinate marketing campaigns for Ripple products"
+            "Review community pull requests",
+            "Brainstorm meme-inspired campaigns",
+            "Highlight open-source contributions"
         ],
         "max_actions": 10,
         "meta_seq_ar": "",
         "replan_time_limit": 1,
         "meta_seq_adjuster_ar": "",
         "focus_topic": [
-            "Institutional partnerships",
-            "Global expansion"
+            "Open-source collaboration",
+            "Friendly user experience"
+        ],
+        "depth_of_reflection": "Shallow",
+        "reflection_ar": "",
+        "level_of_detail": "Shallow",
+        "tone_and_style": "Gentle"
+    },
+    {
+        "characterId": 48,
+        "daily_goal": "Critique and educate around crypto risks",
+        "refer_to_previous": false,
+        "life_style": "Moderate",
+        "daily_objective_ar": "Deliver honest commentary on crypto trends and misconceptions",
+        "task_priority": [
+            "Respond to community questions with critical insights",
+            "Evaluate new meme coins for potential pitfalls",
+            "Publish personal reflections on Dogecoin’s cultural impact"
+        ],
+        "max_actions": 10,
+        "meta_seq_ar": "",
+        "replan_time_limit": 1,
+        "meta_seq_adjuster_ar": "",
+        "focus_topic": [
+            "Skeptical analysis",
+            "Market misconceptions"
         ],
         "depth_of_reflection": "Deep",
         "reflection_ar": "",
@@ -1130,73 +1154,49 @@
         "tone_and_style": "Gentle"
     },
     {
-        "characterId": 48,
-        "daily_goal": "Boost Lightning Network usability",
-        "refer_to_previous": true,
-        "life_style": "Moderate",
-        "daily_objective_ar": "Roll out new developer resources and refine payment channel features",
-        "task_priority": [
-            "Update LN documentation",
-            "Host a developer Q&A session",
-            "Pilot additional merchant solutions"
-        ],
-        "max_actions": 10,
-        "meta_seq_ar": "",
-        "replan_time_limit": 1,
-        "meta_seq_adjuster_ar": "",
-        "focus_topic": [
-            "Payment channels",
-            "Developer support"
-        ],
-        "depth_of_reflection": "Moderate",
-        "reflection_ar": "",
-        "level_of_detail": "Shallow",
-        "tone_and_style": "Gentle"
-    },
-    {
         "characterId": 49,
-        "daily_goal": "Promote digital asset adoption in mainstream markets",
-        "refer_to_previous": false,
+        "daily_goal": "Reassess market strategies post-liquidation",
+        "refer_to_previous": true,
         "life_style": "Busy",
-        "daily_objective_ar": "Craft strategic campaigns and engage policymakers on crypto frameworks",
+        "daily_objective_ar": "Explore new trading approaches and reconnect with potential investors",
         "task_priority": [
-            "Develop public-facing educational content",
-            "Advise institutional investors",
-            "Address regulatory questions in key forums"
+            "Evaluate DeFi protocols for strategic partnerships",
+            "Rebuild brand image via open communication",
+            "Host discussions on leveraged trading risks"
         ],
         "max_actions": 10,
         "meta_seq_ar": "",
         "replan_time_limit": 1,
         "meta_seq_adjuster_ar": "",
         "focus_topic": [
-            "Public policy",
-            "Institutional crypto"
+            "Risk management",
+            "Investor engagement"
         ],
-        "depth_of_reflection": "Moderate",
+        "depth_of_reflection": "Deep",
         "reflection_ar": "",
         "level_of_detail": "Moderate",
         "tone_and_style": "Gentle"
     },
     {
         "characterId": 50,
-        "daily_goal": "Produce high-quality journalism on blockchain trends",
-        "refer_to_previous": true,
+        "daily_goal": "Identify new opportunities for hedge fund innovation",
+        "refer_to_previous": false,
         "life_style": "Moderate",
-        "daily_objective_ar": "Interview thought leaders and publish comprehensive articles",
+        "daily_objective_ar": "Refocus on robust strategies to reduce volatility and cultivate long-term value",
         "task_priority": [
-            "Research upcoming regulations",
-            "Record podcast interviews",
-            "Verify facts with multiple sources"
+            "Research stable DeFi investments",
+            "Coordinate with potential backers on new fund structures",
+            "Assess rebuilding strategies post-Three Arrows Capital"
         ],
         "max_actions": 10,
         "meta_seq_ar": "",
         "replan_time_limit": 1,
         "meta_seq_adjuster_ar": "",
         "focus_topic": [
-            "Regulatory updates",
-            "Industry insights"
+            "Portfolio diversification",
+            "Strategic resilience"
         ],
-        "depth_of_reflection": "Deep",
+        "depth_of_reflection": "Moderate",
         "reflection_ar": "",
         "level_of_detail": "Moderate",
         "tone_and_style": "Gentle"

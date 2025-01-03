@@ -70,23 +70,24 @@ async def generate_daily_reflection(state: RunningState):
 
     full_prompt = daily_reflection_prompt.format(**payload)
     logger.info("======generate_daily_reflection======\n" + full_prompt)
+    state["decision"]["daily_reflection"] = daily_reflection.reflection
 
     return {"decision": {"daily_reflection": daily_reflection.reflection}}
 
 
 async def generate_daily_objective(state: RunningState):
-    response = make_api_request_sync_backend(
-        "GET", f"/characters/getByIdS/{state['userid']}"
-    )
-    skill_list = response.get("data", {}).get("skillList", [])
-    skill_name = [skill["skillName"] for skill in skill_list]
-    try:
-        with open("core/files/skill2actions.json", "r") as f:
-            skills = json.load(f)
-    except Exception as e:
-        logger.error(f"Failed to load skill actions: {e}")
-    role_specific_actions = format_role_actions(skill_name, skills)
-    state["meta"]["tool_functions"] += role_specific_actions
+    # response = make_api_request_sync_backend(
+    #     "GET", f"/characters/getByIdS/{state['userid']}"
+    # )
+    # skill_list = response.get("data", {}).get("skillList", [])
+    # skill_name = [skill["skillName"] for skill in skill_list]
+    # try:
+    #     with open("core/files/skill2actions.json", "r") as f:
+    #         skills = json.load(f)
+    # except Exception as e:
+    #     logger.error(f"Failed to load skill actions: {e}")
+    # role_specific_actions = format_role_actions(skill_name, skills)
+    # state["meta"]["tool_functions"] += role_specific_actions
 
     retry_count = 0
     payload = {
@@ -113,15 +114,7 @@ async def generate_daily_objective(state: RunningState):
             continue
     full_prompt = obj_planner_prompt.format(**payload)
     logger.info("======generate_daily_objective======\n" + full_prompt)
-    # Store daily objectives in database
-    daily_objective_data = {
-        "characterId": state["userid"],
-        "objectives": planner_response.objectives,
-    }
-    # print(daily_objective_data)
-    # await make_api_request_async_backend(
-    #     "POST", "/daily_objectives/store", data=daily_objective_data
-    # )
+    state["decision"]["daily_objective"].append(planner_response.objectives)
 
     logger.info(f"🌞 OBJ_PLANNER INVOKED with {planner_response.objectives}")
     return {"decision": {"daily_objective": [planner_response.objectives]}}
@@ -142,9 +135,22 @@ async def generate_meta_action_sequence(state: RunningState):
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],
     }
-    meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
+
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in generate_daily_objective: {e}"
+            )
+            retry_count += 1
+            continue
+
     full_prompt = meta_action_sequence_prompt.format(**payload)
     logger.info("======generate_meta_action_sequence======\n" + full_prompt)
+    state["decision"]["meta_seq"].append(meta_action_sequence.meta_action_sequence)
 
     await state["instance"].send_message(
         {
@@ -226,21 +232,32 @@ async def replan_action(state: RunningState):
     logger.info(f"🔧 User {state['userid']}: Error context: {error_context}")
     # try:
     # Generate new meta sequence with error context
-    meta_action_sequence = await meta_seq_adjuster.ainvoke(
-        {
-            "meta_seq": state["decision"]["meta_seq"][-1],
-            "tool_functions": state["meta"]["tool_functions"],
-            "locations": state["meta"]["available_locations"],
-            "failed_action": failed_action,
-            "error_message": error_message,
-            "replan_time_limit": state["prompts"]["replan_time_limit"],
-            "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
-        }
-    )
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            meta_action_sequence = await meta_seq_adjuster.ainvoke(
+                {
+                    "meta_seq": state["decision"]["meta_seq"][-1],
+                    "tool_functions": state["meta"]["tool_functions"],
+                    "locations": state["meta"]["available_locations"],
+                    "failed_action": failed_action,
+                    "error_message": error_message,
+                    "replan_time_limit": state["prompts"]["replan_time_limit"],
+                    "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
+                }
+            )
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in generate_daily_objective: {e}"
+            )
+            retry_count += 1
+            continue
 
     logger.info(
         f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}"
     )
+    state["decision"]["new_plan"].append(meta_action_sequence.meta_action_sequence)
 
     # Send new action sequence to client
     await state["instance"].send_message(
@@ -382,6 +399,7 @@ async def generate_character_arc(state: RunningState):
         **dict(character_arc),
     }
     make_api_request_sync("POST", "/character_arc/", data=character_arc_data)
+    state["decision"]["action_description"].append(dict(character_arc))
     return {"Character_Stats": {"character_arc": dict(character_arc)}}
 
 

@@ -53,6 +53,7 @@ For each meta action, you must generate one emoji and list them in the same orde
 3. The third output is a list of state emoji that show the agent state when conducting each meta action.
 This could be a more detailed objective of the action or the agents' emotion.
 For each meta action, you must generate one emoji and list them in the same order as the meta action.
+The emojis should be different.
 4. The fourth output is a list of simple description that describes the meta actions and agent's feeling.
 For each meta action, you must generate one interesting description and list them in the same order as the meta action.
 The description have two parts: one is exactly the action and the other is an interesting description about the feeling and emotion of the agent.
@@ -99,6 +100,7 @@ For each meta action, you must generate one emoji and list them in the same orde
 3. The third output is a list of state emoji that show the agent state when conducting each meta action.
 This could be a more detailed objective of the action or the agents' emotion.
 For each meta action, you must generate one emoji and list them in the same order as the meta action.
+The emojis should be different.
 4. The fourth output is a list of simple description that describes the meta actions and agent's feeling.
 For each meta action, you must generate one interesting description and list them in the same order as the meta action.
 The description have two parts: one is exactly the action and the other is an interesting description about the feeling and emotion of the agent.

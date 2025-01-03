@@ -56,7 +56,7 @@ class AI_WS_Server:
                     message = await websocket.recv()
                     data = json.loads(message)
                     character.log_message("sent", message)
-                    # Handle heartbeat message
+
                     if data.get("messageName") == "heartbeat":
                         character.update_heartbeat()
                         heartbeat_response = self.create_message(
@@ -64,26 +64,27 @@ class AI_WS_Server:
                         )
                         await websocket.send(heartbeat_response)
                         character.log_message("received", heartbeat_response)
-                        continue
-                    # Handle other messages
                     else:
                         message_queue = agent_instance.state["message_queue"]
-
                         await asyncio.gather(
                             message_queue.put(data),
                             conversation_instance.listener(data),
                         )
 
                 except websockets.ConnectionClosed as e:
-                    logger.warning(f"🔗 Connection closed from {character_id}")
+                    logger.warning(f"🔗 Connection closed from {character_id}: {e}")
                     break
+                except json.JSONDecodeError as e:
+                    logger.error(f"❌ JSON decode error: {e}")
                 except Exception as e:
-                    logger.error(f"❌ Error in message loop: {str(e)}")
+                    logger.error(f"❌ Error in message loop: {e}")
                     break
         finally:
-            save_decision_to_db(character_id, agent_instance.state["decision"])
-            self.character_manager.host_character(character_id)
-            logger.info(f"🧹 Cleaned up resources for Character {character_id}")
+            if character_id:
+                save_decision_to_db(character_id, agent_instance.state["decision"])
+                self.character_manager.host_character(character_id)
+                logger.info(f"🧹 Cleaned up resources for Character {character_id}")
+            await websocket.close()
 
     async def initialize_connection(self, websocket):
         init_message = await websocket.recv()

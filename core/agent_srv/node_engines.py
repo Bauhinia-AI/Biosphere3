@@ -11,7 +11,6 @@ from core.agent_srv.node_model import (
     Reflection,
     AccommodationDecision,
 )
-from core.agent_srv.utils import generate_initial_state_hardcoded
 from core.agent_srv.prompts import *
 from core.llm_factory import LLMSelector
 from core.db.database_api_utils import make_api_request_sync
@@ -57,7 +56,7 @@ accommodation_decision_generator = accommodation_decision_prompt | llm_selector.
 
 async def generate_daily_reflection(state: RunningState):
     payload = {
-        "character_stats": state["character_stats"],
+        "character_stats": format_character_data(state["character_stats"]),
         "daily_objectives": state["decision"]["daily_objective"],
         "failed_actions": str(state["false_action_queue"]),
         "additional_requirements": state["prompts"]["daily_reflection_ar"],
@@ -91,7 +90,7 @@ async def generate_daily_objective(state: RunningState):
 
     retry_count = 0
     payload = {
-        "character_stats": state["character_stats"],
+        "character_stats": format_character_data(state["character_stats"]),
         "tool_functions": state["meta"]["tool_functions"],
         "locations": state["meta"]["available_locations"],
         # get the last 3 objectives
@@ -161,7 +160,7 @@ async def generate_meta_action_sequence(state: RunningState):
                 "command": meta_action_sequence.meta_action_sequence,
                 "action_emoji": meta_action_sequence.action_emoji_sequence,
                 "state_emoji": meta_action_sequence.state_emoji_sequence,
-                "description": meta_action_sequence.description_sequence
+                "description": meta_action_sequence.description_sequence,
             },
         }
     )
@@ -172,38 +171,6 @@ async def generate_meta_action_sequence(state: RunningState):
 
 
 async def sensing_environment(state: RunningState):
-    # logger.info(f"👀 User {state['userid']}: Sensing environment...")
-
-    # # Check if there was a failed action that needs replanning
-    # if state.get("decision", {}).get("action_result"):
-    #     latest_result = state["decision"]["action_result"][-1]
-    #     if latest_result.get("status") == "failed":
-    #         logger.info(f"🔄 User {state['userid']}: Action failed, triggering replan")
-    #         return {"current_pointer": "Replan_Action"}
-
-    # try:
-    #     # Send environment query message
-    #     # await state["instance"].send_message(
-    #     #     {
-    #     #         "characterId": state["userid"],
-    #     #         "messageName": "queryEnvironment",
-    #     #         "messageCode": 7,
-    #     #         "data": {"query": ["location", "nearby_objects", "nearby_characters"]},
-    #     #     }
-    #     # )
-
-    #     await asyncio.sleep(1)
-
-    #     # Check message queue for environment data
-    #     while not state["message_queue"].empty():
-    #         message = state["message_queue"].get_nowait()
-    #         if message.get("messageName") == "environment_data":
-    #             state["environment"] = message.get("data", {})
-    #             logger.info(
-    #                 f"🌍 User {state['userid']}: Environment updated - {state['environment']}"
-    #             )
-    # except Exception as e:
-    #     logger.error(f"❌ User {state['userid']}: Error sensing environment - {str(e)}")
     token_usage = llm_selector.get_token_usage()
     print(token_usage)
     return {"current_pointer": "Process_Messages"}
@@ -269,7 +236,7 @@ async def replan_action(state: RunningState):
                 "command": meta_action_sequence.meta_action_sequence,
                 "action_emoji": meta_action_sequence.action_emoji_sequence,
                 "state_emoji": meta_action_sequence.state_emoji_sequence,
-                "description": meta_action_sequence.description_sequence
+                "description": meta_action_sequence.description_sequence,
             },
         }
     )
@@ -387,7 +354,7 @@ async def generate_character_arc(state: RunningState):
     character_info = character_info_response.get("data", {})
     character_arc = await character_arc_generator.ainvoke(
         {
-            "character_stats": state["character_stats"],
+            "character_stats": format_character_data(state["character_stats"]),
             "character_info": character_info,
             "daily_objectives": state["decision"]["daily_objective"],
             "daily_reflection": state["decision"].get("daily_reflection", ""),
@@ -409,22 +376,52 @@ def format_role_actions(roles, data):
     for index, role in enumerate(roles, start=1):
         role_data = data.get(role, {})
         actions = role_data.get("actions", [])
+        cost = role_data.get("cost", 0)
         materials = role_data.get("materials", {})
 
         # Format the actions
-        action_str = f"{index}. craft [itemType:string] [num:int]: Craft a certain number of items.\n"
+        action_str = f"{index}. craft [itemType:string] [num:int]: Craft a certain number of items and cost energy ({cost} per item)\n"
         action_str += "Constraints: Item must be in ItemType: ("
         action_str += ", ".join([action.split()[1] for action in actions])
         action_str += ") and you should have enough materials.\nHere's the rule:\n"
 
         # Format the materials
         for item, constraints in materials.items():
-            constraint_str = "None" if not constraints else ", ".join(constraints)
-            action_str += f"- {item}: {constraint_str}\n"
+            if not constraints:
+                action_str += f"- {item}: No materials required.\n"
+            else:
+                constraint_str = ", ".join(constraints)
+                action_str += f"- {item}: Required materials: {constraint_str}\n"
 
         action_strings.append(action_str)
 
     return "\n".join(action_strings)
+
+
+def format_character_data(character_data: dict) -> str:
+    return (
+        f"Health: {character_data.get('health', 'N/A')} - Represents the character's physical well-being.\n"
+        f"Energy: {character_data.get('energy', 'N/A')} - Indicates how much energy the character has left.\n"
+        f"Hungry: {character_data.get('hungry', 'N/A')} - Indicates the character's level of satiety; the higher, the fuller.\n"
+        f"Education: {character_data.get('education', 'N/A')} - The level of education attained.\n"
+        f"Education Experience: {character_data.get('education_experience', 'N/A')} - Experience points in education.\n"
+        f"Money: {character_data.get('money', 'N/A')} - Current financial status.\n"
+        f"Occupation: {character_data.get('occupation', 'N/A')} - Current job or role work at {character_data.get('work_place')}\n"
+        f"Efficiency: {character_data.get('efficiency', 'N/A'):.2f} - Calculated efficiency based on various factors: "
+        f"Efficiency = (Hungry Factor) * (Energy Factor) * (Health Factor) * (Wisdom Factor), where:\n"
+        f"  - Hungry Factor = hungry / 100 if hungry < 50 else 1\n"
+        f"  - Energy Factor = energy / 100\n"
+        f"  - Health Factor = health / 100\n"
+        f"  - Wisdom Factor = log(education_experience + 10, 10)\n"
+        f"  Efficiency affects the crafting efficiency of items. If the efficiency is too low (lower than 0.2), "
+        f"  it is advisable to improve the basic attributes first.\n"
+        f"Inventory: {character_data.get('inventory', {})} - Items currently held by the character.\n"
+        f"Personality: {character_data.get('personality', 'N/A')} - Describes the character's personality traits.\n"
+        f"Long-term Goal: {character_data.get('long_term_goal', 'N/A')} - The character's long-term aspirations.\n"
+        f"Short-term Goal: {character_data.get('short_term_goal', 'N/A')} - Immediate objectives.\n"
+        f"Language Style: {character_data.get('language_style', 'N/A')} - Preferred communication style.\n"
+        f"Biography: {character_data.get('biography', 'N/A')} - A brief background story.\n"
+    )
 
 
 async def generate_accommodation_decision(state: RunningState):
@@ -489,7 +486,7 @@ async def generate_accommodation_decision(state: RunningState):
     while retries < max_retries:
         # 为 LLM 构建输入
         payload = {
-            "character_stats": state["character_stats"],
+            "character_stats": format_character_data(state["character_stats"]),
             "current_accommodation": current_accommodation,
             "available_accommodations": available_accommodations,
             "financial_status": financial_status,

@@ -5,6 +5,7 @@ import asyncio
 from dotenv import load_dotenv
 import aiohttp
 from loguru import logger
+import math
 
 load_dotenv()
 GAME_BACKEND_URL = os.getenv("GAME_BACKEND_URL")
@@ -113,64 +114,39 @@ async def fetch_json_async(
     return {"code": 0, "data": {}, "message": "Resource not found at GAMEDB"}
 
 
-def get_inventory(
-    userid, filter_fields: list = ["ore", "apple", "wheat", "fish"]
-) -> dict:
+def get_inventory(userid: int) -> dict:
     response = fetch_json(
         f"{GAME_BACKEND_URL}/bag/getByCharacterId/{userid}",
         timeout=GAME_BACKEND_TIMEOUT,
         _logger=logger,
         error_message="Failed to get inventory from game backend",
     )
-
-    # 只保留ore, apple, wheat, fish
     inventory_dict = {}
     try:
         for x in response:
-            if x["itemName"].lower() in filter_fields:
-                inventory_dict[x["itemName"]] = x["itemQuantity"]
-            if x["itemName"].lower() == "iron_ore":
-                inventory_dict["ore"] = x["itemQuantity"]
+            inventory_dict[x["itemName"]] = x["itemQuantity"]
     except KeyError:
         logger.error("Failed to get inventory from game backend")
     return inventory_dict
 
 
-async def get_inventory_async(
-    userid: int, filter_fields: list = ["ore", "apple", "wheat", "fish"]
-) -> dict:
-    """
-    Asynchronously retrieves the user's inventory from the game backend.
-
-    Args:
-        userid (int): The ID of the user.
-        filter_fields (list): The list of fields to filter the inventory items.
-
-    Returns:
-        dict: Filtered inventory data.
-    """
+async def get_inventory_async(userid: int) -> dict:
     response = await fetch_json_async(
         f"{GAME_BACKEND_URL}/bag/getByCharacterId/{userid}",
         timeout=GAME_BACKEND_TIMEOUT,
         _logger=logger,
         error_message="Failed to get inventory from game backend",
     )
-
-    # Only keep specified fields
     inventory_dict = {}
     try:
         for x in response:
-            item_name = x.get("itemName", "").lower()
-            if item_name in filter_fields:
-                inventory_dict[x["itemName"]] = x.get("itemQuantity", 0)
-            if item_name == "iron_ore":
-                inventory_dict["ore"] = x.get("itemQuantity", 0)
+            inventory_dict[x["itemName"]] = x["itemQuantity"]
     except (KeyError, TypeError):
         logger.error("Failed to parse inventory data from game backend")
     return inventory_dict
 
 
-def get_market_data_from_db(fields: list = ["ore", "apple", "wheat", "fish"]):
+def get_market_data_from_db() -> dict:
     # Market data
     price_response = fetch_json(
         url=f"{GAME_BACKEND_URL}/ammPool/getAveragePrice",
@@ -178,9 +154,7 @@ def get_market_data_from_db(fields: list = ["ore", "apple", "wheat", "fish"]):
         _logger=logger,
         error_message="Failed to get market data from AMM pool",
     )
-    market_data_dict = dict(
-        {x["name"]: x["averagePrice"] for x in price_response if x["name"] in fields}
-    )
+    market_data_dict = dict({x["name"]: x["averagePrice"] for x in price_response})
     return market_data_dict
 
 
@@ -223,7 +197,7 @@ async def fetch_game_db_character_response_async(userid: int) -> dict:
         dict: The game database character response.
     """
     response = await fetch_json_async(
-        f"{GAME_BACKEND_URL}/characters/getById/{userid}",
+        f"{GAME_BACKEND_URL}/characters/getByIdS/{userid}",
         timeout=GAME_BACKEND_TIMEOUT,
         _logger=logger,
         error_message="Failed to get character data from game backend",
@@ -275,29 +249,34 @@ async def get_character_data_async(userid: int) -> dict:
     )
 
     # Fetch inventory asynchronously
-    inventory = await get_inventory_async(
-        userid, filter_fields=["ore", "apple", "wheat", "fish"]
-    )
+    inventory = await get_inventory_async(userid)
 
     # Construct character_data
     try:
         character_data = {
             "health": game_db_character_response.get("health"),
             "energy": game_db_character_response.get("energy"),
+            "hungry": game_db_character_response.get("hungry"),
             "education": game_db_character_response.get("education"),
+            "education_experience": game_db_character_response.get("experience"),
+            "money": game_db_character_response.get("money"),
+            "occupation": get_occupation(game_db_character_response.get("jobId")),
+            "work_place": get_work_place(game_db_character_response.get("jobId")),
+            "efficiency": compute_efficiency(game_db_character_response),
             "inventory": inventory,
-            "characterName": game_db_character_response.get("characterName"),
-            "gender": (
-                "Male" if game_db_character_response.get("isMale") == 1 else "Female"
-            ),
+            # "characterName": game_db_character_response.get("characterName"),
+            # "gender": (
+            #     "Male" if game_db_character_response.get("isMale") == 1 else "Female"
+            # ),
             # agent_db_response
-            "relationship": agent_db_response.get("relationship"),
+            # "relationship": agent_db_response.get("relationship"),
             "personality": agent_db_response.get("personality"),
             "long_term_goal": agent_db_response.get("long_term_goal"),
             "short_term_goal": agent_db_response.get("short_term_goal"),
             "language_style": agent_db_response.get("language_style"),
             "biography": agent_db_response.get("biography"),
         }
+
     except AttributeError:
         logger.error(f"Failed to get character data")
         return {}
@@ -330,6 +309,66 @@ def save_decision_to_db(userid: int, decision: dict):
         logger.error(f"Failed to decode JSON from {url}")
 
 
+def get_occupation(job_id: int) -> str:
+    occupation_mapping = {
+        "0": "Unemployed",
+        "1": "Intern",
+        "2": "Trainee",
+        "3": "Assistant",
+        "4": "Programmer",
+        "5": "Researcher",
+        "6": "Manager",
+        "7": "Director",
+        "8": "Chief Officer",
+        "9": "President",
+        "10": "Chairman",
+        "11": "Guard",
+        "12": "Cleaner",
+        "13": "Gardener",
+        "14": "Police",
+        "15": "Cook",
+        "16": "Librarian",
+        "17": "Store Clerk",
+    }
+    return occupation_mapping.get(job_id, "Unemployed")
+
+
+def get_work_place(job_id: int) -> str:
+    work_place_mapping = {
+        "0": "N/A",
+        "1": "School",
+        "2": "School",
+        "3": "School",
+        "4": "School",
+        "5": "School",
+        "6": "School",
+        "7": "School",
+        "8": "School",
+        "9": "School",
+        "10": "School",
+        "11": "School",
+        "12": "School",
+        "13": "Garden",
+        "14": "PoliceStation",
+        "15": "Canteen",
+        "16": "Library",
+        "17": "Supermarket",
+    }
+    return work_place_mapping.get(job_id, "N/A")
+
+
+def compute_efficiency(character_data: dict) -> float:
+    hungry = (
+        character_data.get("hungry", 0) / 100
+        if character_data.get("hungry") < 50
+        else 1
+    )
+    energy = character_data.get("energy", 0) / 100
+    health = character_data.get("health", 0) / 100
+    wisdom = math.log(character_data.get("education_experience", 0) + 10, 10)
+    return hungry * energy * health * wisdom
+
+
 async def get_initial_state_from_db(userid, websocket):
     # 获取市场数据
     market_data = get_market_data_from_db()
@@ -351,7 +390,7 @@ async def get_initial_state_from_db(userid, websocket):
             "reflection": [],
         },
         "meta": {
-            "tool_functions": tool_functions_easy,
+            "tool_functions": tool_functions_live,
             "day": "",
             "available_locations": [
                 "school",
@@ -360,12 +399,20 @@ async def get_initial_state_from_db(userid, websocket):
                 "farm",
                 "mall",
                 "square",
+                "councilHall",
                 "hospital",
                 "fruit",
                 "harvest",
                 "fishing",
                 "mine",
                 "orchard",
+                "foodfactory",
+                "factory",
+                "garden",
+                "policestation",
+                "library",
+                "supermarket",
+                "canteen",
             ],
         },
         "prompts": prompt_data,
@@ -469,6 +516,34 @@ Constraints: Must have enough items in inventory. ItemType:(ore,bread,apple,whea
 Constraints: None
 21. getprice [itemType:string]: Get the price of an item.
 Constraints: None
+"""
+
+tool_functions_live = """
+1. goto [placeName:string]: Go to a specified location.
+Constraints: Must in (school,workshop,home,farm,mall,square,councilHall,hospital,fruit,harvest,fishing,mine,orchard,foodfactory,factory,garden,policestation,library,supermarket,canteen).
+2. sleep [hours:int]: Sleep to recover energy (10 per hour).
+Constraints: Must be at home.
+3. study [hours:int]: Study to achieve a higher degree, cost money (100 per hour) and energy (10 per hour), gain education experience (10 per hour).
+Constraints: Must be in school and have enough money.
+4. seedoctor [hours:int]: See a doctor, cost money (100 per hour), gain health (10 per hour).
+Constraints: Must be in the hospital and have enough money.
+5. work [hours:int]: Work to earn money (you should check your salary per hour), cost energy (10 per hour).
+Constraints: Must have an occupation and be in the corresponding work place.
+6. use [itemType:string] [amount:int]: Use items in your inventory to get corresponding effects. Here are the effects of different items:
+    - apple: +10 hungry
+    - pear: +15 hungry
+    - bread: +25 hungry
+    - applepie: +20 hungry
+    - fruitsalad: +35 hungry
+    - chickensalad: +35 hungry and +10 energy
+    - beefrice: +50 hungry and +5 energy
+    - sushi: +30 hungry
+    - book: +10 education experience
+Constraints: Must have enough items in inventory.
+7. buy [itemType:string] [amount:int]: Purchase items, costing money (you should check the market data to get the price of different items).
+Constraints: Must have enough money, and items must be available in sufficient quantity in the AMM.
+8. sell [itemType:string] [amount:int]: Sell items to get money (you should check the market data to get the price of different items).
+Constraints: Must have enough items in inventory.
 """
 
 

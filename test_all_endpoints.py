@@ -1109,9 +1109,9 @@ def test_get_action_counts():
     print(json.dumps(response, indent=4))
 
 
-def test_get_weekly_action_counts():
-    print("Testing Get Weekly Action Counts...")
-    response = make_api_request_sync("GET", "/actions/weekly_counts", params={})
+def test_get_all_action_counts():
+    print("Testing Get all Action Counts...")
+    response = make_api_request_sync("GET", "/actions/all_counts", params={})
     print(json.dumps(response, indent=4))
 
 
@@ -1163,9 +1163,9 @@ def main():
 
     # asyncio.run(test_store_agent_profiles())
     # asyncio.run(test_store_agent_prompts())
-    asyncio.run(test_store_conversation_prompts())
+    # asyncio.run(test_store_conversation_prompts())
 
-    # test_get_weekly_action_counts()
+    test_get_all_action_counts()
 
     # # Test actions endpoints
     # test_store_action()
@@ -1358,8 +1358,8 @@ def main():
     # test_sample_get_specific()
     # time.sleep(1)
 
-    # Agent Prompt
-    test_agent_prompt_store()
+    # # Agent Prompt
+    # test_agent_prompt_store()
     # time.sleep(1)
     # test_agent_prompt_get()
     # time.sleep(1)

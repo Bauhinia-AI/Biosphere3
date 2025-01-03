@@ -615,17 +615,15 @@ class DomainSpecificQueries:
 
         return final_counts
 
-    def get_action_counts_in_a_week(self):
+    def get_all_action_counts(self):
         """
-        统计最近 7 天的各地点人数：
-        - 如果数据库中天数少于 7 天，则从第 1 天补全至 7 天，空缺天数数据为 0；
-        - 如果天数多于或等于 7 天，则统计最近 7 天；
+        统计从第 0 天到当前最新一天的各地点人数：
 
         返回:
         {
-        "xAxis": [...7天的天数...],
+        "xAxis": [...从第 0 天到最新天的天数...],
         "series": [
-            { "name": 地点, "data": [7天统计值] },
+            { "name": 地点, "data": [每天统计值] },
             ...
         ]
         }
@@ -650,11 +648,11 @@ class DomainSpecificQueries:
         )
 
         if not max_day_result or max_day_result[0].get("maxDay") is None:
-            # 如果库里没有任何文档 or 没有可解析的 dayInt，直接返回全为 0 的 7 天数据
+            # 如果库里没有任何文档 or 没有可解析的 dayInt，直接返回空数据
             return {
-                "xAxis": [str(d) for d in range(1, 8)],
+                "xAxis": [],
                 "series": [
-                    {"name": loc, "data": [0] * 7}
+                    {"name": loc, "data": []}
                     for loc in [
                         "school",
                         "workshop",
@@ -674,13 +672,9 @@ class DomainSpecificQueries:
 
         max_day = max_day_result[0]["maxDay"]
 
-        # 确定统计的时间范围：如果 maxDay < 7，则从第 1 天补齐到 7 天
-        if max_day < 7:
-            start_day = 1
-            end_day = 7
-        else:
-            start_day = max_day - 6
-            end_day = max_day
+        # 确定统计的时间范围：从第 0 天到 maxDay
+        start_day = 0
+        end_day = max_day
 
         # 2) 聚合查询，统计每个地点在 [start_day..end_day] 范围内的每日数量
         pipeline_actions = [
@@ -724,7 +718,7 @@ class DomainSpecificQueries:
 
         # day_location_map 形如: { dayInt: { location: count, ... }, ... }
         day_location_map = {}
-        for d in range(1, 8):  # 确保从第 1 天到第 7 天都初始化
+        for d in range(start_day, end_day + 1):  # 初始化所有天数
             day_location_map[d] = {loc: 0 for loc in ALL_LOCATIONS}
 
         for doc in agg_results:
@@ -737,13 +731,16 @@ class DomainSpecificQueries:
                 day_location_map[day_int][location] += count
 
         # 4) 构建返回的 xAxis 和 series
-        # xAxis: 确保输出连续 7 天的天数
-        xAxis = [str(d) for d in range(1, 8)]
+        # xAxis: 确保输出从第 0 天到 maxDay 的连续天数
+        xAxis = [str(d) for d in range(start_day, end_day + 1)]
 
         # series: [{"name": 地点, "data": [每天数据]}]
         series = []
         for location in ALL_LOCATIONS:
-            data = [day_location_map[day].get(location, 0) for day in range(1, 8)]
+            data = [
+                day_location_map[day].get(location, 0)
+                for day in range(start_day, end_day + 1)
+            ]
             series.append({"name": location, "data": data})
 
         # 5) 返回结果
@@ -1956,7 +1953,7 @@ if __name__ == "__main__":
     # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
 
     # 获取最近7天的统计数据
-    print(queries.get_action_counts_in_a_week())
+    print(queries.get_all_action_counts())
 
     # # 存储角色信息
     # print("存储角色信息...")

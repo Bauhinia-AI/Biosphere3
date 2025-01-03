@@ -4,6 +4,8 @@ import asyncio
 from database_api_utils import make_api_request_sync, make_api_request_async
 import json
 import time
+import os
+import httpx
 
 
 def test_crud_insert():
@@ -411,6 +413,7 @@ def test_characters_store():
         "short_term_goal": "Scout the area for potential threats",
         "language_style": "Stealthy and precise",
         "biography": "An agile ranger with unparalleled archery skills.",
+        "image": "https://i.postimg.cc/ht2MvWwm/c57c5212d5f9861b230525a5e848bb1.png",  # 新增字段
     }
     response = make_api_request_sync("POST", "/characters/", data=character_data)
     print(json.dumps(response, indent=4))
@@ -1086,7 +1089,7 @@ def test_character_arc_get():
 
 def test_knowledge_graph_get():
     print("Testing Knowledge Graph Get...")
-    character_id = 100  # 使用一个有效的characterId进行测试
+    character_id = 1  # 使用一个有效的characterId进行测试
     response = make_api_request_sync(
         "GET", f"/knowledge_graph/{character_id}", params={}
     )
@@ -1127,13 +1130,13 @@ async def store_agent_profile(profile):
     print(json.dumps(response, indent=4))
 
 
-async def test_store_agent_profiles():
-    print("Testing Store Agent Profiles...")
-    with open("data/AGENT_PROFILE.json", "r", encoding="utf-8") as file:
-        agent_profiles = json.load(file)
+# async def test_store_agent_profiles():
+#     print("Testing Store Agent Profiles...")
+#     with open("data/AGENT_PROFILE.json", "r", encoding="utf-8") as file:
+#         agent_profiles = json.load(file)
 
-    tasks = [store_agent_profile(profile) for profile in agent_profiles]
-    await asyncio.gather(*tasks)
+#     tasks = [store_agent_profile(profile) for profile in agent_profiles]
+#     await asyncio.gather(*tasks)
 
 
 async def store_agent_prompt(prompt):
@@ -1148,27 +1151,130 @@ async def store_conversation_prompt(prompt):
     print(json.dumps(response, indent=4))
 
 
-async def test_store_agent_prompts():
+# async def test_store_agent_prompts():
+#     print("Testing Store Agent Prompts...")
+#     with open("data/AGENT_PROMPT.json", "r", encoding="utf-8") as file:
+#         agent_prompts = json.load(file)
+
+#     tasks = [store_agent_prompt(prompt) for prompt in agent_prompts]
+#     await asyncio.gather(*tasks)
+
+
+# async def test_store_conversation_prompts():
+#     print("Testing Store Conversation Prompts...")
+#     with open("data/CONVERSATION_PROMPT.json", "r", encoding="utf-8") as file:
+#         conversation_prompts = json.load(file)
+
+#     tasks = [store_conversation_prompt(prompt) for prompt in conversation_prompts]
+#     await asyncio.gather(*tasks)
+
+
+async def get_sql_characters():
+    """从 SQL 接口获取所有角色信息并返回。"""
+    url = os.getenv("CHARACTERS_GETALL_URL")
+    async with httpx.AsyncClient(timeout=30) as client:
+        response = await client.get(url)  # Make the GET request asynchronously
+        response.raise_for_status()  # Check if the request was successful
+        response_data = response.json()
+        print(response_data)
+        return response_data.get("data", [])
+
+
+async def build_id_mappings():
+    """
+    1. 从 SQL 数据中构建 name -> sql_id 映射；
+    2. 从 AGENT_PROFILE.json 构建 old_id -> name 映射；
+    3. 最终合成 old_id -> new_sql_id 映射并返回。
+    """
+    # 1) 获取 SQL 角色数据并构建 name -> sql_id
+    sql_characters = await get_sql_characters()
+    name_to_sql_id = {}
+    for char in sql_characters:
+        name_to_sql_id[char["characterName"]] = char["id"]
+    print(name_to_sql_id)
+
+    # 2) 从 AGENT_PROFILE.json 建立 old_id -> name
+    agent_profile_id_to_name = {}
+    with open("data/AGENT_PROFILE.json", "r", encoding="utf-8") as f:
+        agent_profiles = json.load(f)
+        for profile in agent_profiles:
+            old_id = profile["characterId"]
+            name = profile["characterName"]
+            agent_profile_id_to_name[old_id] = name
+
+    # 3) old_id -> new_sql_id
+    old_to_new_id = {}
+    for old_id, name in agent_profile_id_to_name.items():
+        if name in name_to_sql_id:
+            old_to_new_id[old_id] = name_to_sql_id[name]
+        else:
+            # 可能存在无法在 SQL 中找到对应 name 的情况，你可以根据需求进行处理
+            print(f"在 SQL 数据中未找到角色名 {name} 对应的 id，跳过映射。")
+
+    return old_to_new_id
+
+
+async def test_store_agent_profiles(old_to_new_id):
+    """读取 AGENT_PROFILE.json，将 characterId 替换后写入 MongoDB。"""
+    print("Testing Store Agent Profiles...")
+
+    # 读取原始数据
+    with open("data/AGENT_PROFILE.json", "r", encoding="utf-8") as file:
+        agent_profiles = json.load(file)
+
+    # 动态替换 characterId
+    for profile in agent_profiles:
+        original_id = profile["characterId"]
+        if original_id in old_to_new_id:
+            profile["characterId"] = old_to_new_id[original_id]
+        # 然后调用异步写入 MongoDB 的函数
+    tasks = [store_agent_profile(profile) for profile in agent_profiles]
+    await asyncio.gather(*tasks)
+
+
+async def test_store_agent_prompts(old_to_new_id):
+    """读取 AGENT_PROMPT.json，将 characterId 替换后写入 MongoDB。"""
     print("Testing Store Agent Prompts...")
     with open("data/AGENT_PROMPT.json", "r", encoding="utf-8") as file:
         agent_prompts = json.load(file)
 
+    for prompt in agent_prompts:
+        original_id = prompt["characterId"]
+        if original_id in old_to_new_id:
+            prompt["characterId"] = old_to_new_id[original_id]
     tasks = [store_agent_prompt(prompt) for prompt in agent_prompts]
     await asyncio.gather(*tasks)
 
 
-async def test_store_conversation_prompts():
+async def test_store_conversation_prompts(old_to_new_id):
+    """读取 CONVERSATION_PROMPT.json，将 characterId 替换后写入 MongoDB。"""
     print("Testing Store Conversation Prompts...")
     with open("data/CONVERSATION_PROMPT.json", "r", encoding="utf-8") as file:
         conversation_prompts = json.load(file)
 
+    for prompt in conversation_prompts:
+        original_id = prompt["characterId"]
+        if original_id in old_to_new_id:
+            prompt["characterId"] = old_to_new_id[original_id]
     tasks = [store_conversation_prompt(prompt) for prompt in conversation_prompts]
     await asyncio.gather(*tasks)
 
 
+async def store_base_data():
+    # 1) 构建 old_id -> new_sql_id
+    old_to_new_id = await build_id_mappings()
+
+    # 2) 分别对三个文件执行写入操作（在写入时才进行内存中的 characterId 替换）
+    await test_store_agent_profiles(old_to_new_id)
+    await test_store_agent_prompts(old_to_new_id)
+    await test_store_conversation_prompts(old_to_new_id)
+
+
 def main():
 
-    test_characters_get_k()
+    asyncio.run(store_base_data())
+
+    # test_characters_get_k()
 
     # asyncio.run(test_store_agent_profiles())
     # asyncio.run(test_store_agent_prompts())

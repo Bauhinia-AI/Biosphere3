@@ -135,7 +135,19 @@ async def generate_meta_action_sequence(state: RunningState):
         "max_actions": state["prompts"]["max_actions"],
         "additional_requirements": state["prompts"]["meta_seq_ar"],
     }
-    meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
+
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            meta_action_sequence = await meta_action_sequence_planner.ainvoke(payload)
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in generate_daily_objective: {e}"
+            )
+            retry_count += 1
+            continue
+
     full_prompt = meta_action_sequence_prompt.format(**payload)
     logger.info("======generate_meta_action_sequence======\n" + full_prompt)
     state["decision"]["meta_seq"].append(meta_action_sequence.meta_action_sequence)
@@ -220,17 +232,27 @@ async def replan_action(state: RunningState):
     logger.info(f"🔧 User {state['userid']}: Error context: {error_context}")
     # try:
     # Generate new meta sequence with error context
-    meta_action_sequence = await meta_seq_adjuster.ainvoke(
-        {
-            "meta_seq": state["decision"]["meta_seq"][-1],
-            "tool_functions": state["meta"]["tool_functions"],
-            "locations": state["meta"]["available_locations"],
-            "failed_action": failed_action,
-            "error_message": error_message,
-            "replan_time_limit": state["prompts"]["replan_time_limit"],
-            "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
-        }
-    )
+    retry_count = 0
+    while retry_count < 3:
+        try:
+            meta_action_sequence = await meta_seq_adjuster.ainvoke(
+                {
+                    "meta_seq": state["decision"]["meta_seq"][-1],
+                    "tool_functions": state["meta"]["tool_functions"],
+                    "locations": state["meta"]["available_locations"],
+                    "failed_action": failed_action,
+                    "error_message": error_message,
+                    "replan_time_limit": state["prompts"]["replan_time_limit"],
+                    "additional_requirements": state["prompts"]["meta_seq_adjuster_ar"],
+                }
+            )
+            break
+        except Exception as e:
+            logger.error(
+                f"⛔ User {state['userid']} Error in generate_daily_objective: {e}"
+            )
+            retry_count += 1
+            continue
 
     logger.info(
         f"✨ User {state['userid']}: Generated new action sequence: {meta_action_sequence.meta_action_sequence}"

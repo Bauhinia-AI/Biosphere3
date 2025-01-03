@@ -4,12 +4,7 @@ validators = {
     "agent_profile": {
         "$jsonSchema": {
             "bsonType": "object",
-            "required": [
-                "characterId",
-                "created_at",
-                "updated_at",
-                "full_profile",
-            ],
+            "required": ["characterId"],
             "properties": {
                 "characterId": {
                     "bsonType": "int",
@@ -19,11 +14,15 @@ validators = {
                     "bsonType": ["string", "null"],
                     "description": "character 名字,必须为字符串",
                 },
+                "image": {
+                    "bsonType": ["string", "null"],
+                    "description": "头像链接, 必须为字符串",
+                },
                 "gender": {
                     "bsonType": ["string", "null"],
                     "description": "character 性别,必须为字符串",
                 },
-                "spriteId": {  # 新增字段
+                "spriteId": {
                     "bsonType": "int",
                     "description": "agent 样貌, 必须为整数",
                 },

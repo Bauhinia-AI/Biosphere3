@@ -241,12 +241,15 @@ class DomainSpecificQueries:
             # 角色名
             text_value = char_doc.get("characterName", f"Character_{cid}")
             # 头像 spriteId（这里直接返回 spriteId，也可根据你需求构造完整URL）
-            icon_value = str(char_doc.get("spriteId", "0"))
+            icon_value = str(
+                char_doc.get("image")
+                or "https://i.postimg.cc/ht2MvWwm/c57c5212d5f9861b230525a5e848bb1.png"
+            )
 
             # 性别
             gender_value = char_doc.get("gender", "")
             if not gender_value:
-                gender_value = "未知"
+                gender_value = "Unknown"
 
             # 这里可以给节点按性别设置不同颜色，也可统一
             if gender_value == "Female":
@@ -957,6 +960,7 @@ class DomainSpecificQueries:
         short_term_goal=None,
         language_style=None,
         biography=None,
+        image=None,
     ):
         # 拼接非空字段
         fields = [
@@ -987,6 +991,7 @@ class DomainSpecificQueries:
             "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "full_profile": full_profile,
+            "image": image,  # 新增字段
         }
         # 插入文档
         inserted_id = self.db_utils.insert_document(
@@ -1957,8 +1962,8 @@ if __name__ == "__main__":
     # minute_result = queries.get_action_counts_in_time_range(from_time, to_time)
     # print(f"从 {from_time} 到 {to_time} 时间范围内，各地点人数统计: {minute_result}")
 
-    # 获取最近7天的统计数据
-    print(queries.get_all_action_counts())
+    # # 获取最近7天的统计数据
+    # print(queries.get_all_action_counts())
 
     # # 存储角色信息
     # print("存储角色信息...")
@@ -1979,22 +1984,25 @@ if __name__ == "__main__":
 
     # 测试 get_k
 
-    # # 插入数据：亲密度为 50，relationship 由系统自动计算
-    # print("插入数据...")
-    # inserted_id_1_2 = queries.store_intimacy(100, 200, intimacy_level=50)
-    # print(f"插入成功，文档 ID：{inserted_id_1_2}")
+    # 插入数据：亲密度为 50，relationship 由系统自动计算
+    print("插入数据...")
+    inserted_id_1_2 = queries.store_intimacy(1, 2, intimacy_level=50)
+    print(f"插入成功，文档 ID：{inserted_id_1_2}")
 
-    # # 再插入一些测试数据，方便观察关联结果
-    # inserted_id_1_3 = queries.store_intimacy(100, 300, intimacy_level=60)
-    # inserted_id_2_3 = queries.store_intimacy(200, 300, intimacy_level=70)
-    # inserted_id_2_4 = queries.store_intimacy(200, 400, intimacy_level=40)
-    # print("插入了额外测试数据：", inserted_id_1_3, inserted_id_2_3, inserted_id_2_4)
+    queries.store_intimacy(2, 1, intimacy_level=10)
 
-    # # 测试 get_knowledge_graph_data 方法
-    # print("测试 get_knowledge_graph_data 方法...")
-    # character_id = 100  # 替换为你想测试的角色ID
-    # knowledge_graph_data = queries.get_knowledge_graph_data(character_id)
-    # print("知识图谱数据：", knowledge_graph_data)
+    # 再插入一些测试数据，方便观察关联结果
+    inserted_id_1_3 = queries.store_intimacy(1, 3, intimacy_level=60)
+    inserted_id_2_3 = queries.store_intimacy(2, 3, intimacy_level=70)
+    queries.store_intimacy(3, 2, intimacy_level=20)
+    inserted_id_2_4 = queries.store_intimacy(2, 4, intimacy_level=40)
+    print("插入了额外测试数据")
+
+    # 测试 get_knowledge_graph_data 方法
+    print("测试 get_knowledge_graph_data 方法...")
+    character_id = 1  # 替换为你想测试的角色ID
+    knowledge_graph_data = queries.get_knowledge_graph_data(character_id)
+    print("知识图谱数据：", knowledge_graph_data)
 
     # # 测试 store_character_arc 方法
     # print("存储 character_arc...")

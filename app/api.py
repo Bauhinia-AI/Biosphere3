@@ -366,6 +366,7 @@ class StorecharacterRequest(BaseModel):
     short_term_goal: Optional[str] = None
     language_style: Optional[str] = None
     biography: Optional[str] = None
+    image: Optional[str] = None  # 新增字段
 
 
 class characterRAGRequest(BaseModel):
@@ -1393,6 +1394,7 @@ def store_character_api(request: StorecharacterRequest):
         or sample_methods["short_term_goal"](),
         "language_style": request.language_style or sample_methods["language_style"](),
         "biography": request.biography or sample_methods["biography"](),
+        "image": request.image,  # 新增字段
     }
 
     inserted_id = retry_operation(
